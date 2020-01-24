@@ -1,0 +1,13 @@
+diff --git a/gas/testsuite/gas/ppc/spe_ambiguous.d b/gas/testsuite/gas/ppc/spe_ambiguous.d
+index 2e0b1d3594..c0a69c95a1 100644
+--- a/gas/testsuite/gas/ppc/spe_ambiguous.d
++++ b/gas/testsuite/gas/ppc/spe_ambiguous.d
+@@ -1,6 +1,6 @@
+ #as: -a32 -mbig -mvle
+ #objdump: -d -Mspe
+-#name: Validate SPE instructions
++#name: Validate SPE instructions (ambiguous)
+ 
+ .*: +file format elf.*-powerpc.*
+ 
+       

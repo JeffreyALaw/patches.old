@@ -1,0 +1,12 @@
+diff --git a/libgloss/xstormy16/sim_high.ld b/libgloss/xstormy16/sim_high.ld
+index a5142c504..f9846fa58 100644
+--- a/libgloss/xstormy16/sim_high.ld
++++ b/libgloss/xstormy16/sim_high.ld
+@@ -3,6 +3,7 @@
+ OUTPUT_FORMAT("elf32-xstormy16", "elf32-xstormy16",
+ 	      "elf32-xstormy16")
+ OUTPUT_ARCH(xstormy16)
++GROUP(-lc -lsim -lgcc)
+ ENTRY(_start)
+  SEARCH_DIR(/es/scratch/geoffk/objs/mainline-sX/H-i686-pc-linux-gnulibc2.2/xstormy16-elf/lib);
+ /* There are two memory regions we care about, one from 0 through 0x7F00

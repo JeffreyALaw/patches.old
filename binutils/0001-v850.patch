@@ -1,0 +1,94 @@
+diff --git a/ld/scripttempl/v850.sc b/ld/scripttempl/v850.sc
+index c66c310..3efa398 100644
+--- a/ld/scripttempl/v850.sc
++++ b/ld/scripttempl/v850.sc
+@@ -211,7 +211,7 @@ EOF
+ 
+ cat <<EOF
+   /* User stack.  */
+-  .stack 0x200000	:
++  .stack 0x300000	:
+   {
+ 	${RELOCATING+__stack = .;}
+ 	*(.stack)
+diff --git a/ld/scripttempl/v850_rh850.sc b/ld/scripttempl/v850_rh850.sc
+index 618dc2f..2a09b27 100644
+--- a/ld/scripttempl/v850_rh850.sc
++++ b/ld/scripttempl/v850_rh850.sc
+@@ -231,7 +231,7 @@ EOF
+ 
+ cat <<EOF
+   /* User stack.  */
+-  .stack 0x200000	:
++  .stack 0x300000	:
+   {
+ 	${RELOCATING+__stack = .;}
+ 	*(.stack)
+diff --git a/sim/common/sim-fpu.c b/sim/common/sim-fpu.c
+index ce5fafb..495d4d7 100644
+--- a/sim/common/sim-fpu.c
++++ b/sim/common/sim-fpu.c
+@@ -1807,11 +1807,13 @@ sim_fpu_neg (sim_fpu *f,
+     {
+       *f = *r;
+       f->class = sim_fpu_class_qnan;
++      f->sign = !r->sign;
+       return sim_fpu_status_invalid_snan;
+     }
+   if (sim_fpu_is_qnan (r))
+     {
+       *f = *r;
++      f->sign = !r->sign;
+       return 0;
+     }
+   *f = *r;
+diff --git a/sim/v850/sim-main.h b/sim/v850/sim-main.h
+index e7276a6..35dc02f 100644
+--- a/sim/v850/sim-main.h
++++ b/sim/v850/sim-main.h
+@@ -67,7 +67,7 @@ extern SIM_DESC simulator;
+ 
+ 
+ #define V850_ROM_SIZE 0x8000
+-#define V850_LOW_END 0x200000
++#define V850_LOW_END 0x300000
+ #define V850_HIGH_START 0xffe000
+ 
+ 
+diff --git a/sim/v850/simops.c b/sim/v850/simops.c
+index 40d578e..dfb6f82 100644
+--- a/sim/v850/simops.c
++++ b/sim/v850/simops.c
+@@ -345,10 +345,10 @@ Multiply64 (int sign, unsigned long op0)
+ 	  
+       sign = (op0 ^ op1) & 0x80000000;
+ 	  
+-      if (((signed long) op0) < 0)
++      if (op0 & 0x80000000)
+ 	op0 = - op0;
+ 	  
+-      if (((signed long) op1) < 0)
++      if (op1 & 0x80000000)
+ 	op1 = - op1;
+     }
+       
+@@ -3185,8 +3185,8 @@ v850_div (SIM_DESC sd, unsigned int op0, unsigned int op1, unsigned int *op2p, u
+   bfd_boolean     overflow = FALSE;
+   
+   /* Compute the result.  */
+-  divide_by   = op0;
+-  divide_this = op1;
++  divide_by   = (signed32) op0;
++  divide_this = (signed32) op1;
+ 
+   if (divide_by == 0 || (divide_by == -1 && divide_this == (1 << 31)))
+     {
+@@ -3317,7 +3317,7 @@ v850_bins (SIM_DESC sd, unsigned int source, unsigned int lsb, unsigned int msb,
+   pos = lsb;
+   width = (msb - lsb) + 1;
+ 
+-  mask = ~ (-(1 << width));
++  mask = ~ (-(1UL << width));
+   source &= mask;
+   mask <<= pos;
+   result = (* dest) & ~ mask;

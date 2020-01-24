@@ -1,0 +1,13 @@
+diff --git a/drivers/net/ethernet/mellanox/mlx4/en_rx.c b/drivers/net/ethernet/mellanox/mlx4/en_rx.c
+index a1aeeb8094c3..66d26d1cb75d 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/en_rx.c
++++ b/drivers/net/ethernet/mellanox/mlx4/en_rx.c
+@@ -42,6 +42,8 @@
+ #include <linux/if_ether.h>
+ #include <linux/if_vlan.h>
+ #include <linux/vmalloc.h>
++#include <linux/tcp.h>
++#include <linux/ip.h>
+ #include <linux/irq.h>
+ 
+ #if IS_ENABLED(CONFIG_IPV6)

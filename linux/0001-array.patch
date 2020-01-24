@@ -1,0 +1,13 @@
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index ca92e01d0bd1..2aecab7b6c54 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1569,6 +1569,8 @@ static void power_pmu_del(struct perf_event *event, int ef_flags)
+ 			break;
+ 	if (i < cpuhw->n_limited) {
+ 		while (++i < cpuhw->n_limited) {
++			if (i >= 2)
++			  unreachable ();
+ 			cpuhw->limited_counter[i-1] = cpuhw->limited_counter[i];
+ 			cpuhw->limited_hwidx[i-1] = cpuhw->limited_hwidx[i];
+ 		}

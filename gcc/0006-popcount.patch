@@ -1,0 +1,25 @@
+diff --git a/gcc/tree-ssa-loop-niter.c b/gcc/tree-ssa-loop-niter.c
+index fbdf838..f60b896 100644
+--- a/gcc/tree-ssa-loop-niter.c
++++ b/gcc/tree-ssa-loop-niter.c
+@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
+ #include "system.h"
+ #include "coretypes.h"
+ #include "backend.h"
++#include "target.h"
++#include "optabs-query.h"
+ #include "rtl.h"
+ #include "tree.h"
+ #include "gimple.h"
+@@ -2571,6 +2573,11 @@ number_of_iterations_popcount (loop_p loop, edge exit,
+ 	   (long_long_integer_type_node))
+     fn = builtin_decl_implicit (BUILT_IN_POPCOUNTLL);
+ 
++  /* Check if libfunc for popcount is available.  */
++  if (!direct_optab_handler (popcount_optab,
++			     TYPE_MODE (TREE_TYPE (src)),
++			     OPTIMIZE_FOR_SPEED))
++    return false;
+   /* ??? Support promoting char/short to int.  */
+   if (!fn)
+     return false;

@@ -1,0 +1,358 @@
+
+The attached patch treats the intrinsic SIGN in the same way as MOD and DIM as it has the same arguments.
+
+Tested using make -j 8 check-fortran on x86_64
+
+Conditional compilation using #ifdef __GFC_REAL_16__ has been employed where appropriate in the test cases so should be OK on platforms without REAL(16).
+
+Change logs:
+
+gcc/fortran
+
+    Mark Eggleston  <mark.eggleston@codethink.com>
+
+    PR fortran/89286
+        * check.c (gfc_check_sign): Deleted.
+    * intrinsic.c (add_functions): Call add_sym_2 with gfc_check_a_p
+    instead of gfc_check_sign for "sign".
+    * intrinsic.h: Remove declaration of gfc_check_sign.
+    * iresolve.c (gfc_resolve_sign): Check for largest kind of the actual
+    arguments and convert the smaller. Set return kind to be the largest.
+    * simplify.c (gfc_simplify_sign): Use the largest kind of the actual
+    arguments for return
+    * intrinsic.texi: Add GNU extension notes for return value to SIGN.
+
+gcc/testsuite
+
+    Mark Eggleston <mark.eggleston@codethink.com>
+
+    PR fortran/89240
+    * gfortran.dg/sign_gnu_extension_1.f90: New test.
+    * gfortran.dg/sign_gnu_extension_2.f90: New test.
+    * gfortran.dg/pr78619.f90: Check for "must have" instead of "must be".
+
+If OK please can someone commit as I do not have the privileges.
+
+-- 
+https://www.codethink.co.uk/privacy.html
+
+
+0001-Intrinsic-sign-and-GNU-extension.patch
+
+From 59069e6053f8b178d6f981f02e4b33701ae78062 Mon Sep 17 00:00:00 2001
+From: Mark Eggleston <markeggleston@codethink.com>
+Date: Thu, 31 Jan 2019 13:36:48 +0000
+Subject: [PATCH 01/12] Intrinsic sign and GNU extension.
+
+The intrinsic sign has the same parameters as other intrinsics such as
+dim and mod. This support is part of the GNU extension enabled by using
+-std=gnu (the default).
+---
+ gcc/fortran/check.c                                |  14 ---
+ gcc/fortran/intrinsic.c                            |   2 +-
+ gcc/fortran/intrinsic.h                            |   1 -
+ gcc/fortran/intrinsic.texi                         |   6 +-
+ gcc/fortran/iresolve.c                             |  13 +++
+ gcc/fortran/simplify.c                             |   4 +-
+ gcc/testsuite/gfortran.dg/pr78619.f90              |   2 +-
+ gcc/testsuite/gfortran.dg/sign-gnu-extension_1.f90 | 103 +++++++++++++++++++++
+ gcc/testsuite/gfortran.dg/sign-gnu-extension_2.f90 |  70 ++++++++++++++
+ 9 files changed, 195 insertions(+), 20 deletions(-)
+ create mode 100644 gcc/testsuite/gfortran.dg/sign-gnu-extension_1.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/sign-gnu-extension_2.f90
+
+diff --git a/gcc/fortran/check.c b/gcc/fortran/check.c
+index 95801804022..a7c5a6ef2a1 100644
+--- a/gcc/fortran/check.c
++++ b/gcc/fortran/check.c
+@@ -4484,20 +4484,6 @@ gfc_check_shift (gfc_expr *i, gfc_expr *shift)
+   return true;
+ }
+ 
+-
+-bool
+-gfc_check_sign (gfc_expr *a, gfc_expr *b)
+-{
+-  if (!int_or_real_check (a, 0))
+-    return false;
+-
+-  if (!same_type_check (a, 0, b, 1))
+-    return false;
+-
+-  return true;
+-}
+-
+-
+ bool
+ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
+ {
+diff --git a/gcc/fortran/intrinsic.c b/gcc/fortran/intrinsic.c
+index c21fbddd5fb..fd10c48f1cf 100644
+--- a/gcc/fortran/intrinsic.c
++++ b/gcc/fortran/intrinsic.c
+@@ -2930,7 +2930,7 @@ add_functions (void)
+   make_generic ("shiftr", GFC_ISYM_SHIFTR, GFC_STD_F2008);
+ 
+   add_sym_2 ("sign", GFC_ISYM_SIGN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
+-	     gfc_check_sign, gfc_simplify_sign, gfc_resolve_sign,
++	     gfc_check_a_p, gfc_simplify_sign, gfc_resolve_sign,
+ 	     a, BT_REAL, dr, REQUIRED, b, BT_REAL, dr, REQUIRED);
+ 
+   add_sym_2 ("isign", GFC_ISYM_SIGN, CLASS_ELEMENTAL, ACTUAL_YES, BT_INTEGER, di, GFC_STD_F77,
+diff --git a/gcc/fortran/intrinsic.h b/gcc/fortran/intrinsic.h
+index 0c60dab8390..83be8b38bdf 100644
+--- a/gcc/fortran/intrinsic.h
++++ b/gcc/fortran/intrinsic.h
+@@ -154,7 +154,6 @@ bool gfc_check_set_exponent (gfc_expr *, gfc_expr *);
+ bool gfc_check_shape (gfc_expr *, gfc_expr *);
+ bool gfc_check_shift (gfc_expr *, gfc_expr *);
+ bool gfc_check_size (gfc_expr *, gfc_expr *, gfc_expr *);
+-bool gfc_check_sign (gfc_expr *, gfc_expr *);
+ bool gfc_check_signal (gfc_expr *, gfc_expr *);
+ bool gfc_check_sizeof (gfc_expr *);
+ bool gfc_check_c_associated (gfc_expr *, gfc_expr *);
+diff --git a/gcc/fortran/iresolve.c b/gcc/fortran/iresolve.c
+index 53338dda0a7..8ba503f979e 100644
+--- a/gcc/fortran/iresolve.c
++++ b/gcc/fortran/iresolve.c
+@@ -2581,6 +2581,19 @@ void
+ gfc_resolve_sign (gfc_expr *f, gfc_expr *a, gfc_expr *b ATTRIBUTE_UNUSED)
+ {
+   f->ts = a->ts;
++  if (b != NULL)
++    {
++      f->ts.kind = gfc_kind_max (a,b);
++
++      if (a->ts.kind != b->ts.kind)
++	{
++	  if (a->ts.kind == f->ts.kind)
++	    gfc_convert_type (b, &a->ts, 2);
++	  else
++	    gfc_convert_type (a, &b->ts, 2);
++	}
++    }
++
+   f->value.function.name
+     = gfc_get_string ("__sign_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+ }
+diff --git a/gcc/fortran/simplify.c b/gcc/fortran/simplify.c
+index 2d20913ca56..feb86889c82 100644
+--- a/gcc/fortran/simplify.c
++++ b/gcc/fortran/simplify.c
+@@ -7439,11 +7439,13 @@ gfc_expr *
+ gfc_simplify_sign (gfc_expr *x, gfc_expr *y)
+ {
+   gfc_expr *result;
++  int kind;
+ 
+   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+     return NULL;
+ 
+-  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
++  kind = x->ts.kind > y->ts.kind ? x->ts.kind : y->ts.kind;
++  result = gfc_get_constant_expr (x->ts.type, kind, &x->where);
+ 
+   switch (x->ts.type)
+     {
+diff --git a/gcc/testsuite/gfortran.dg/pr78619.f90 b/gcc/testsuite/gfortran.dg/pr78619.f90
+index 5fbe185cfab..8b8619fea64 100644
+--- a/gcc/testsuite/gfortran.dg/pr78619.f90
++++ b/gcc/testsuite/gfortran.dg/pr78619.f90
+@@ -10,7 +10,7 @@
+ contains
+   function f(x) result(z)
+     real :: x, z
+-    z = sign(1.0, f) ! { dg-error "calling itself recursively|must be the same type" }
++    z = sign(1.0, f) ! { dg-error "calling itself recursively|must have the same type" }
+   end
+   real function g(x)
+     real :: x
+diff --git a/gcc/testsuite/gfortran.dg/sign-gnu-extension_1.f90 b/gcc/testsuite/gfortran.dg/sign-gnu-extension_1.f90
+new file mode 100644
+index 00000000000..4f83148f4b1
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/sign-gnu-extension_1.f90
+@@ -0,0 +1,103 @@
++! { dg-do run }
++! { dg-options "-Wconversion-extra" }
++!
++! Test case contributed by Mark Eggleston  <mark.eggleston@codethink.com>
++!
++program test
++  implicit none
++  integer(1) :: a1 = 1_1
++  integer(2) :: a2 = 2_2
++  integer(4) :: a4 = 4_4
++  integer(8) :: a8 = 8_8
++  integer(1) :: p1 = 1_1
++  integer(2) :: p2 = 1_2
++  integer(4) :: p4 = -1_4
++  integer(8) :: p8 = -1_8
++
++  if (sign(a1, p2).ne.1_2) stop 1     ! { dg-warning "Conversion from" }
++  if (kind(sign(a1, p2)).ne.2) stop 2 ! { dg-warning "Conversion from" }
++  if (sign(1_1, p2).ne.1_2) stop 3
++  if (kind(sign(1_1, p2)).ne.2) stop 4
++  if (sign(1_1, 1_2).ne.1_2) stop 5
++  if (kind(sign(1_1, 1_2)).ne.2) stop 6
++  !
++  if (sign(a1, p4).ne.-1_4) stop 7    ! { dg-warning "Conversion from" }
++  if (kind(sign(a1, p4)).ne.4) stop 8 ! { dg-warning "Conversion from" }
++  if (sign(1_1, p4).ne.-1_4) stop 9
++  if (kind(sign(1_1, p4)).ne.4) stop 10
++  if (sign(1_1, 1_4).ne.1_4) stop 11
++  if (kind(sign(1_1, 1_4)).ne.4) stop 12
++  !
++  if (sign(a1, p8).ne.-1_8) stop 13    ! { dg-warning "Conversion from" }
++  if (kind(sign(a1, p8)).ne.8) stop 14 ! { dg-warning "Conversion from" }
++  if (sign(1_1, p8).ne.-1_8) stop 15
++  if (kind(sign(1_1, p8)).ne.8) stop 16
++  if (sign(1_1, 1_8).ne.1_8) stop 17
++  if (kind(sign(1_1, 1_8)).ne.8) stop 18
++  !!
++  if (sign(a2, p1).ne.2_2) stop 19      ! { dg-warning "Conversion from" }
++  if (kind(sign(a2, p1)).ne.2) stop 20  ! { dg-warning "Conversion from" }
++  if (sign(1_2, p1).ne.1_2) stop 21     ! { dg-warning "Conversion from" }
++  if (kind(sign(1_2, p1)).ne.2) stop 22 ! { dg-warning "Conversion from" }
++  if (sign(1_2, 1_1).ne.1_2) stop 23
++  if (kind(sign(1_2, 1_1)).ne.2) stop 24
++  !
++  if (sign(a2, p4).ne.-2_4) stop 25     ! { dg-warning "Conversion from" }
++  if (kind(sign(a2, p4)).ne.4) stop 26 ! { dg-warning "Conversion from" }
++  if (sign(1_2, p4).ne.-1_4) stop 27
++  if (kind(sign(1_2, p4)).ne.4) stop 28
++  if (sign(1_2, 1_4).ne.1_4) stop 29
++  if (kind(sign(1_2, 1_4)).ne.4) stop 30
++  !
++  if (sign(a2, p8).ne.-2_8) stop 31     ! { dg-warning "Conversion from" }
++  if (kind(sign(a2, p8)).ne.8) stop 32 ! { dg-warning "Conversion from" }
++  if (sign(1_2, p8).ne.-1_8) stop 33
++  if (kind(sign(1_2, p8)).ne.8) stop 34
++  if (sign(1_2, 1_8).ne.1_8) stop 35
++  if (kind(sign(1_2, 1_8)).ne.8) stop 36
++  !!
++  if (sign(a4, p1).ne.4_4) stop 37      ! { dg-warning "Conversion from" }
++  if (kind(sign(a4, p1)).ne.4) stop 38  ! { dg-warning "Conversion from" }
++  if (sign(1_4, p1).ne.1_4) stop 39     ! { dg-warning "Conversion from" }
++  if (kind(sign(1_4, p1)).ne.4) stop 40 ! { dg-warning "Conversion from" }
++  if (sign(1_4, 1_1).ne.1_4) stop 41
++  if (kind(sign(1_4, 1_1)).ne.4) stop 42
++  !
++  if (sign(a4, p2).ne.4_4) stop 43      ! { dg-warning "Conversion from" }
++  if (kind(sign(a4, p2)).ne.4) stop 44  ! { dg-warning "Conversion from" }
++  if (sign(1_4, p2).ne.1_4) stop 45     ! { dg-warning "Conversion from" }
++  if (kind(sign(1_4, p2)).ne.4) stop 46 ! { dg-warning "Conversion from" }
++  if (sign(1_4, 1_2).ne.1_4) stop 47
++  if (kind(sign(1_4, 1_2)).ne.4) stop 48
++  !
++  if (sign(a4, p8).ne.-4_8) stop 49     ! { dg-warning "Conversion from" }
++  if (kind(sign(a4, p8)).ne.8) stop 50 ! { dg-warning "Conversion from" }
++  if (sign(1_4, p8).ne.-1_8) stop 51
++  if (kind(sign(1_4, p8)).ne.8) stop 52
++  if (sign(1_4, 1_8).ne.1_8) stop 53
++  if (kind(sign(1_4, 1_8)).ne.8) stop 54
++  !!
++  if (sign(a8, p1).ne.8_8) stop 55      ! { dg-warning "Conversion from" }
++  if (kind(sign(a8, p1)).ne.8) stop 56  ! { dg-warning "Conversion from" }
++  if (sign(1_8, p1).ne.1_8) stop 57     ! { dg-warning "Conversion from" }
++  if (kind(sign(1_8, p1)).ne.8) stop 58 ! { dg-warning "Conversion from" }
++  if (sign(1_8, 1_1).ne.1_8) stop 59
++  if (kind(sign(1_8, 1_1)).ne.8) stop 60
++  !
++  if (sign(a8, p2).ne.8_4) stop 61      ! { dg-warning "Conversion from" }
++  if (kind(sign(a8, p2)).ne.8) stop 62  ! { dg-warning "Conversion from" }
++  if (sign(1_8, p2).ne.1_8) stop 63     ! { dg-warning "Conversion from" }
++  if (kind(sign(1_8, p2)).ne.8) stop 64 ! { dg-warning "Conversion from" }
++  if (sign(1_8, 1_2).ne.1_8) stop 65
++  if (kind(sign(1_8, 1_2)).ne.8) stop 66
++  !
++  if (sign(a8, p4).ne.-8_8) stop 67     ! { dg-warning "Conversion from" }
++  if (kind(sign(a8, p4)).ne.8) stop 68  ! { dg-warning "Conversion from" }
++  if (sign(1_8, p4).ne.-1_8) stop 69    ! { dg-warning "Conversion from" }
++  if (kind(sign(1_8, p4)).ne.8) stop 70 ! { dg-warning "Conversion from" }
++  if (sign(1_8, 1_4).ne.1_8) stop 71
++  if (kind(sign(1_8, 1_4)).ne.8) stop 72
++
++end program test
++
++
+diff --git a/gcc/testsuite/gfortran.dg/sign-gnu-extension_2.f90 b/gcc/testsuite/gfortran.dg/sign-gnu-extension_2.f90
+new file mode 100644
+index 00000000000..314d2ea696d
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/sign-gnu-extension_2.f90
+@@ -0,0 +1,70 @@
++! { dg-do run }
++! { dg-options "-cpp -Wconversion-extra" }
++!
++! Test case contributed by Mark Eggleston  <mark.eggleston@codethink.com>
++!
++program test
++  implicit none
++  real(4) :: a4 = 4.0_4
++  real(8) :: a8 = 8.0_8
++#ifdef __GFC_REAL_16__
++  real(16) :: a16 = 16.0_16
++#endif
++  real(4) :: p4 = 1.0_4
++  real(8) :: p8 = -1.0_8
++#ifdef __GFC_REAL_16__
++  real(16) :: p16 = 1.0_16
++#endif
++  real(8), parameter :: delta8 = 1.0e-6_8
++#ifdef __GFC_REAL_16__
++  real(16), parameter :: delta16 = 1.0e-6_16
++#endif
++
++  if (sign(a4, p8)-4.0_8.gt.delta8) stop 1    ! { dg-warning "Conversion from" }
++  if (kind(sign(a4, p8)).ne.8) stop 2         ! { dg-warning "Conversion from" }
++  if (sign(1.0_4, p8)-1.0_8.gt.delta8) stop 3 ! { dg-warning "Conversion from" }
++  if (kind(sign(1.0_4, p8)).ne.8) stop 4      ! { dg-warning "Conversion from" }
++  if (sign(1.0_4, 1.0_8)-1.0_8.gt.delta8) stop 5
++  if (kind(sign(1.0_4, 1.0_8)).ne.8) stop 6
++  !
++#ifdef __GFC_REAL_16__
++  if (sign(a4, p16)-4.0_16.gt.delta16) stop 7    ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(a4, p16)).ne.16) stop 8          ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_4, p16)-1.0_16.gt.delta16) stop 9 ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(1.0_4, p16)).ne.16) stop 10      ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_4, 1.0_16)-1.0_16.gt.delta16) stop 11
++  if (kind(sign(1.0_4, 1.0_16)).ne.16) stop 12
++#endif
++  !!
++  if (sign(a8, p4)-8.0_8.gt.delta8) stop 13    ! { dg-warning "Conversion from" }
++  if (kind(sign(a8, p4)).ne.8) stop 14         ! { dg-warning "Conversion from" }
++  if (sign(1.0_8, p4)-1.0_8.gt.delta8) stop 15 ! { dg-warning "Conversion from" }
++  if (kind(sign(1.0_8, p4)).ne.8) stop 16      ! { dg-warning "Conversion from" }
++  if (sign(1.0_8, 1.0_4)-1.0_8.gt.delta8) stop 17
++  if (kind(sign(1.0_8, 1.0_4)).ne.8) stop 18
++  !
++#ifdef __GFC_REAL_16__
++  if (sign(a8, p16)-8.0_16.gt.delta16) stop 19    ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(a8, p16)).ne.16) stop 20          ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_8, p16)-1.0_16.gt.delta16) stop 21 ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(1.0_8, p16)).ne.16) stop 22       ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_8, 1.0_16)-1.0_16.gt.delta16) stop 23
++  if (kind(sign(1.0_8, 1.0_16)).ne.16) stop 24
++  !!
++  if (sign(a16, p4)-16.0_16.gt.delta16) stop 25   ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(a16, p4)).ne.16) stop 26          ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_16, p4)-1.0_16.gt.delta16) stop 27 ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(1.0_16, p4)).ne.16) stop 28       ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_16, 1.0_4)-1.0_16.gt.delta16) stop 29
++  if (kind(sign(1.0_16, 1.0_4)).ne.16) stop 30
++  !
++  if (sign(a16, p8)-16.0_16.gt.delta16) stop 31   ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(a16, p8)).ne.16) stop 32          ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_16, p8)-1.0_16.gt.delta16) stop 33 ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (kind(sign(1.0_16, p8)).ne.16) stop 34       ! { dg-warning "Conversion from" "" { target fortran_real_16 } }
++  if (sign(1.0_16, 1.0_8)-1.0_16.gt.delta16) stop 35
++  if (kind(sign(1.0_16, 1.0_8)).ne.16) stop 36
++#endif
++end program test
++
++
+-- 
+2.11.0
+
+

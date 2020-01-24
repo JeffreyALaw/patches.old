@@ -1,0 +1,14 @@
+diff --git a/gcc/testsuite/lib/target-supports.exp b/gcc/testsuite/lib/target-supports.exp
+index 5026c5906cd..0e346652ed5 100644
+--- a/gcc/testsuite/lib/target-supports.exp
++++ b/gcc/testsuite/lib/target-supports.exp
+@@ -1094,7 +1094,8 @@ proc check_effective_target_freorder {} {
+     } "-freorder-blocks-and-partition"]
+     && [check_no_compiler_messages fprofile_use_freorder object {
+ 	void foo (void) { }
+-    } "-fprofile-use -freorder-blocks-and-partition -Wno-missing-profile"] } {
++    } "-fprofile-use -freorder-blocks-and-partition -Wno-missing-profile"] 
++    && ! [istarget fr30*-*-*] && ! [istarget v850*-*-*] } {
+ 	return 1
+     }
+     return 0

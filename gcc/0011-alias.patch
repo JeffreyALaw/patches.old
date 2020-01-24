@@ -1,0 +1,49 @@
+diff --git a/gcc/tree-ssa-alias.c b/gcc/tree-ssa-alias.c
+index dd2a43e1409..5b0d44bae20 100644
+--- a/gcc/tree-ssa-alias.c
++++ b/gcc/tree-ssa-alias.c
+@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
+ #include "tree-dfa.h"
+ #include "ipa-reference.h"
+ #include "varasm.h"
++#include "builtins.h"
++#include "gimple-fold.h"
+ 
+ /* Broad overview of how alias analysis on gimple works:
+ 
+@@ -3057,6 +3059,9 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
+ 	  case BUILT_IN_MEMSET_CHK:
+ 	  case BUILT_IN_STRNCPY:
+ 	  case BUILT_IN_STPNCPY:
++	  case BUILT_IN_STRCPY:
++	  case BUILT_IN_STRNCPY_CHK:
++	  case BUILT_IN_STRCPY_CHK:
+ 	  case BUILT_IN_CALLOC:
+ 	    {
+ 	      /* For a must-alias check we need to be able to constrain
+@@ -3082,6 +3087,25 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
+ 		  dest = gimple_call_lhs (stmt);
+ 		  len = fold_build2 (MULT_EXPR, TREE_TYPE (arg0), arg0, arg1);
+ 		}
++	      /* For these cases, the source operand determines how many
++		 bytes are written.  */
++	      else if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STRCPY
++		       || DECL_FUNCTION_CODE (callee) == BUILT_IN_STRCPY_CHK)
++		{
++		  /* We can conservatively use the minimum length of the
++		     source operand.  */
++		  c_strlen_data data = { };
++		  if (get_range_strlen (gimple_call_arg (stmt, 1), &data, 1))
++		    {
++		      dest = gimple_call_arg (stmt, 0);
++		      len = data.minlen;
++		      len = fold_build2 (PLUS_EXPR, TREE_TYPE (len),
++					 len, fold_convert (TREE_TYPE (len),
++							    integer_one_node));
++		    }
++		  else
++		    return false;
++		}
+ 	      else
+ 		{
+ 		  dest = gimple_call_arg (stmt, 0);

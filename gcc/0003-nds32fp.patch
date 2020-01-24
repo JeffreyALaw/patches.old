@@ -1,0 +1,15 @@
+diff --git a/gcc/config/nds32/nds32-fp-as-gp.c b/gcc/config/nds32/nds32-fp-as-gp.c
+index 278df99bc74..b245b1b1cd3 100644
+--- a/gcc/config/nds32/nds32-fp-as-gp.c
++++ b/gcc/config/nds32/nds32-fp-as-gp.c
+@@ -101,6 +101,10 @@ nds32_get_symbol_count (void)
+ static bool
+ nds32_fp_as_gp_check_available (void)
+ {
++  /* I'm getting occasional failures from the linker with
++     this opt.  Disable for now.  */
++  return false;
++
+   basic_block bb;
+   basic_block exit_bb;
+   edge_iterator ei;

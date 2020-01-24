@@ -1,0 +1,33 @@
+diff --git a/arch/m68k/include/asm/string.h b/arch/m68k/include/asm/string.h
+index f759d944c..028a9b4bb 100644
+--- a/arch/m68k/include/asm/string.h
++++ b/arch/m68k/include/asm/string.h
+@@ -56,6 +56,28 @@ static inline int strcmp(const char *cs, const char *ct)
+ 		: "+a" (cs), "+a" (ct), "=d" (res));
+ 	return res;
+ }
++
++#define __HAVE_ARCH_STRNCMP
++static inline int strncmp(const char *cs, const char *ct, size_t count)
++{
++	char res;
++
++	asm ("\n"
++		"	move.l  %3,%2\n"	/* get count */
++		"	jeq	3f\n"		/* If count == 0 quit  */
++		"1:	move.b	(%0)+,%2\n"	/* get *cs */
++		"	cmp.b	(%1)+,%2\n"	/* compare a byte */
++		"	jne	2f\n"		/* not equal, break out */
++		"	tst.b	%2\n"		/* at end of cs? */
++		"	beq	3f\n"		/* yes, break out */
++		"	subq.l	#1, %2\n"	/* Decrement count */
++		"	jne	1b\n"		/* no, keep going */
++		"	jra	3f\n"		/* strings are equal */
++		"2:	sub.b	-(%1),%2\n"	/* *cs - *ct */
++		"3:"
++		: "+a" (cs), "+a" (ct), "=d" (res) : "d" (count));
++	return res;
++}
+ #endif /* CONFIG_COLDFIRE */
+ 
+ #define __HAVE_ARCH_MEMMOVE

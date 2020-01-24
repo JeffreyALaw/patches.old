@@ -1,0 +1,11 @@
+diff --git a/libgloss/ft32/sim.ld b/libgloss/ft32/sim.ld
+index c61c1a6e7..2b3641650 100644
+--- a/libgloss/ft32/sim.ld
++++ b/libgloss/ft32/sim.ld
+@@ -54,3 +54,6 @@ SECTIONS
+     *(.stabstr)
+   }
+ }
++__PMSIZE = 0x1000;
++__RAMSIZE = 0x10000;
++
