@@ -1,0 +1,13 @@
+diff --git a/binutils/dwarf.c b/binutils/dwarf.c
+index 35842f74b2..ae2bc491f7 100644
+--- a/binutils/dwarf.c
++++ b/binutils/dwarf.c
+@@ -4904,7 +4904,7 @@ display_debug_lines_decoded (struct dwarf_section *  section,
+ 		  /* Truncate file name */
+ 		  strncpy (newFileName,
+ 			   fileName + fileNameLength - MAX_FILENAME_LENGTH,
+-			   MAX_FILENAME_LENGTH + 1);
++			   MAX_FILENAME_LENGTH);
+ 		}
+ 	      else
+ 		{
