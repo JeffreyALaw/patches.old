@@ -1,0 +1,13 @@
+diff --git a/arch/microblaze/kernel/kgdb.c b/arch/microblaze/kernel/kgdb.c
+index 130cd0f064ce..636d43012564 100644
+--- a/arch/microblaze/kernel/kgdb.c
++++ b/arch/microblaze/kernel/kgdb.c
+@@ -31,6 +31,8 @@
+ #define GDB_RTLBLO	55
+ #define GDB_RTLBHI	56
+ 
++struct dbg_reg_def_t dbg_reg_def[DBG_MAX_REG_NUM];
++
+ /* keep pvr separately because it is unchangeble */
+ static struct pvr_s pvr;
+ 
