@@ -2,4 +2,4 @@ gdb/testsuite/gdb.threads/omp-par-scope.exp
 gdb/testsuite/gdb.base/watchpoint.exp
 gdb/testsuite/gdb.base/watchpoint-unaligned.exp
 gdb/testsuite/gdb.base/watchpoint-reuse-slot.exp
-gdb/testsuite/gdb.base/set-cws.exp
+gdb/testsuite/gdb.base/set-cwd.exp
