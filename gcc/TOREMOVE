@@ -28,11 +28,6 @@ gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-3.c
 gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-4.c
 gcc/testsuite/gcc.dg/format/gcc_diag-12.c
 gcc/testsuite/gcc.c-torture/execute/pr90949.c
-gcc/testsuite/gcc.dg/pr90756.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-1.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-2.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-3.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-4.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-5.c
-gcc/testsuite/gcc.dg/tree-ssa/pr89430-6.c
 gcc/testsuite/gcc.c-torture/execute/simd-1.c
+gcc/testsuite/gcc.c-torture/execute/pr92904.c
+gcc/testsuite/gcc.dg/pr43058.c
