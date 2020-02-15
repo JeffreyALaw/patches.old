@@ -5,3 +5,4 @@ gdb/testsuite/gdb.base/set-cwd.exp
 gdb/testsuite/gdb.threads/omp-par-scope.exp
 gdb/testsuite/gdb.threads/process-dies-while-detaching.exp
 gdb/testsuite/gdb.python/py-finish-breakpoint2.exp
+gdb/testsuite/gdb.base/signals-state-child.exp
