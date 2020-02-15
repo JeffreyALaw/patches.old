@@ -1,0 +1,310 @@
+commit 5809b4f2ad7bfb371c0afc15a704054b952c59a0
+Author: Jeff Law <law@redhat.com>
+Date:   Sat Feb 15 07:48:33 2020 -0700
+
+    Revert "gdb: make gdbarch_displaced_step_copy_insn return an std::unique_ptr"
+    
+    This reverts commit e8217e61f5952ccfdabb0c4ee0c237a363e9bd99.
+
+diff --git a/gdb/aarch64-tdep.c b/gdb/aarch64-tdep.c
+index 1bf6bfdf92..1c44345e57 100644
+--- a/gdb/aarch64-tdep.c
++++ b/gdb/aarch64-tdep.c
+@@ -2999,7 +2999,7 @@ static const struct aarch64_insn_visitor visitor =
+ 
+ /* Implement the "displaced_step_copy_insn" gdbarch method.  */
+ 
+-std::unique_ptr<displaced_step_closure>
++struct displaced_step_closure *
+ aarch64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 				  CORE_ADDR from, CORE_ADDR to,
+ 				  struct regcache *regs)
+@@ -3053,7 +3053,7 @@ aarch64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+       dsc = NULL;
+     }
+ 
+-  return dsc;
++  return dsc.release ();
+ }
+ 
+ /* Implement the "displaced_step_fixup" gdbarch method.  */
+diff --git a/gdb/aarch64-tdep.h b/gdb/aarch64-tdep.h
+index fc397967cd..732f78b5ba 100644
+--- a/gdb/aarch64-tdep.h
++++ b/gdb/aarch64-tdep.h
+@@ -106,7 +106,7 @@ const target_desc *aarch64_read_description (uint64_t vq, bool pauth_p);
+ extern int aarch64_process_record (struct gdbarch *gdbarch,
+                                struct regcache *regcache, CORE_ADDR addr);
+ 
+-struct std::unique_ptr<displaced_step_closure>
++struct displaced_step_closure *
+   aarch64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 				    CORE_ADDR from, CORE_ADDR to,
+ 				    struct regcache *regs);
+diff --git a/gdb/amd64-tdep.c b/gdb/amd64-tdep.c
+index 35ddfbaa32..f5ec40f37e 100644
+--- a/gdb/amd64-tdep.c
++++ b/gdb/amd64-tdep.c
+@@ -1465,7 +1465,7 @@ fixup_displaced_copy (struct gdbarch *gdbarch,
+     }
+ }
+ 
+-std::unique_ptr<displaced_step_closure>
++struct displaced_step_closure *
+ amd64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 				CORE_ADDR from, CORE_ADDR to,
+ 				struct regcache *regs)
+@@ -1474,8 +1474,8 @@ amd64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+   /* Extra space for sentinels so fixup_{riprel,displaced_copy} don't have to
+      continually watch for running off the end of the buffer.  */
+   int fixup_sentinel_space = len;
+-  std::unique_ptr<amd64_displaced_step_closure> dsc
+-    (new amd64_displaced_step_closure (len + fixup_sentinel_space));
++  amd64_displaced_step_closure *dsc
++    = new amd64_displaced_step_closure (len + fixup_sentinel_space);
+   gdb_byte *buf = &dsc->insn_buf[0];
+   struct amd64_insn *details = &dsc->insn_details;
+ 
+@@ -1500,7 +1500,7 @@ amd64_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 
+   /* Modify the insn to cope with the address where it will be executed from.
+      In particular, handle any rip-relative addressing.	 */
+-  fixup_displaced_copy (gdbarch, dsc.get (), from, to, regs);
++  fixup_displaced_copy (gdbarch, dsc, from, to, regs);
+ 
+   write_memory (to, buf, len);
+ 
+diff --git a/gdb/amd64-tdep.h b/gdb/amd64-tdep.h
+index 33ef0c3cea..4c6d132222 100644
+--- a/gdb/amd64-tdep.h
++++ b/gdb/amd64-tdep.h
+@@ -87,7 +87,7 @@ enum amd64_regnum
+ 
+ #define AMD64_NUM_REGS		(AMD64_GSBASE_REGNUM + 1)
+ 
+-extern std::unique_ptr<displaced_step_closure> amd64_displaced_step_copy_insn
++extern struct displaced_step_closure *amd64_displaced_step_copy_insn
+   (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to,
+    struct regcache *regs);
+ extern void amd64_displaced_step_fixup (struct gdbarch *gdbarch,
+diff --git a/gdb/arm-linux-tdep.c b/gdb/arm-linux-tdep.c
+index b3ae04fb43..363e67161c 100644
+--- a/gdb/arm-linux-tdep.c
++++ b/gdb/arm-linux-tdep.c
+@@ -1103,13 +1103,12 @@ arm_catch_kernel_helper_return (struct gdbarch *gdbarch, CORE_ADDR from,
+    the program has stepped into a Linux kernel helper routine (which must be
+    handled as a special case).  */
+ 
+-static std::unique_ptr<displaced_step_closure>
++static struct displaced_step_closure *
+ arm_linux_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 				    CORE_ADDR from, CORE_ADDR to,
+ 				    struct regcache *regs)
+ {
+-  std::unique_ptr<arm_displaced_step_closure> dsc
+-    (new arm_displaced_step_closure);
++  arm_displaced_step_closure *dsc = new arm_displaced_step_closure;
+ 
+   /* Detect when we enter an (inaccessible by GDB) Linux kernel helper, and
+      stop at the return location.  */
+@@ -1119,17 +1118,17 @@ arm_linux_displaced_step_copy_insn (struct gdbarch *gdbarch,
+         fprintf_unfiltered (gdb_stdlog, "displaced: detected kernel helper "
+ 			    "at %.8lx\n", (unsigned long) from);
+ 
+-      arm_catch_kernel_helper_return (gdbarch, from, to, regs, dsc.get ());
++      arm_catch_kernel_helper_return (gdbarch, from, to, regs, dsc);
+     }
+   else
+     {
+       /* Override the default handling of SVC instructions.  */
+       dsc->u.svc.copy_svc_os = arm_linux_copy_svc;
+ 
+-      arm_process_displaced_insn (gdbarch, from, to, regs, dsc.get ());
++      arm_process_displaced_insn (gdbarch, from, to, regs, dsc);
+     }
+ 
+-  arm_displaced_init_closure (gdbarch, from, to, dsc.get ());
++  arm_displaced_init_closure (gdbarch, from, to, dsc);
+ 
+   return dsc;
+ }
+diff --git a/gdb/gdbarch.c b/gdb/gdbarch.c
+index 4e59b375f7..d763fc85e6 100644
+--- a/gdb/gdbarch.c
++++ b/gdb/gdbarch.c
+@@ -3936,7 +3936,7 @@ gdbarch_displaced_step_copy_insn_p (struct gdbarch *gdbarch)
+   return gdbarch->displaced_step_copy_insn != NULL;
+ }
+ 
+-std::unique_ptr<displaced_step_closure>
++struct displaced_step_closure *
+ gdbarch_displaced_step_copy_insn (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to, struct regcache *regs)
+ {
+   gdb_assert (gdbarch != NULL);
+diff --git a/gdb/gdbarch.h b/gdb/gdbarch.h
+index 8a3a07181c..800a4e8b16 100644
+--- a/gdb/gdbarch.h
++++ b/gdb/gdbarch.h
+@@ -1036,8 +1036,8 @@ extern void set_gdbarch_max_insn_length (struct gdbarch *gdbarch, ULONGEST max_i
+ 
+ extern int gdbarch_displaced_step_copy_insn_p (struct gdbarch *gdbarch);
+ 
+-typedef std::unique_ptr<displaced_step_closure> (gdbarch_displaced_step_copy_insn_ftype) (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to, struct regcache *regs);
+-extern std::unique_ptr<displaced_step_closure> gdbarch_displaced_step_copy_insn (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to, struct regcache *regs);
++typedef struct displaced_step_closure * (gdbarch_displaced_step_copy_insn_ftype) (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to, struct regcache *regs);
++extern struct displaced_step_closure * gdbarch_displaced_step_copy_insn (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to, struct regcache *regs);
+ extern void set_gdbarch_displaced_step_copy_insn (struct gdbarch *gdbarch, gdbarch_displaced_step_copy_insn_ftype *displaced_step_copy_insn);
+ 
+ /* Return true if GDB should use hardware single-stepping to execute
+diff --git a/gdb/gdbarch.sh b/gdb/gdbarch.sh
+index d4170c9822..a86de96119 100755
+--- a/gdb/gdbarch.sh
++++ b/gdb/gdbarch.sh
+@@ -816,7 +816,7 @@ V;ULONGEST;max_insn_length;;;0;0
+ # If the instruction cannot execute out of line, return NULL.  The
+ # core falls back to stepping past the instruction in-line instead in
+ # that case.
+-M;std::unique_ptr<displaced_step_closure>;displaced_step_copy_insn;CORE_ADDR from, CORE_ADDR to, struct regcache *regs;from, to, regs
++M;struct displaced_step_closure *;displaced_step_copy_insn;CORE_ADDR from, CORE_ADDR to, struct regcache *regs;from, to, regs
+ 
+ # Return true if GDB should use hardware single-stepping to execute
+ # the displaced instruction identified by CLOSURE.  If false,
+diff --git a/gdb/i386-linux-tdep.c b/gdb/i386-linux-tdep.c
+index 7170687f4d..f4a5f0a761 100644
+--- a/gdb/i386-linux-tdep.c
++++ b/gdb/i386-linux-tdep.c
+@@ -797,12 +797,12 @@ i386_linux_iterate_over_regset_sections (struct gdbarch *gdbarch,
+    which does not seem worth it.  The same effect is achieved by patching that
+    'nop' instruction there instead.  */
+ 
+-static std::unique_ptr<displaced_step_closure>
++static struct displaced_step_closure *
+ i386_linux_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 				     CORE_ADDR from, CORE_ADDR to,
+ 				     struct regcache *regs)
+ {
+-  std::unique_ptr<displaced_step_closure> closure_
++  displaced_step_closure *closure_
+     =  i386_displaced_step_copy_insn (gdbarch, from, to, regs);
+ 
+   if (i386_linux_get_syscall_number_from_regcache (regs) != -1)
+@@ -810,7 +810,7 @@ i386_linux_displaced_step_copy_insn (struct gdbarch *gdbarch,
+       /* The closure returned by i386_displaced_step_copy_insn is simply a
+ 	 buffer with a copy of the instruction. */
+       i386_displaced_step_closure *closure
+-	= (i386_displaced_step_closure *) closure_.get ();
++	= (i386_displaced_step_closure *) closure_;
+ 
+       /* Fake nop.  */
+       closure->buf[0] = 0x90;
+diff --git a/gdb/i386-tdep.c b/gdb/i386-tdep.c
+index 4b6f3d0ecd..f71444f652 100644
+--- a/gdb/i386-tdep.c
++++ b/gdb/i386-tdep.c
+@@ -798,14 +798,13 @@ i386_insn_is_jump (struct gdbarch *gdbarch, CORE_ADDR addr)
+ 
+ /* Some kernels may run one past a syscall insn, so we have to cope.  */
+ 
+-std::unique_ptr<displaced_step_closure>
++struct displaced_step_closure *
+ i386_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 			       CORE_ADDR from, CORE_ADDR to,
+ 			       struct regcache *regs)
+ {
+   size_t len = gdbarch_max_insn_length (gdbarch);
+-  std::unique_ptr<i386_displaced_step_closure> closure
+-    (new i386_displaced_step_closure (len));
++  i386_displaced_step_closure *closure = new i386_displaced_step_closure (len);
+   gdb_byte *buf = closure->buf.data ();
+ 
+   read_memory (from, buf, len);
+diff --git a/gdb/i386-tdep.h b/gdb/i386-tdep.h
+index 41faf51586..14bab37205 100644
+--- a/gdb/i386-tdep.h
++++ b/gdb/i386-tdep.h
+@@ -428,7 +428,7 @@ extern void
+ 
+ typedef buf_displaced_step_closure i386_displaced_step_closure;
+ 
+-extern std::unique_ptr<displaced_step_closure> i386_displaced_step_copy_insn
++extern struct displaced_step_closure *i386_displaced_step_copy_insn
+   (struct gdbarch *gdbarch, CORE_ADDR from, CORE_ADDR to,
+    struct regcache *regs);
+ extern void i386_displaced_step_fixup (struct gdbarch *gdbarch,
+diff --git a/gdb/infrun.c b/gdb/infrun.c
+index d9a6f73351..e3e4bdb9b8 100644
+--- a/gdb/infrun.c
++++ b/gdb/infrun.c
+@@ -1646,6 +1646,7 @@ displaced_step_prepare_throw (thread_info *tp)
+   const address_space *aspace = regcache->aspace ();
+   CORE_ADDR original, copy;
+   ULONGEST len;
++  struct displaced_step_closure *closure;
+   int status;
+ 
+   /* We should never reach this function if the architecture does not
+@@ -1737,9 +1738,9 @@ displaced_step_prepare_throw (thread_info *tp)
+ 				 len);
+     };
+ 
+-  displaced->step_closure
+-    = gdbarch_displaced_step_copy_insn (gdbarch, original, copy, regcache);
+-  if (displaced->step_closure == NULL)
++  closure = gdbarch_displaced_step_copy_insn (gdbarch,
++					      original, copy, regcache);
++  if (closure == NULL)
+     {
+       /* The architecture doesn't know how or want to displaced step
+ 	 this instruction or instruction sequence.  Fallback to
+@@ -1751,6 +1752,7 @@ displaced_step_prepare_throw (thread_info *tp)
+      succeeds.  */
+   displaced->step_thread = tp;
+   displaced->step_gdbarch = gdbarch;
++  displaced->step_closure.reset (closure);
+   displaced->step_original = original;
+   displaced->step_copy = copy;
+ 
+diff --git a/gdb/rs6000-tdep.c b/gdb/rs6000-tdep.c
+index 010bbc9e01..919bebc71b 100644
+--- a/gdb/rs6000-tdep.c
++++ b/gdb/rs6000-tdep.c
+@@ -855,7 +855,7 @@ typedef buf_displaced_step_closure ppc_displaced_step_closure;
+ 
+ /* We can't displaced step atomic sequences.  */
+ 
+-static std::unique_ptr<displaced_step_closure>
++static struct displaced_step_closure *
+ ppc_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 			      CORE_ADDR from, CORE_ADDR to,
+ 			      struct regcache *regs)
+@@ -894,7 +894,7 @@ ppc_displaced_step_copy_insn (struct gdbarch *gdbarch,
+       displaced_step_dump_bytes (gdb_stdlog, buf, len);
+     }
+ 
+-  return closure;
++  return closure.release ();
+ }
+ 
+ /* Fix up the state of registers and memory after having single-stepped
+diff --git a/gdb/s390-tdep.c b/gdb/s390-tdep.c
+index 313d459cb3..5f3cb7e81e 100644
+--- a/gdb/s390-tdep.c
++++ b/gdb/s390-tdep.c
+@@ -425,7 +425,7 @@ typedef buf_displaced_step_closure s390_displaced_step_closure;
+ 
+ /* Implementation of gdbarch_displaced_step_copy_insn.  */
+ 
+-static std::unique_ptr<displaced_step_closure>
++static struct displaced_step_closure *
+ s390_displaced_step_copy_insn (struct gdbarch *gdbarch,
+ 			       CORE_ADDR from, CORE_ADDR to,
+ 			       struct regcache *regs)
+@@ -477,7 +477,7 @@ s390_displaced_step_copy_insn (struct gdbarch *gdbarch,
+       displaced_step_dump_bytes (gdb_stdlog, buf, len);
+     }
+ 
+-  return closure;
++  return closure.release ();
+ }
+ 
+ /* Fix up the state of registers and memory after having single-stepped
