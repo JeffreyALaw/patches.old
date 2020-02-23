@@ -1,8 +1,3 @@
-gcc/testsuite/gcc.dg/cpp/_Pragma3.c
-gcc/testsuite/gcc.dg/pr88074-2.c
-gcc/testsuite/gcc.dg/uninit-pred-8_b.c
-gcc/testsuite/gcc.dg/debug/dwarf2/pr86964.c
-gcc/testsuite/gcc.c-torture/execute/pr89826.c
 gcc/testsuite/c-c++-common/builtins.c
 gcc/testsuite/gcc.target/mips/interrupt_handler-4.c
 gcc/testsuite/gcc.dg/diag-sanity.c
@@ -27,3 +22,7 @@ gcc/testsuite/gcc.c-torture/execute/pr90949.c
 gcc/testsuite/gcc.c-torture/execute/simd-1.c
 gcc/testsuite/gcc.c-torture/execute/pr92904.c
 gcc/testsuite/gcc.dg/pr43058.c
+gcc/testsuite/gcc.dg/plugin/poly-int-02_plugin.c
+gcc/testsuite/gcc.dg/plugin/poly-int-03_plugin.c
+gcc/testsuite/gcc.dg/plugin/poly-int-04_plugin.c
+gcc/testsuite/gcc.dg/plugin/poly-int-07_plugin.c
