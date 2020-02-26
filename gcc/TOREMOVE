@@ -28,3 +28,4 @@ gcc/testsuite/gcc.dg/plugin/poly-int-04_plugin.c
 gcc/testsuite/gcc.dg/plugin/poly-int-07_plugin.c
 gcc/testsuite/gcc.dg/guality/pr68860-2.c
 gcc/testsuite/gcc.dg/guality/sra-1.c
+gcc/testsuite/gcc.dg/guality/pr54693-2.c
