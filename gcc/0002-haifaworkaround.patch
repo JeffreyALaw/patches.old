@@ -1,0 +1,19 @@
+Workaround fault on c6x.  Still investigating
+diff --git a/gcc/haifa-sched.c b/gcc/haifa-sched.c
+index 1d3de7b6a76..835936cceb0 100644
+--- a/gcc/haifa-sched.c
++++ b/gcc/haifa-sched.c
+@@ -4713,8 +4713,11 @@ apply_replacement (dep_t dep, bool immediately)
+ 
+       rtx_insn *insn = DEP_PRO (dep);
+ 
+-      /* Recompute priority since dependent priorities may have changed.  */
+-      priority (insn, true);
++      /* If INSN has already been scheduled, then do not bother recomputing
++	 its priority.  If not, then recompute priority since dependent
++	 priorities may have changed.  */
++      if (QUEUE_INDEX (insn) != QUEUE_SCHEDULED)
++	priority (insn, true);
+       update_insn_after_change (desc->insn);
+ 
+       if ((TODO_SPEC (desc->insn) & (HARD_DEP | DEP_POSTPONED)) == 0)
