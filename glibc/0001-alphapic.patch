@@ -1,0 +1,149 @@
+From libc-alpha-owner@sourceware.org Mon Mar  2 11:06:24 2020
+Return-Path: libc-alpha-return-110201-law=redhat.com@sourceware.org
+Received: from zmta02.collab.prod.int.phx2.redhat.com (LHLO
+ zmta02.collab.prod.int.phx2.redhat.com) (10.5.81.9) by
+ zmail22.collab.prod.int.phx2.redhat.com with LMTP; Mon, 2 Mar 2020 11:06:24
+ -0500 (EST)
+Received: from smtp.corp.redhat.com
+ (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6]) by
+ zmta02.collab.prod.int.phx2.redhat.com (Postfix) with ESMTP id 1E43E123FA6
+ for <law@mail.corp.redhat.com>; Mon,  2 Mar 2020 11:06:24 -0500 (EST)
+Received: by smtp.corp.redhat.com (Postfix)
+	id D7E7F2166B2D; Mon,  2 Mar 2020 16:06:23 +0000 (UTC)
+Delivered-To: law@redhat.com
+Received: from mimecast-mx02.redhat.com
+ (mimecast05.extmail.prod.ext.rdu2.redhat.com [10.11.55.21]) by
+ smtp.corp.redhat.com (Postfix) with ESMTPS id D3B3E2166B2B for
+ <law@redhat.com>; Mon,  2 Mar 2020 16:06:23 +0000 (UTC)
+Received: from us-smtp-1.mimecast.com (us-smtp-1.mimecast.com
+ [207.211.31.81]) (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384
+ (256/256 bits)) (No client certificate requested) by
+ mimecast-mx02.redhat.com (Postfix) with ESMTPS id B40D8800298 for
+ <law@redhat.com>; Mon,  2 Mar 2020 16:06:23 +0000 (UTC)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=dkim.mimecast.com; s=201903; t=1583165183;
+	h=from:from:sender:sender:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:mime-version:mime-version:
+	 content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:list-id:list-help:
+	 list-unsubscribe:list-subscribe:list-post:dkim-signature;
+	bh=5TlHFGJzBiiGQvUEhrOdSsq9KSf/seY1JfgPp9kxDms=;
+	b=G3kw0QV4Cd0XAtFhz+6MtbCRucAUBQ7XGzCs52HBGZwZ5rmRJfHEI9Uj9SDFYOqENBHOxf
+	SfNNNc263Pxr80wto+Ek+ot10PhyHl87eozjnodKJiV7KL1r2r8jKds9MeKjbYpU/uHAnJ
+	sLq3d8NsiHwQ33BEE0XMzpCCSJnJ1fgrvC3KehlUh85sMzU0z+MJSWE7qGZ23WcZ6rhEQd
+	pPSvOsi4NcMFpL9F99NoVtXjNRUZx3utwqmFEmfigeV/YOZ8lTZnA8KZzJhdaWhzanRN6o
+	eZGAd6/3agZgVZUsknkwIiKXkXNzuexsbBw/SNPXBIZ/ccxd7KOXJcDuUziTVA==
+ARC-Seal: i=1; s=201903; d=dkim.mimecast.com; t=1583165183; a=rsa-sha256;
+	cv=none;
+	b=e18bxuk4CP2ogg8pSuklPZSwwFHklLEdJwEJrJIGa9gNkZi4Q0R6uLw4v00Dql1sVJKxgI
+	e2S5kS825st/I6wlzCR6qzzcKIrFvlNTPg/fQVP3t7W9/IM06/LHRFOmhDm0/soSEZ1VsU
+	TfYw6/3NeYW5XAyw06mQoHudLWhHxUgpxVnJZZ49XdnJa5IqLCkuAUqI20fG1g5G5djb7R
+	NZ9rsm+wE6barCa95rykuIWXxj8OX+4N8fVti76NASMhDzLIG4RDR4RwVRg3Akw+X6kcVF
+	W4aWIuDn5jx1ucaYM+PFFe7FVj58WScpGy1HCI0xQKcM7/be+gbFk3BKhZjl8w==
+ARC-Authentication-Results: i=1; relay.mimecast.com; dkim=pass
+ header.d=sourceware.org header.s=default header.b=vw1v1U96; dkim=pass
+ header.d=redhat.com header.s=mimecast20190719 header.b=KcQGZpxy; spf=pass
+ (relay.mimecast.com: domain of
+ libc-alpha-return-110201-law=redhat.com@sourceware.org designates
+ 209.132.180.131 as permitted sender)
+ smtp.mailfrom=libc-alpha-return-110201-law=redhat.com@sourceware.org
+Received: from sourceware.org (server1.sourceware.org [209.132.180.131])
+ (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-299-A1h_OrUyO_qXTSfMuTLU8w-1; Mon, 02 Mar 2020 11:06:22 -0500
+X-MC-Unique: A1h_OrUyO_qXTSfMuTLU8w-1
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=sourceware.org; h=list-id
+	:list-unsubscribe:list-subscribe:list-archive:list-post
+	:list-help:sender:from:to:subject:date:message-id:mime-version
+	:content-type:content-transfer-encoding; q=dns; s=default; b=a7L
+	FZtlISioWlKdu9wTkLFqQso6/+yA/Xgix31YGYxjQrQfSfqtmhbjvQ+XhPB1+44k
+	VOKs4M6ik+sdrplHNSsYWt8R+TV8Vk5OmVOqKKb6O70LYVzFhpFFU8JT/NmbhBsY
+	CZuXZVa/Ao78HS5kaJuj0GVS4bjMHCxpvAjTRWGk=
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed; d=sourceware.org; h=list-id
+	:list-unsubscribe:list-subscribe:list-archive:list-post
+	:list-help:sender:from:to:subject:date:message-id:mime-version
+	:content-type:content-transfer-encoding; s=default; bh=8OKGV++t6
+	gJGOWPKlO0BRJWghGw=; b=vw1v1U96UpIexUEgwZ3GVJl0jcY0ynF3CiAjlcqzh
+	1AydbpAUwDYw1Q9AL3Vpn5UYQw0k/QQcl+jWNg1KmRHzXoafUb14xh2HjEmJ3/dr
+	zOoQETDMcKEupBlBXKXlBokp50FJhVDuOlkR1KBNLKYf4qhKoBIjbrwa3Y/+lnYs
+	UU=
+Received: (qmail 81146 invoked by alias); 2 Mar 2020 15:58:58 -0000
+Mailing-List: contact libc-alpha-help@sourceware.org; run by ezmlm
+Precedence: bulk
+List-Id: <libc-alpha.sourceware.org>
+List-Unsubscribe:
+ <mailto:libc-alpha-unsubscribe-law=redhat.com@sourceware.org>
+List-Subscribe: <mailto:libc-alpha-subscribe@sourceware.org>
+List-Archive: <http://sourceware.org/ml/libc-alpha/>
+List-Post: <mailto:libc-alpha@sourceware.org>
+List-Help: <mailto:libc-alpha-help@sourceware.org>,
+ <http://sourceware.org/ml/#faqs>
+Sender: libc-alpha-owner@sourceware.org
+Delivered-To: mailing list libc-alpha@sourceware.org
+Received: (qmail 81133 invoked by uid 89); 2 Mar 2020 15:58:58 -0000
+X-Spam-SWARE-Status: No, score=-19.0 required=5.0
+ tests=AWL,BAYES_00,GIT_PATCH_0,GIT_PATCH_1,GIT_PATCH_2,GIT_PATCH_3,RCVD_IN_DNSWL_NONE
+ autolearn=ham version=3.3.1 spammy=
+X-HELO: us-smtp-1.mimecast.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1583164735;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=5TlHFGJzBiiGQvUEhrOdSsq9KSf/seY1JfgPp9kxDms=;
+	b=KcQGZpxyhdJTjPZALlg7NIa8iBbcEiRlmvNRHRy3A1dJq/Byx3l9yoqFy+Y9D7mHEJULJC
+	pqo8xJQUKUQcGZ/oefjux/lFVbQQzizNnWdsdnDegbp8Ne9SAsFphfgzsiqmHj4s8TrUI5
+	8N3OuR9NYp2JVrgGqxF/3YOzL3N+HtQ=
+From: Florian Weimer <fweimer@redhat.com>
+To: libc-alpha@sourceware.org
+Subject: [PATCH] alpha: Do not build with -fpic
+Date: Mon, 02 Mar 2020 16:58:48 +0100
+Message-ID: <87zhcykatj.fsf@oldenburg2.str.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
+MIME-Version: 1.0
+X-Mimecast-Originator: redhat.com
+Authentication-Results: relay.mimecast.com; dkim=pass
+ header.d=sourceware.org header.s=default header.b=vw1v1U96; dkim=pass
+ header.d=redhat.com header.s=mimecast20190719 header.b=KcQGZpxy; spf=pass
+ (relay.mimecast.com: domain of
+ libc-alpha-return-110201-law=redhat.com@sourceware.org designates
+ 209.132.180.131 as permitted sender)
+ smtp.mailfrom=libc-alpha-return-110201-law=redhat.com@sourceware.org
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain
+X-Scanned-By: MIMEDefang 2.78 on 10.11.54.6
+X-Evolution-Source: c7a8bea51dc340263fb5562dcfccd2a5085155c1
+Content-Transfer-Encoding: 8bit
+
+The combination of GCC 10 and binutils 2.35 (both unreleased) is no
+longer able to link the dynamic linker, due to a GP16 relocation
+overflow error:
+
+glibc/alpha-linux-gnu/elf/librtld.os: in function `calloc': glibc/elf/../include/rtld-malloc.h:44:(.text+0xd98): relocation truncated to fit: GPREL16 against symbol `__rtld_calloc' defined in .data.rel.ro section in glibc/alpha-linux-gnu/elf/librtld.os
+glibc/alpha-linux-gnu/elf/librtld.os: in function `malloc': glibc/elf/../include/rtld-malloc.h:56:(.text+0x2978): relocation truncated to fit: GPREL16 against symbol `__rtld_malloc' defined in .data.rel.ro section in glibc/alpha-linux-gnu/elf/librtld.os
+
+This is arguably a linker bug; the object files and their section size
+requirements look reasonable enough.
+
+Using -fPIC (the default) works around this issue.
+
+-----
+ sysdeps/alpha/Makefile | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/sysdeps/alpha/Makefile b/sysdeps/alpha/Makefile
+index da52c1d4d1..baf5d480e5 100644
+--- a/sysdeps/alpha/Makefile
++++ b/sysdeps/alpha/Makefile
+@@ -57,10 +57,6 @@ endif
+ # "current" rounding mode, and it's easiest to set this with all of them.
+ sysdep-CFLAGS += -mieee -mfp-rounding-mode=d
+ 
+-# libc.so requires about 16k for the small data area, which is well
+-# below the 64k maximum.
+-pic-ccflag = -fpic
+-
+ #  Software floating-point emulation.
+ 
+ ifeq ($(subdir),soft-fp)
+
+
