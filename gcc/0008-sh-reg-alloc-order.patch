@@ -1,0 +1,15 @@
+diff --git a/gcc/config/sh/sh.h b/gcc/config/sh/sh.h
+index 8ab5455505c..d10abb19898 100644
+--- a/gcc/config/sh/sh.h
++++ b/gcc/config/sh/sh.h
+@@ -991,6 +991,10 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
+ #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+   sh_small_register_classes_for_mode_p
+ 
++/* Tell IRA to use the order we define rather than messing it up with its
++   own cost calculations.  */
++#define HONOR_REG_ALLOC_ORDER 1
++
+ /* The order in which register should be allocated.  */
+ /* Sometimes FP0_REGS becomes the preferred class of a floating point pseudo,
+    and GENERAL_FP_REGS the alternate class.  Since FP0 is likely to be
