@@ -1,13 +1,15 @@
 diff --git a/math/Makefile b/math/Makefile
-index 84a8b94c74..e463a785ad 100644
+index 84a8b94c74..a3ae648548 100644
 --- a/math/Makefile
 +++ b/math/Makefile
-@@ -654,7 +654,7 @@ endif
- 
- # These files quiet sNaNs in a way that is optimized away without
- # -fsignaling-nans.
--CFLAGS-s_modf.c += -fsignaling-nans
-+CFLAGS-s_modf.c += -fsignaling-nans -Wno-error=builtin-declaration-mismatch
- CFLAGS-s_modff.c += -fsignaling-nans
+@@ -659,6 +659,10 @@ CFLAGS-s_modff.c += -fsignaling-nans
  CFLAGS-s_modfl.c += -fsignaling-nans
  CFLAGS-s_modff128.c += -fsignaling-nans
+ 
++# Work around GCC diagnostic
++CFLAGS-s_modf.c += -Wno-error=builtin-declaration-mismatch
++CFLAGS-s_sincos.c += -Wno-error-builtin-declaration-mismatch
++
+ $(addprefix $(objpfx),\
+ 	    $(filter-out $(tests-static) $(libm-tests-vector),\
+ 			 $(tests) $(tests-internal))): $(libm)
