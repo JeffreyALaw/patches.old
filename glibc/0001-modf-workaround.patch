@@ -1,0 +1,13 @@
+diff --git a/math/Makefile b/math/Makefile
+index 84a8b94c74..e463a785ad 100644
+--- a/math/Makefile
++++ b/math/Makefile
+@@ -654,7 +654,7 @@ endif
+ 
+ # These files quiet sNaNs in a way that is optimized away without
+ # -fsignaling-nans.
+-CFLAGS-s_modf.c += -fsignaling-nans
++CFLAGS-s_modf.c += -fsignaling-nans -Werror=no-builtin-declaration-mismatch
+ CFLAGS-s_modff.c += -fsignaling-nans
+ CFLAGS-s_modfl.c += -fsignaling-nans
+ CFLAGS-s_modff128.c += -fsignaling-nans
