@@ -1,0 +1,13 @@
+diff --git a/nscd/Makefile b/nscd/Makefile
+index 87c571c228..ca48bdb9d5 100644
+--- a/nscd/Makefile
++++ b/nscd/Makefile
+@@ -81,6 +81,8 @@ CFLAGS-nscd_initgroups.c += -fexceptions
+ 
+ CPPFLAGS-nscd += -D_FORTIFY_SOURCE=2
+ 
++CFLAGS-cachedumper.c += -Wno-error=implicit-function-declaration -Wno-error=format
++
+ ifeq (yesyes,$(have-fpie)$(build-shared))
+ CFLAGS-nscd += $(pie-ccflag)
+ endif
