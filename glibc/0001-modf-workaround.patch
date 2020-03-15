@@ -8,7 +8,7 @@ index 84a8b94c74..a3ae648548 100644
  
 +# Work around GCC diagnostic
 +CFLAGS-s_modf.c += -Wno-error=builtin-declaration-mismatch
-+CFLAGS-s_sincos.c += -Wno-error-builtin-declaration-mismatch
++CFLAGS-s_sincos.c += -Wno-error=builtin-declaration-mismatch
 +
  $(addprefix $(objpfx),\
  	    $(filter-out $(tests-static) $(libm-tests-vector),\
