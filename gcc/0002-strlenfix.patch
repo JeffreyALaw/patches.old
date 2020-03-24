@@ -1,0 +1,77 @@
+PR tree-optimization/94131 - ICE on printf with a VLA string and -fno-tree-ccp
+
+gcc/testsuite/ChangeLog:
+
+	PR tree-optimization/94131
+	* gcc.dg/pr94131.c: New test.
+
+gcc/ChangeLog:
+
+	PR tree-optimization/94131
+	* gimple-fold.c (get_range_strlen_tree): Fail for variable-length
+	types and decls.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Avoid assuming
+	types have constant sizes.
+
+diff --git a/gcc/gimple-fold.c b/gcc/gimple-fold.c
+index fa7a396a361..c85b4f2662b 100644
+--- a/gcc/gimple-fold.c
++++ b/gcc/gimple-fold.c
+@@ -1372,7 +1372,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
+ 
+ 	  /* Fail when the array bound is unknown or zero.  */
+ 	  val = TYPE_SIZE_UNIT (optype);
+-	  if (!val || integer_zerop (val))
++	  if (!val
++	      || TREE_CODE (val) != INTEGER_CST
++	      || integer_zerop (val))
+ 	    return false;
+ 
+ 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+@@ -1406,7 +1408,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
+ 
+ 	  /* Fail when the array bound is unknown or zero.  */
+ 	  val = TYPE_SIZE_UNIT (optype);
+-	  if (!val || integer_zerop (val))
++	  if (!val
++	      || TREE_CODE (val) != INTEGER_CST
++	      || integer_zerop (val))
+ 	    return false;
+ 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+ 			     integer_one_node);
+@@ -1442,7 +1446,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
+ 	      /* Fail if the offset is out of bounds.  Such accesses
+ 		 should be diagnosed at some point.  */
+ 	      val = DECL_SIZE_UNIT (ref);
+-	      if (!val || integer_zerop (val))
++	      if (!val
++		  || TREE_CODE (val) != INTEGER_CST
++		  || integer_zerop (val))
+ 		return false;
+ 
+ 	      poly_offset_int psiz = wi::to_offset (val);
+diff --git a/gcc/tree-ssa-strlen.c b/gcc/tree-ssa-strlen.c
+index 8815cdbc9ca..e1589f68806 100644
+--- a/gcc/tree-ssa-strlen.c
++++ b/gcc/tree-ssa-strlen.c
+@@ -1139,10 +1139,16 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
+ 	    {
+ 	      tree basetype = TREE_TYPE (base);
+ 	      tree size = TYPE_SIZE_UNIT (basetype);
+-	      ++off;   /* Increment for the terminating nul.  */
+-	      pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
+-					   build_int_cst (size_type_node, off));
+-	      pdata->maxbound = pdata->maxlen;
++	      if (TREE_CODE (size) == INTEGER_CST)
++		{
++		  ++off;   /* Increment for the terminating nul.  */
++		  tree toffset = build_int_cst (size_type_node, off);
++		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
++					       toffset);
++		  pdata->maxbound = pdata->maxlen;
++		}
++	      else	
++		pdata->maxlen = build_all_ones_cst (size_type_node);
+ 	    }
+ 	  else
+ 	    pdata->maxlen = build_all_ones_cst (size_type_node);
