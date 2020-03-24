@@ -1,0 +1,17 @@
+diff --git a/gcc/cse.c b/gcc/cse.c
+index 3e8724b3fed..af5999d59b5 100644
+--- a/gcc/cse.c
++++ b/gcc/cse.c
+@@ -5328,7 +5328,11 @@ cse_insn (rtx_insn *insn)
+ 	     might be impossible for certain registers (like CC registers).  */
+ 	  else if (n_sets == 1
+ 		   && !CALL_P (insn)
+-		   && (MEM_P (trial) || REG_P (trial))
++		   && (MEM_P (trial)
++		       || (REG_P (trial)
++			   && (REGNO (trial) >= FIRST_PSEUDO_REGISTER
++			       || (!targetm.small_register_classes_for_mode_p (GET_MODE (trial))
++				   && !targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (trial)))))))
+ 		   && rtx_equal_p (trial, dest)
+ 		   && !side_effects_p (dest)
+ 		   && (cfun->can_delete_dead_exceptions
