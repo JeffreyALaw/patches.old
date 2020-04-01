@@ -1,8 +1,8 @@
 diff --git a/gcc/vr-values.c b/gcc/vr-values.c
-index 2e3a0788710..b91d4a7104b 100644
+index 2e3a0788710..e64da3930c8 100644
 --- a/gcc/vr-values.c
 +++ b/gcc/vr-values.c
-@@ -4308,6 +4308,50 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
+@@ -4308,6 +4308,52 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
  	    return simplify_bit_ops_using_ranges (gsi, stmt);
  	  break;
  
@@ -29,7 +29,9 @@ index 2e3a0788710..b91d4a7104b 100644
 +		  tree max_converted = const_unop (VIEW_CONVERT_EXPR,
 +						   TREE_TYPE (lhs),
 +						   max);
-+		  if (min_converted
++		  if (TREE_CODE (min) == INTEGER_CST
++		      && TREE_CODE (max) == INTEGER_CST
++		      && min_converted
 +		      && max_converted
 +		      /* These may not be strictly necessary, but to be safe
 +			 do not do this optimization if the original or
