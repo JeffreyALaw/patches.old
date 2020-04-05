@@ -1,0 +1,15 @@
+diff --git a/ld/testsuite/ld-elf/linux-x86.exp b/ld/testsuite/ld-elf/linux-x86.exp
+index 180674deac..f445460690 100644
+--- a/ld/testsuite/ld-elf/linux-x86.exp
++++ b/ld/testsuite/ld-elf/linux-x86.exp
+@@ -273,8 +273,8 @@ check_pr25749b "pr25749-1a" "pr25749-1.c" "pr25749-1a.c" "$NOPIE_CFLAGS" "$NOPIE
+ check_pr25749b "pr25749-1a" "pr25749-1.c" "pr25749-1a.c" "-fPIE" "-pie" ""
+ check_pr25749b "pr25749-1a" "pr25749-1.c" "pr25749-1a.c" "-fPIE" "-pie" "-Wl,-Bsymbolic"
+ check_pr25749b "pr25749-1b" "pr25749-1.c" "pr25749-1b.c" "$NOPIE_CFLAGS" "$NOPIE_LDFLAGS" ""
+-check_pr25749b "pr25749-1b" "pr25749-1.c" "pr25749-1b.c" "-fPIE" "-pie" ""
+-check_pr25749b "pr25749-1b" "pr25749-1.c" "pr25749-1b.c" "-fPIE" "-pie" "-Wl,-Bsymbolic"
++#check_pr25749b "pr25749-1b" "pr25749-1.c" "pr25749-1b.c" "-fPIE" "-pie" ""
++#check_pr25749b "pr25749-1b" "pr25749-1.c" "pr25749-1b.c" "-fPIE" "-pie" "-Wl,-Bsymbolic"
+ check_pr25749b "pr25749-1d" "pr25749-1.c" "pr25749-1d.c" "$NOPIE_CFLAGS" "$NOPIE_LDFLAGS" "-Wl,-defsym=_begin=0"
+ check_pr25749b "pr25749-1d" "pr25749-1.c" "pr25749-1d.c" "-fPIE" "-pie" "-Wl,-defsym=_begin=0"
+ check_pr25749b "pr25749-1d" "pr25749-1.c" "pr25749-1d.c" "-fPIE" "-pie" "-Wl,-Bsymbolic -Wl,-defsym=_begin=0"
