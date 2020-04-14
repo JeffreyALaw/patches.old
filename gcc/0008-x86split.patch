@@ -1,0 +1,23 @@
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index 3051624d89f..b6d8bb8a540 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -8766,6 +8766,18 @@
+ 
+   gcc_assert (pos + len <= GET_MODE_PRECISION (mode));
+ 
++  /* If the mask is going to have the sign bit set in the mode
++     we want to do the comparison, then we must widen the target
++     mode.  Otherwise the flags will be incorrect when we split
++     this into a (compare (and (op0) (mask))) and a subsequent
++     test like LE will get the wrong result.  */
++  if (mode < E_DImode
++      && pos + len == GET_MODE_PRECISION (mode))
++    {
++      mode = GET_MODE_WIDER_MODE (mode).require ();
++      val = gen_lowpart (mode, val);
++    }
++
+   wide_int mask
+     = wi::shifted_mask (pos, len, false, GET_MODE_PRECISION (mode));
+ 
