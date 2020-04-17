@@ -36,3 +36,4 @@ gcc/testsuite/gcc.dg/guality/pr68860-1.c
 gcc/testsuite/gcc.dg/guality/pr43077-1.c
 gcc/testsuite/gcc.target/aarch64/sve/acle/general/attributes_7.c
 gcc/testsuite/gcc.dg/atomic/atomic.exp
+gcc/testsuite/gcc.dg/struct-by-value-1.c
