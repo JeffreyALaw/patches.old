@@ -2515,7 +2515,7 @@ index 2416741e76a..24e853349bf 100644
  extern enum attr_cc compute_plussi_cc (rtx *);
  extern enum attr_cc compute_a_shift_cc (rtx, rtx *);
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index d2fea04d8e4..90a24a2af54 100644
+index d2fea04d8e4..92948d58c95 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -102,9 +102,6 @@ static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
@@ -4310,7 +4310,23 @@ index d2fea04d8e4..90a24a2af54 100644
  }
  
  /* Helper function for the move patterns.  Make sure a move is legitimate.  */
-@@ -5856,7 +5377,7 @@ static bool
+@@ -5796,8 +5317,13 @@ h8300_move_ok (rtx dest, rtx src)
+   else
+     return true;
+ 
+-  /* Validate that auto-inc doesn't affect OTHER.  */
+-  if (GET_RTX_CLASS (GET_CODE (addr)) != RTX_AUTOINC)
++  /* Validate that auto-inc doesn't affect OTHER.
++     But allow them post-reload.  Reload can create such RTL even
++     though it's not technically valid.  The semantics are well
++     defined by the hardware and match what one would expect
++     (the value pushed is the stack pointer's value at the start
++     of the instruction.  */
++  if (reload_completed || GET_RTX_CLASS (GET_CODE (addr)) != RTX_AUTOINC)
+     return true;
+   addr = XEXP (addr, 0);
+ 
+@@ -5856,7 +5382,7 @@ static bool
  h8300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
  {
    return (TYPE_MODE (type) == BLKmode
@@ -4519,7 +4535,7 @@ index 32e5f7dc5cf..eb78175c50d 100644
     the symbol_ref name of an internal numbered label where
     PREFIX is the class of label and NUM is the number within the class.
 diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
-index fdd2d8b02d7..1841dda191a 100644
+index 3e5cdbeeebe..1841dda191a 100644
 --- a/gcc/config/h8300/h8300.md
 +++ b/gcc/config/h8300/h8300.md
 @@ -65,7 +65,8 @@
@@ -5496,7 +5512,7 @@ index fdd2d8b02d7..1841dda191a 100644
 -		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
 -  "TARGET_H8300SX"
 -  { return <MODE>mode == HImode ? "muls.w\\t%T2,%T0" : "muls.l\\t%S2,%S0"; }
--  [(set_attr "length" "2")
+-  [(set_attr "length" "4")
 -   (set_attr "cc" "set_zn")])
 -
 -(define_insn "smulsi3_highpart"
@@ -5509,7 +5525,7 @@ index fdd2d8b02d7..1841dda191a 100644
 -	  (const_int 32))))]
 -  "TARGET_H8300SXMUL"
 -  "muls/u.l\\t%S2,%S0"
--  [(set_attr "length" "2")
+-  [(set_attr "length" "4")
 -   (set_attr "cc" "set_zn")])
 -
 -(define_insn "umulsi3_highpart"
@@ -5522,7 +5538,7 @@ index fdd2d8b02d7..1841dda191a 100644
 -	    (const_int 32))))]
 -  "TARGET_H8300SX"
 -  "mulu/u.l\\t%S2,%S0"
--  [(set_attr "length" "2")
+-  [(set_attr "length" "4")
 -   (set_attr "cc" "none_0hit")])
 -
 -;; This is a "bridge" instruction.  Combine can't cram enough insns
@@ -10908,7 +10924,7 @@ index 00000000000..f3548ad2e0e
 +
 diff --git a/gcc/config/h8300/multiply.md b/gcc/config/h8300/multiply.md
 new file mode 100644
-index 00000000000..863b129ac2f
+index 00000000000..00b8aacd434
 --- /dev/null
 +++ b/gcc/config/h8300/multiply.md
 @@ -0,0 +1,380 @@
@@ -11155,7 +11171,7 @@ index 00000000000..863b129ac2f
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  { return <MODE>mode == HImode ? "muls.w\\t%T2,%T0" : "muls.l\\t%S2,%S0"; }
-+  [(set_attr "length" "2")
++  [(set_attr "length" "4")
 +   (set_attr "cc" "set_zn")])
 +
 +(define_insn_and_split "smulsi3_highpart"
@@ -11187,7 +11203,7 @@ index 00000000000..863b129ac2f
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SXMUL"
 +  "muls/u.l\\t%S2,%S0"
-+  [(set_attr "length" "2")
++  [(set_attr "length" "4")
 +   (set_attr "cc" "set_zn")])
 +
 +(define_insn_and_split "umulsi3_highpart"
@@ -11219,7 +11235,7 @@ index 00000000000..863b129ac2f
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  "mulu/u.l\\t%S2,%S0"
-+  [(set_attr "length" "2")
++  [(set_attr "length" "4")
 +   (set_attr "cc" "none_0hit")])
 +
 +;; This is a "bridge" instruction.  Combine can't cram enough insns
