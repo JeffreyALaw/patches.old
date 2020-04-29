@@ -2018,7 +2018,7 @@ index fee44e847db..d24518225f8 100644
    "Integer -1 or -2."
 diff --git a/gcc/config/h8300/divmod.md b/gcc/config/h8300/divmod.md
 new file mode 100644
-index 00000000000..ee8be62ed9f
+index 00000000000..b5ab6b727bb
 --- /dev/null
 +++ b/gcc/config/h8300/divmod.md
 @@ -0,0 +1,214 @@
@@ -2043,7 +2043,7 @@ index 00000000000..ee8be62ed9f
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  { return <MODE>mode == HImode ? "divu.w\\t%T2,%T0" : "divu.l\\t%S2,%S0"; }
-+  [(set_attr "length" "2")])
++  [(set_attr "length" "4")])
 +
 +(define_insn_and_split "div<mode>3"
 +  [(set (match_operand:HSI 0 "register_operand" "=r")
@@ -2062,7 +2062,7 @@ index 00000000000..ee8be62ed9f
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  { return <MODE>mode == HImode ? "divs.w\\t%T2,%T0" : "divs.l\\t%S2,%S0"; }
-+  [(set_attr "length" "2")])
++  [(set_attr "length" "4")])
 +
 +(define_insn_and_split "udivmodqi4"
 +  [(set (match_operand:QI 0 "register_operand" "=r")
@@ -4535,7 +4535,7 @@ index 32e5f7dc5cf..eb78175c50d 100644
     the symbol_ref name of an internal numbered label where
     PREFIX is the class of label and NUM is the number within the class.
 diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
-index 3e5cdbeeebe..1841dda191a 100644
+index a86b8ea2074..1841dda191a 100644
 --- a/gcc/config/h8300/h8300.md
 +++ b/gcc/config/h8300/h8300.md
 @@ -65,7 +65,8 @@
@@ -5584,7 +5584,7 @@ index 3e5cdbeeebe..1841dda191a 100644
 -		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
 -  "TARGET_H8300SX"
 -  { return <MODE>mode == HImode ? "divu.w\\t%T2,%T0" : "divu.l\\t%S2,%S0"; }
--  [(set_attr "length" "2")])
+-  [(set_attr "length" "4")])
 -
 -(define_insn "div<mode>3"
 -  [(set (match_operand:HSI 0 "register_operand" "=r")
@@ -5592,7 +5592,7 @@ index 3e5cdbeeebe..1841dda191a 100644
 -		 (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
 -  "TARGET_H8300SX"
 -  { return <MODE>mode == HImode ? "divs.w\\t%T2,%T0" : "divs.l\\t%S2,%S0"; }
--  [(set_attr "length" "2")])
+-  [(set_attr "length" "4")])
 -
 -(define_insn "udivmodqi4"
 -  [(set (match_operand:QI 0 "register_operand" "=r")
