@@ -1,0 +1,21 @@
+diff --git a/sim/h8300/compile.c b/sim/h8300/compile.c
+index c1c61d8211..af9137d6d6 100644
+--- a/sim/h8300/compile.c
++++ b/sim/h8300/compile.c
+@@ -568,6 +568,7 @@ decode (SIM_DESC sd, int addr, unsigned char *data, decoded_inst *dst)
+ 
+   dst->dst.type = -1;
+   dst->src.type = -1;
++  dst->op3.type = -1;
+ 
+   /* Find the exact opcode/arg combo.  */
+   for (q = h8_opcodes; q->name; q++)
+@@ -1940,7 +1941,7 @@ step_once (SIM_DESC sd, SIM_CPU *cpu)
+ 		of the same register.
+ 	  */
+ 
+-	  if (code->op3.type == 0)
++	  if (code->op3.type == -1)
+ 	    {
+ 	      /* Short form: src == INDEXB/INDEXW, dst == op3 == 0.
+ 		 We get to compose dst and op3 as follows:
