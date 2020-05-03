@@ -2800,7 +2800,7 @@ index 00000000000..2f36c7ead8d
 +CC_MODE (CCZN);
 +CC_MODE (CCZNV);
 diff --git a/gcc/config/h8300/h8300-protos.h b/gcc/config/h8300/h8300-protos.h
-index 2416741e76a..39591ffe17e 100644
+index 2416741e76a..0d3eda0611e 100644
 --- a/gcc/config/h8300/h8300-protos.h
 +++ b/gcc/config/h8300/h8300-protos.h
 @@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
@@ -2814,7 +2814,7 @@ index 2416741e76a..39591ffe17e 100644
  extern const char *output_a_shift (rtx *);
  extern unsigned int compute_a_shift_length (rtx, rtx *);
  extern const char *output_a_rotate (enum rtx_code, rtx *);
-@@ -35,14 +35,17 @@ extern unsigned int compute_a_rotate_length (rtx *);
+@@ -35,14 +35,16 @@ extern unsigned int compute_a_rotate_length (rtx *);
  extern const char *output_simode_bld (int, rtx[]);
  extern void final_prescan_insn (rtx_insn *, rtx *, int);
  extern int h8300_expand_movsi (rtx[]);
@@ -2823,18 +2823,18 @@ index 2416741e76a..39591ffe17e 100644
  extern const char *output_logical_op (machine_mode, rtx *);
  extern unsigned int compute_logical_op_length (machine_mode,
  					       rtx *);
-+extern machine_mode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
 +
-+int compute_logical_op_cc (machine_mode, rtx *);
++extern int compute_logical_op_cc (machine_mode, rtx *);
++extern int compute_a_shift_cc (rtx, rtx *);
  #ifdef HAVE_ATTR_cc
  extern enum attr_cc compute_plussi_cc (rtx *);
- extern enum attr_cc compute_a_shift_cc (rtx, rtx *);
+-extern enum attr_cc compute_a_shift_cc (rtx, rtx *);
 -extern enum attr_cc compute_logical_op_cc (machine_mode, rtx *);
  #endif
  extern void h8300_expand_branch (rtx[]);
  extern void h8300_expand_store (rtx[]);
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index d2fea04d8e4..cd693d22d38 100644
+index d2fea04d8e4..ff20f3193e3 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -102,9 +102,6 @@ static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
@@ -3361,11 +3361,11 @@ index d2fea04d8e4..cd693d22d38 100644
 -	      if (REG_P (src))
 -		return 4;
 +	      int val = INTVAL (src);
-+
-+	      if (val == 0)
-+		return 2;
  
 -	      if (satisfies_constraint_G (src))
++	      if (val == 0)
++		return 2;
++
 +	      if (val == (val & 0x00ff) || val == (val & 0xff00))
  		return 4;
  
@@ -3470,26 +3470,23 @@ index d2fea04d8e4..cd693d22d38 100644
 -		  else
 -		    return 2;
 -		}
-+	  return 6;
-+	}
- 
+-
 -	      if (GET_CODE (src) == CONST_INT)
 -		{
 -		  int val = INTVAL (src);
-+      base_length = 10;
-+	break;
++	  return 6;
++	}
  
 -		  if (val == 0)
 -		    return 2;
-+    default:
-+      gcc_unreachable ();
-+    }
++      base_length = 10;
++	break;
  
 -		  if (val == (val & 0x00ff) || val == (val & 0xff00))
 -		    return 4;
-+  /* Adjust the length based on the addressing mode used.
-+     Specifically, we subtract the difference between the actual
-+     length and the longest one, which is @(d:24,ERs).  */
++    default:
++      gcc_unreachable ();
++    }
  
 -		  switch (val & 0xffffffff)
 -		    {
@@ -3507,15 +3504,15 @@ index d2fea04d8e4..cd693d22d38 100644
 -		}
 -	      return 6;
 -	    }
-+  /* @ERs+ and @-ERd are 6 bytes shorter than the longest.  */
-+  if (GET_CODE (addr) == PRE_DEC
-+      || GET_CODE (addr) == POST_INC)
-+    return base_length - 6;
++  /* Adjust the length based on the addressing mode used.
++     Specifically, we subtract the difference between the actual
++     length and the longest one, which is @(d:24,ERs).  */
  
 -	  base_length = 10;
 -	  break;
-+  /* @ERs and @ERd are 6 bytes shorter than the longest.  */
-+  if (GET_CODE (addr) == REG)
++  /* @ERs+ and @-ERd are 6 bytes shorter than the longest.  */
++  if (GET_CODE (addr) == PRE_DEC
++      || GET_CODE (addr) == POST_INC)
 +    return base_length - 6;
  
 -	case E_SFmode:
@@ -3523,7 +3520,10 @@ index d2fea04d8e4..cd693d22d38 100644
 -	    {
 -	      if (REG_P (src))
 -		return 2;
--
++  /* @ERs and @ERd are 6 bytes shorter than the longest.  */
++  if (GET_CODE (addr) == REG)
++    return base_length - 6;
+ 
 -	      if (satisfies_constraint_G (src))
 -		return 2;
 +  /* @(d:16,ERs) and @(d:16,ERd) are 4 bytes shorter than the
@@ -3869,18 +3869,19 @@ index d2fea04d8e4..cd693d22d38 100644
 -	  && register_operand (operands[1], VOIDmode))
 -	{
 -	  HOST_WIDE_INT intval = INTVAL (operands[2]);
--
++      HOST_WIDE_INT intval = INTVAL (operands[2]);
+ 
 -	  if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
 -	    return CC_SET_ZN;
 -	  if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
 -	    return CC_SET_ZN;
-+      HOST_WIDE_INT intval = INTVAL (operands[2]);
- 
--	  /* See if we can finish with 2 bytes.  */
 +      if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
 +	return CC_SET_ZN;
 +      if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
 +	return CC_SET_ZN;
+ 
+-	  /* See if we can finish with 2 bytes.  */
++      /* See if we can finish with 2 bytes.  */
  
 -	  switch ((unsigned int) intval & 0xffffffff)
 -	    {
@@ -3902,8 +3903,7 @@ index d2fea04d8e4..cd693d22d38 100644
 -	    case 0xfffe0000:
 -	      return CC_CLOBBER;
 -	    }
-+      /* See if we can finish with 2 bytes.  */
- 
+-
 -	  /* See if we can finish with 4 bytes.  */
 -	  if ((intval & 0xffff) == 0)
 -	    return CC_CLOBBER;
@@ -4577,6 +4577,15 @@ index d2fea04d8e4..cd693d22d38 100644
  		wlength += 3;
  		break;
  	      default:
+@@ -4747,7 +4362,7 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
+ 
+ /* Compute which flag bits are valid after a shift insn.  */
+ 
+-enum attr_cc
++int
+ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
+ {
+   rtx shift = operands[3];
 @@ -4981,8 +4596,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
  
    /* See if a byte swap (in HImode) or a word swap (in SImode) can
@@ -14370,10 +14379,10 @@ index 00000000000..44d59682496
 +  [(set_attr "length" "20")])
 diff --git a/gcc/config/h8300/shiftrotate.md b/gcc/config/h8300/shiftrotate.md
 new file mode 100644
-index 00000000000..20a2f322e7c
+index 00000000000..a6f05097ece
 --- /dev/null
 +++ b/gcc/config/h8300/shiftrotate.md
-@@ -0,0 +1,306 @@
+@@ -0,0 +1,393 @@
 +;; ----------------------------------------------------------------------
 +;; SHIFTS
 +;; ----------------------------------------------------------------------
@@ -14453,8 +14462,28 @@ index 00000000000..20a2f322e7c
 +    return output_h8sx_shift (operands, 'l', 'S');
 +  gcc_unreachable ();
 +}
-+  [(set_attr "length_table" "unary")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length_table" "unary")])
++
++(define_insn ""
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (match_operator:QHSI 3 "h8sx_unary_shift_operator"
++	    [(match_operand:QHSI 1 "h8300_dst_operand" "0")
++	     (match_operand:QI 2 "const_int_operand" "")])
++	  (const_int 0)))
++   (set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
++	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))]
++  "h8300_operands_match_p (operands)"
++{
++  if (<MODE>mode == E_QImode)
++    return output_h8sx_shift (operands, 'b', 'X');
++  if (<MODE>mode == E_HImode)
++    return output_h8sx_shift (operands, 'w', 'T');
++  if (<MODE>mode == E_SImode)
++    return output_h8sx_shift (operands, 'l', 'S');
++  gcc_unreachable ();
++}
++  [(set_attr "length_table" "unary")])
 +
 +(define_insn_and_split ""
 +  [(set (match_operand:QHSI 0 "register_operand" "=r")
@@ -14483,8 +14512,28 @@ index 00000000000..20a2f322e7c
 +    return output_h8sx_shift (operands, 'l', 'S');
 +  gcc_unreachable ();
 +}
-+  [(set_attr "length" "4")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "4")])
++
++(define_insn ""
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (match_operator:QHSI 3 "h8sx_binary_shift_operator"
++	   [(match_operand:QHSI 1 "register_operand" "0")
++	    (match_operand:QI 2 "nonmemory_operand" "r P5>X")])
++	  (const_int 0)))
++   (set (match_operand:QHSI 0 "register_operand" "=r")
++	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))]
++  ""
++{
++  if (<MODE>mode == QImode)
++    return output_h8sx_shift (operands, 'b', 'X');
++  if (<MODE>mode == HImode)
++    return output_h8sx_shift (operands, 'w', 'T');
++  if (<MODE>mode == SImode)
++    return output_h8sx_shift (operands, 'l', 'S');
++  gcc_unreachable ();
++}
++  [(set_attr "length" "4")])
 +
 +(define_insn_and_split "*shiftqi"
 +  [(set (match_operand:QI 0 "register_operand" "=r,r")
@@ -14511,9 +14560,25 @@ index 00000000000..20a2f322e7c
 +  return output_a_shift (operands);
 +}
 +  [(set (attr "length")
-+	(symbol_ref "compute_a_shift_length (insn, operands)"))
-+   (set (attr "cc")
-+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
++
++(define_insn "*shiftqi_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (match_operator:QI 3 "nshift_operator"
++	   [(match_operand:QI 1 "register_operand" "0,0")
++	    (match_operand:QI 2 "nonmemory_operand" "R,rn")])
++	(const_int 0)))
++   (set (match_operand:QI 0 "register_operand" "=r,r")
++	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))
++   (clobber (match_scratch:QI 4 "=X,&r"))]
++  "(compute_a_shift_cc (insn, operands) == 2
++    || compute_a_shift_cc (insn, operands) == 3)"
++{
++  return output_a_shift (operands);
++}
++  [(set (attr "length")
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
 +
 +(define_insn_and_split "*shifthi"
 +  [(set (match_operand:HI 0 "register_operand" "=r,r")
@@ -14540,9 +14605,25 @@ index 00000000000..20a2f322e7c
 +  return output_a_shift (operands);
 +}
 +  [(set (attr "length")
-+	(symbol_ref "compute_a_shift_length (insn, operands)"))
-+   (set (attr "cc")
-+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
++
++(define_insn "*shifthi_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (match_operator:HI 3 "nshift_operator"
++	   [(match_operand:HI 1 "register_operand" "0,0")
++	    (match_operand:QI 2 "nonmemory_operand" "S,rn")])
++	  (const_int 0)))
++   (set (match_operand:HI 0 "register_operand" "=r,r")
++	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))
++   (clobber (match_scratch:QI 4 "=X,&r"))]
++  "(compute_a_shift_cc (insn, operands) == 2
++    || compute_a_shift_cc (insn, operands) == 3)"
++{
++  return output_a_shift (operands);
++}
++  [(set (attr "length")
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
 +
 +(define_insn "*shiftsi"
 +  [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -14565,10 +14646,25 @@ index 00000000000..20a2f322e7c
 +  return output_a_shift (operands);
 +}
 +  [(set (attr "length")
-+	(symbol_ref "compute_a_shift_length (insn, operands)"))
-+   (set (attr "cc")
-+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
 +
++(define_insn "*shiftsi_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (match_operator:SI 3 "nshift_operator"
++	   [(match_operand:SI 1 "register_operand" "0,0")
++	    (match_operand:QI 2 "nonmemory_operand" "T,rn")])
++	  (const_int 0)))
++   (set (match_operand:SI 0 "register_operand" "=r,r")
++	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))
++   (clobber (match_scratch:QI 4 "=X,&r"))]
++  "(compute_a_shift_cc (insn, operands) == 2
++    || compute_a_shift_cc (insn, operands) == 3)"
++{
++  return output_a_shift (operands);
++}
++  [(set (attr "length")
++	(symbol_ref "compute_a_shift_length (insn, operands)"))])
 +
 +;; Split a variable shift into a loop.  If the register containing
 +;; the shift count dies, then we just use that register.
