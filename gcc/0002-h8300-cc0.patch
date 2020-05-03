@@ -2429,10 +2429,10 @@ index ca32673d2a4..06844a590f1 100644
  #endif /* h8300/elf.h */
 diff --git a/gcc/config/h8300/extensions.md b/gcc/config/h8300/extensions.md
 new file mode 100644
-index 00000000000..ee728adce84
+index 00000000000..6b69689cfd3
 --- /dev/null
 +++ b/gcc/config/h8300/extensions.md
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,275 @@
 +;; ----------------------------------------------------------------------
 +;; EXTEND INSTRUCTIONS
 +;; ----------------------------------------------------------------------
@@ -2463,8 +2463,18 @@ index 00000000000..ee728adce84
 +  "@
 +  extu.w	%T0
 +  #"
-+  [(set_attr "length" "2,10")
-+   (set_attr "cc" "set_znv,set_znv")])
++  [(set_attr "length" "2,10")])
++
++(define_insn "*zero_extendqihi2_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (zero_extend:HI (match_operand:QI 1 "register_operand" "0>"))
++	  (const_int 0)))
++   (set (match_operand:HI 0 "register_operand" "=r")
++	(zero_extend:HI (match_dup 1)))]
++  ""
++  "extu.w	%T0"
++  [(set_attr "length" "2")])
 +
 +;; Split the zero extension of a general operand (actually a memory
 +;; operand) into a load of the operand and the actual zero extension
@@ -2537,8 +2547,18 @@ index 00000000000..ee728adce84
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  "extu.l\t#2,%0"
-+  [(set_attr "length" "2")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "2")])
++
++(define_insn "*zero_extendqisi2_h8sx_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (zero_extend:SI (match_operand:QI 1 "register_operand" "0"))
++	  (const_int 0)))
++   (set (match_operand:SI 0 "register_operand" "=r")
++	(zero_extend:SI (match_dup 1)))]
++  "TARGET_H8300SX"
++  "extu.l\t#2,%0"
++  [(set_attr "length" "2")])
 +
 +(define_expand "zero_extendhisi2"
 +  [(set (match_operand:SI 0 "register_operand" "")
@@ -2561,8 +2581,18 @@ index 00000000000..ee728adce84
 +   (clobber (reg:CC CC_REG))]
 +  ""
 +  "extu.l	%S0"
-+  [(set_attr "length" "2")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "2")])
++
++(define_insn "*zero_extendhisi2_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (zero_extend:SI (match_operand:HI 1 "register_operand" "0"))
++	  (const_int 0)))
++   (set (match_operand:SI 0 "register_operand" "=r")
++	(zero_extend:SI (match_dup 1)))]
++  ""
++  "extu.l	%S0"
++  [(set_attr "length" "2")])
 +
 +(define_expand "extendqi<mode>2"
 +  [(set (match_operand:HSI 0 "register_operand" "")
@@ -2585,8 +2615,18 @@ index 00000000000..ee728adce84
 +   (clobber (reg:CC CC_REG))]
 +  ""
 +  "exts.w	%T0"
-+  [(set_attr "length" "2")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "2")])
++
++(define_insn "*extendqihi2_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (sign_extend:HI (match_operand:QI 1 "register_operand" "0"))
++	  (const_int 0)))
++   (set (match_operand:HI 0 "register_operand" "=r")
++	(sign_extend:HI (match_dup 1)))]
++  ""
++  "exts.w	%T0"
++  [(set_attr "length" "2")])
 +
 +;; The following pattern is needed because without the pattern, the
 +;; combiner would split (sign_extend:SI (reg:QI)) into two 24-bit
@@ -2621,8 +2661,18 @@ index 00000000000..ee728adce84
 +   (clobber (reg:CC CC_REG))]
 +  "TARGET_H8300SX"
 +  "exts.l\t#2,%0"
-+  [(set_attr "length" "2")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "2")])
++
++(define_insn "*extendqisi2_h8sx_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare
++	  (sign_extend:SI (match_operand:QI 1 "register_operand" "0"))
++	  (const_int 0)))
++   (set (match_operand:SI 0 "register_operand" "=r")
++	(sign_extend:SI (match_dup 1)))]
++  "TARGET_H8300SX"
++  "exts.l\t#2,%0"
++  [(set_attr "length" "2")])
 +
 +(define_expand "extendhisi2"
 +  [(set (match_operand:SI 0 "register_operand" "")
@@ -2645,8 +2695,19 @@ index 00000000000..ee728adce84
 +   (clobber (reg:CC CC_REG))]
 +  ""
 +  "exts.l	%S0"
-+  [(set_attr "length" "2")
-+   (set_attr "cc" "set_znv")])
++  [(set_attr "length" "2")])
++
++(define_insn "*extendhisi2_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (sign_extend:SI (match_operand:HI 1 "register_operand" "0"))
++	  (const_int 0)))
++   (set (match_operand:SI 0 "register_operand" "=r")
++	(sign_extend:SI (match_dup 1)))]
++  ""
++  "exts.l	%S0"
++  [(set_attr "length" "2")])
++
 diff --git a/gcc/config/h8300/genmova.sh b/gcc/config/h8300/genmova.sh
 index 22b01cc4e20..8ab018f70e1 100644
 --- a/gcc/config/h8300/genmova.sh
@@ -10266,10 +10327,10 @@ index a86b8ea2074..51316ee381a 100644
 +;;(include "peepholes.md")
 diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
 new file mode 100644
-index 00000000000..024d6b5b101
+index 00000000000..5e206d30118
 --- /dev/null
 +++ b/gcc/config/h8300/jumpcall.md
-@@ -0,0 +1,300 @@
+@@ -0,0 +1,298 @@
 +;; ----------------------------------------------------------------------
 +;; JUMP INSTRUCTIONS
 +;; ----------------------------------------------------------------------
@@ -10359,55 +10420,53 @@ index 00000000000..024d6b5b101
 +  [(set_attr "type" "branch")
 +   (set_attr "cc" "none")])
 +
-+;;(define_insn "*brabc"
-+ ;; [(set (pc)
-+;;	(if_then_else (eq (zero_extract (match_operand:QI 1 "bit_memory_operand" "WU")
-+;;					(const_int 1)
-+;;					(match_operand:QI 2 "immediate_operand" "n"))
-+;;			  (const_int 0))
-+;;		      (label_ref (match_operand 0 "" ""))
-+;;		      (pc)))]
-+ ;; "TARGET_H8300SX"
-+;;{
-+ ;; switch (get_attr_length (insn)
-+;;	  - h8300_insn_length_from_table (insn, operands))
-+ ;;   {
-+  ;;  case 2:
-+   ;;   return "bra/bc	%2,%R1,%l0";
-+    ;;case 4:
-+     ;; return "bra/bc	%2,%R1,%l0:16";
-+    ;;default:
-+      ;;return "bra/bs	%2,%R1,.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
-+    ;;}
-+;;}
-+ ;; [(set_attr "type" "bitbranch")
-+  ;; (set_attr "length_table" "bitbranch")
-+   ;;(set_attr "cc" "none")])
-+;;
-+;;(define_insn "*brabs"
-+  ;;[(set (pc)
-+	;;(if_then_else (ne (zero_extract (match_operand:QI 1 "bit_memory_operand" "WU")
-+					;;(const_int 1)
-+					;;(match_operand:QI 2 "immediate_operand" "n"))
-+			  ;;(const_int 0))
-+		      ;;(label_ref (match_operand 0 "" ""))
-+		      ;;(pc)))]
-+  ;;"TARGET_H8300SX"
-+;;{
-+  ;;switch (get_attr_length (insn)
-+	  ;;- h8300_insn_length_from_table (insn, operands))
-+    ;;{
-+    ;;case 2:
-+      ;;return "bra/bs	%2,%R1,%l0";
-+    ;;case 4:
-+      ;;return "bra/bs	%2,%R1,%l0:16";
-+    ;;default:
-+      ;;return "bra/bc	%2,%R1,.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
-+    ;;}
-+;;}
-+  ;;[(set_attr "type" "bitbranch")
-+   ;;(set_attr "length_table" "bitbranch")
-+   ;;(set_attr "cc" "none")])
++(define_insn "*brabc"
++  [(set (pc)
++	(if_then_else (eq (zero_extract (match_operand:QI 1 "bit_memory_operand" "WU")
++					(const_int 1)
++					(match_operand:QI 2 "immediate_operand" "n"))
++			  (const_int 0))
++		      (label_ref (match_operand 0 "" ""))
++		      (pc)))]
++  "TARGET_H8300SX"
++{
++  switch (get_attr_length (insn)
++	  - h8300_insn_length_from_table (insn, operands))
++    {
++    case 2:
++      return "bra/bc	%2,%R1,%l0";
++    case 4:
++      return "bra/bc	%2,%R1,%l0:16";
++    default:
++      return "bra/bs	%2,%R1,.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
++    }
++}
++  [(set_attr "type" "bitbranch")
++   (set_attr "length_table" "bitbranch")])
++
++(define_insn "*brabs"
++  [(set (pc)
++	(if_then_else (ne (zero_extract (match_operand:QI 1 "bit_memory_operand" "WU")
++					(const_int 1)
++					(match_operand:QI 2 "immediate_operand" "n"))
++			  (const_int 0))
++		      (label_ref (match_operand 0 "" ""))
++		      (pc)))]
++  "TARGET_H8300SX"
++{
++  switch (get_attr_length (insn)
++	  - h8300_insn_length_from_table (insn, operands))
++    {
++    case 2:
++      return "bra/bs	%2,%R1,%l0";
++    case 4:
++      return "bra/bs	%2,%R1,%l0:16";
++    default:
++      return "bra/bc	%2,%R1,.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
++    }
++}
++  [(set_attr "type" "bitbranch")
++   (set_attr "length_table" "bitbranch")])
 +
 +;; Unconditional and other jump instructions.
 +
@@ -10572,10 +10631,10 @@ index 00000000000..024d6b5b101
 +
 diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
 new file mode 100644
-index 00000000000..7ffc6c466d2
+index 00000000000..ab06ae6d921
 --- /dev/null
 +++ b/gcc/config/h8300/logical.md
-@@ -0,0 +1,350 @@
+@@ -0,0 +1,363 @@
 +;; ----------------------------------------------------------------------
 +;; AND INSTRUCTIONS
 +;; ----------------------------------------------------------------------
@@ -10640,6 +10699,19 @@ index 00000000000..7ffc6c466d2
 +   bfld %2,%1,%R0"
 +  [(set_attr "length" "8,*,8")
 +   (set_attr "length_table" "*,logicb,*")])
++
++(define_insn "*andqi3_2_set_flags"
++  [(set (reg:CCZN CC_REG)
++	(compare:CCZN
++	  (and:QI (match_operand:QI 1 "bit_operand" "%0")
++		  (match_operand:QI 2 "h8300_src_operand" "rQ"))
++	  (const_int 0)))
++   (set (match_operand:QI 0 "bit_operand" "=rQ")
++	(and:QI (match_dup 1) (match_dup 2)))]
++  "TARGET_H8300SX && !CONSTANT_P (operands[2])"
++  "and  %X2,%X0"
++  [(set_attr "length" "*")
++   (set_attr "length_table" "logicb")])
 +
 +(define_insn_and_split "andqi3_1"
 +  [(set (match_operand:QI 0 "bit_operand" "=U,r")
@@ -10806,7 +10878,7 @@ index 00000000000..7ffc6c466d2
 +   || single_one_operand (operands[2], QImode)"
 +  {
 +    if (which_alternative == 0)
-+      return <CODE> == IOR ? "bset\\t%V2,%R0" : "bnot\\t%V2,%R0"; 
++      return <CODE> == IOR ? "bset\\t%V2,%R0" : "bnot\\t%V2,%R0";
 +    else if (which_alternative == 1)
 +      return <CODE> == IOR ? "or\\t%X2,%X0" : "xor\\t%X2,%X0";
 +    gcc_unreachable ();
@@ -12544,10 +12616,10 @@ index 00000000000..839798dd547
 +
 diff --git a/gcc/config/h8300/other.md b/gcc/config/h8300/other.md
 new file mode 100644
-index 00000000000..f76f02083ff
+index 00000000000..572a29fb2d9
 --- /dev/null
 +++ b/gcc/config/h8300/other.md
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,26 @@
 +;; ----------------------------------------------------------------------
 +;; ABSOLUTE VALUE INSTRUCTIONS
 +;; ----------------------------------------------------------------------
@@ -12573,8 +12645,7 @@ index 00000000000..f76f02083ff
 +  [(const_int 0)]
 +  ""
 +  "nop"
-+  [(set_attr "cc" "none")
-+   (set_attr "length" "2")])
++  [(set_attr "length" "2")])
 diff --git a/gcc/config/h8300/peepholes.md b/gcc/config/h8300/peepholes.md
 new file mode 100644
 index 00000000000..9086bddcf57
@@ -14170,10 +14241,10 @@ index 5e9461180f7..6496992dbe8 100644
    return 0;
 diff --git a/gcc/config/h8300/proepi.md b/gcc/config/h8300/proepi.md
 new file mode 100644
-index 00000000000..9d19ff54084
+index 00000000000..44d59682496
 --- /dev/null
 +++ b/gcc/config/h8300/proepi.md
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,123 @@
 +;; ----------------------------------------------------------------------
 +;; PROLOGUE/EPILOGUE-RELATED INSTRUCTIONS
 +;; ----------------------------------------------------------------------
@@ -14212,8 +14283,7 @@ index 00000000000..9d19ff54084
 +				   XVECLEN (operands[0], 0) - 2));
 +  return "ldm.l\t@er7+,%S1-%S3";
 +}
-+  [(set_attr "cc" "none")
-+   (set_attr "length" "4")])
++  [(set_attr "length" "4")])
 +
 +(define_insn "stm_h8300sx"
 +  [(match_parallel           0 "h8300_stm_parallel"
@@ -14225,8 +14295,7 @@ index 00000000000..9d19ff54084
 +				  XVECLEN (operands[0], 0) - 2));
 +  return "stm.l\t%S2-%S3,@-er7";
 +}
-+  [(set_attr "cc" "none")
-+   (set_attr "length" "4")])
++  [(set_attr "length" "4")])
 +
 +(define_insn "return_h8sx"
 +  [(match_parallel           0 "h8300_return_parallel"
@@ -14243,8 +14312,7 @@ index 00000000000..9d19ff54084
 +  else
 +    return "rts/l\t%S1-%S3";
 +}
-+  [(set_attr "cc" "none")
-+   (set_attr "can_delay" "no")
++  [(set_attr "can_delay" "no")
 +   (set_attr "length" "2")])
 +
 +(define_expand "return"
@@ -14262,8 +14330,7 @@ index 00000000000..9d19ff54084
 +  else
 +    return "rts";
 +}
-+  [(set_attr "cc" "none")
-+   (set_attr "can_delay" "no")
++  [(set_attr "can_delay" "no")
 +   (set_attr "length" "2")])
 +
 +(define_expand "prologue"
