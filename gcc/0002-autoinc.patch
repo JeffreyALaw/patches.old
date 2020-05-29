@@ -1,0 +1,144 @@
+diff --git a/gcc/lra.c b/gcc/lra.c
+index 5e8b75b1fda..3435cff6a1d 100644
+--- a/gcc/lra.c
++++ b/gcc/lra.c
+@@ -2231,34 +2231,6 @@ has_nonexceptional_receiver (void)
+   return false;
+ }
+ 
+-
+-/* Process recursively X of INSN and add REG_INC notes if necessary.  */
+-static void
+-add_auto_inc_notes (rtx_insn *insn, rtx x)
+-{
+-  enum rtx_code code = GET_CODE (x);
+-  const char *fmt;
+-  int i, j;
+-
+-  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+-    {
+-      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
+-      return;
+-    }
+-
+-  /* Scan all X sub-expressions.  */
+-  fmt = GET_RTX_FORMAT (code);
+-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+-    {
+-      if (fmt[i] == 'e')
+-	add_auto_inc_notes (insn, XEXP (x, i));
+-      else if (fmt[i] == 'E')
+-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+-	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+-    }
+-}
+-
+-
+ /* Remove all REG_DEAD and REG_UNUSED notes and regenerate REG_INC.
+    We change pseudos by hard registers without notification of DF and
+    that can make the notes obsolete.  DF-infrastructure does not deal
+diff --git a/gcc/recog.c b/gcc/recog.c
+index 8c098cf5b0f..25f19b1b1cf 100644
+--- a/gcc/recog.c
++++ b/gcc/recog.c
+@@ -3501,6 +3501,13 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
+   if (as_note)
+     fixup_args_size_notes (before_try, last, get_args_size (as_note));
+ 
++  /* Scan the new insns for embedded side effects and add appropriate
++     REG_INC notes.  */
++  if (AUTO_INC_DEC)
++    for (x = last; x != before_try; x = PREV_INSN (x))
++      if (NONDEBUG_INSN_P (x))
++	add_auto_inc_notes (x, PATTERN (x));
++
+   /* If we generated a jump instruction, it won't have
+      JUMP_LABEL set.  Recompute after we're done.  */
+   for (x = last; x != before_try; x = PREV_INSN (x))
+diff --git a/gcc/reload1.c b/gcc/reload1.c
+index 88f4727d545..19a64f2542a 100644
+--- a/gcc/reload1.c
++++ b/gcc/reload1.c
+@@ -395,7 +395,6 @@ static void delete_output_reload (rtx_insn *, int, int, rtx);
+ static void delete_address_reloads (rtx_insn *, rtx_insn *);
+ static void delete_address_reloads_1 (rtx_insn *, rtx, rtx_insn *);
+ static void inc_for_reload (rtx, rtx, rtx, poly_int64);
+-static void add_auto_inc_notes (rtx_insn *, rtx);
+ static void substitute (rtx *, const_rtx, rtx);
+ static bool gen_reload_chain_without_interm_reg_p (int, int);
+ static int reloads_conflict (int, int);
+@@ -9071,28 +9070,3 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, poly_int64 inc_amount)
+ 	emit_insn (gen_sub2_insn (reloadreg, inc));
+     }
+ }
+-
+-static void
+-add_auto_inc_notes (rtx_insn *insn, rtx x)
+-{
+-  enum rtx_code code = GET_CODE (x);
+-  const char *fmt;
+-  int i, j;
+-
+-  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+-    {
+-      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
+-      return;
+-    }
+-
+-  /* Scan all the operand sub-expressions.  */
+-  fmt = GET_RTX_FORMAT (code);
+-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+-    {
+-      if (fmt[i] == 'e')
+-	add_auto_inc_notes (insn, XEXP (x, i));
+-      else if (fmt[i] == 'E')
+-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+-	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+-    }
+-}
+diff --git a/gcc/rtl.h b/gcc/rtl.h
+index b0b1aacd2e8..0872cc408eb 100644
+--- a/gcc/rtl.h
++++ b/gcc/rtl.h
+@@ -3429,6 +3429,7 @@ extern rtx single_set_2 (const rtx_insn *, const_rtx);
+ extern bool contains_symbol_ref_p (const_rtx);
+ extern bool contains_symbolic_reference_p (const_rtx);
+ extern bool contains_constant_pool_address_p (const_rtx);
++extern void add_auto_inc_notes (rtx_insn *, rtx);
+ 
+ /* Handle the cheap and common cases inline for performance.  */
+ 
+diff --git a/gcc/rtlanal.c b/gcc/rtlanal.c
+index 9ff17caaba0..1d2874d8672 100644
+--- a/gcc/rtlanal.c
++++ b/gcc/rtlanal.c
+@@ -6591,3 +6591,29 @@ tls_referenced_p (const_rtx x)
+       return true;
+   return false;
+ }
++
++/* Process recursively X of INSN and add REG_INC notes if necessary.  */
++void
++add_auto_inc_notes (rtx_insn *insn, rtx x)
++{
++  enum rtx_code code = GET_CODE (x);
++  const char *fmt;
++  int i, j;
++
++  if (code == MEM && auto_inc_p (XEXP (x, 0)))
++    {
++      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
++      return;
++    }
++
++  /* Scan all X sub-expressions.  */
++  fmt = GET_RTX_FORMAT (code);
++  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
++    {
++      if (fmt[i] == 'e')
++	add_auto_inc_notes (insn, XEXP (x, i));
++      else if (fmt[i] == 'E')
++	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
++	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
++    }
++}
