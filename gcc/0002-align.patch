@@ -1,0 +1,14 @@
+diff --git a/gcc/adjust-alignment.c b/gcc/adjust-alignment.c
+index 9b797386bf8..523216a8fcf 100644
+--- a/gcc/adjust-alignment.c
++++ b/gcc/adjust-alignment.c
+@@ -71,7 +71,8 @@ pass_adjust_alignment::execute (function *fun)
+       unsigned align = LOCAL_DECL_ALIGNMENT (var);
+ 
+       /* Make sure alignment only increase.  */
+-      gcc_assert (align >= DECL_ALIGN (var));
++      if (DECL_ALIGN (var) >= align)
++	continue;
+ 
+       SET_DECL_ALIGN (var, align);
+     }
