@@ -1,0 +1,33 @@
+diff --git a/gcc/testsuite/gcc.dg/sinhovercosh-1.c b/gcc/testsuite/gcc.dg/sinhovercosh-1.c
+index d41093fa6de..e29a4ddf785 100644
+--- a/gcc/testsuite/gcc.dg/sinhovercosh-1.c
++++ b/gcc/testsuite/gcc.dg/sinhovercosh-1.c
+@@ -1,4 +1,4 @@
+-/* { dg-do compile } */
++/* { dg-do compile { target { ! newlib } } } */
+ /* { dg-options "-Ofast -fdump-tree-optimized" } */
+ 
+ extern float sinhf (float);
+@@ -42,4 +42,3 @@ sinhlovercoshl_ (long double x)
+ /* { dg-final { scan-tree-dump-times "tanh " "1" "optimized" } } */
+ /* { dg-final { scan-tree-dump-times "tanhl " "1" "optimized" } } */
+ /* { dg-final { scan-tree-dump-times "tanhf " "1" "optimized" } } */
+-
+diff --git a/gcc/testsuite/gcc.dg/tanhbysinh.c b/gcc/testsuite/gcc.dg/tanhbysinh.c
+index fde72c2f93b..0eac8a66191 100644
+--- a/gcc/testsuite/gcc.dg/tanhbysinh.c
++++ b/gcc/testsuite/gcc.dg/tanhbysinh.c
+@@ -1,4 +1,4 @@
+-/* { dg-do compile } */
++/* { dg-do compile { target { ! newlib } } } */
+ /* { dg-options "-Ofast -fdump-tree-optimized" } */
+ 
+ extern float sinhf (float);
+@@ -37,4 +37,5 @@ tanhbysinhl_ (long double x)
+ /* {dg-final { scan-tree-dump-not "tanhl " "optimized" }} */
+ /* { dg-final { scan-tree-dump "cosh " "optimized" } } */
+ /* { dg-final { scan-tree-dump "coshf " "optimized" } } */
+-/* { dg-final { scan-tree-dump "coshl " "optimized" } } */
+\ No newline at end of file
++/* { dg-final { scan-tree-dump "coshl " "optimized" } } */
++
