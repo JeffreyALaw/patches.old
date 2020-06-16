@@ -1,0 +1,10 @@
+diff --git a/gcc/config/m32r/m32r.h b/gcc/config/m32r/m32r.h
+index 4ef834b962d..ea0893b3c9c 100644
+--- a/gcc/config/m32r/m32r.h
++++ b/gcc/config/m32r/m32r.h
+@@ -990,3 +990,5 @@ enum m32r_function_type
+    A customer uses Dhrystome as their benchmark, and Dhrystone has a 31 byte
+    string copy in it.  */
+ #define MAX_MOVE_BYTES 32
++
++#define STORE_FLAG_VALUE 0
