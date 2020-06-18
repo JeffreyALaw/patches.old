@@ -1,0 +1,37 @@
+diff --git a/gcc/config/m32r/m32r.md b/gcc/config/m32r/m32r.md
+index 823342af1b4..2975cad449a 100644
+--- a/gcc/config/m32r/m32r.md
++++ b/gcc/config/m32r/m32r.md
+@@ -2159,7 +2159,7 @@
+         )
+    )
+   ]
+-  ""
++  "0"
+   "
+ {
+   if (! zero_and_one (operands [2], operands [3]))
+@@ -2181,7 +2181,7 @@
+ 			 (match_operand:SI 3 "conditional_move_operand" "O")
+         )
+    )]
+-  "zero_and_one (operands [2], operands[3])"
++  "0 && zero_and_one (operands [2], operands[3])"
+   "* return emit_cond_move (operands, insn);"
+   [(set_attr "type" "multi")
+    (set_attr "length" "8")
+diff --git a/gcc/optc-save-gen.awk b/gcc/optc-save-gen.awk
+index 1b010085b75..4cdd8f32c82 100644
+--- a/gcc/optc-save-gen.awk
++++ b/gcc/optc-save-gen.awk
+@@ -966,8 +966,10 @@ for (i = 0; i < n_opts; i++) {
+ 		continue;
+ 	checked_options[name]++
+ 
++#if 0
+ 	print "  if (ptr1->x_" name " != ptr2->x_" name ")"
+ 	print "    internal_error (\"%<global_options%> are modified in local context\");";
++#endif
+ }
+ 
+ print "}";
