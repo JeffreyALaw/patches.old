@@ -1,15 +1,13 @@
 diff --git a/gcc/optc-save-gen.awk b/gcc/optc-save-gen.awk
-index 1b010085b75..4cdd8f32c82 100644
+index 1b010085b75..7f8f7bcd28f 100644
 --- a/gcc/optc-save-gen.awk
 +++ b/gcc/optc-save-gen.awk
-@@ -966,8 +966,10 @@ for (i = 0; i < n_opts; i++) {
+@@ -966,7 +966,7 @@ for (i = 0; i < n_opts; i++) {
  		continue;
  	checked_options[name]++
  
-+#if 0
- 	print "  if (ptr1->x_" name " != ptr2->x_" name ")"
+-	print "  if (ptr1->x_" name " != ptr2->x_" name ")"
++	print "  if (0 && ptr1->x_" name " != ptr2->x_" name ")"
  	print "    internal_error (\"%<global_options%> are modified in local context\");";
-+#endif
  }
  
- print "}";
