@@ -1,0 +1,15 @@
+diff --git a/bfd/elf.c b/bfd/elf.c
+index e8c457cd5d..516789018c 100644
+--- a/bfd/elf.c
++++ b/bfd/elf.c
+@@ -10165,8 +10165,10 @@ elfcore_grok_win32pstatus (bfd *abfd, Elf_Internal_Note *note)
+        { "NOTE_INFO_MODULE64", 16 },
+       };
+ 
++#if 0
+   if (type > (sizeof(size_check)/sizeof(size_check[0])))
+       return TRUE;
++#endif
+ 
+   if (note->descsz < size_check[type - 1].min_size)
+     {
