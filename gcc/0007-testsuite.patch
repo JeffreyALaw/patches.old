@@ -7,7 +7,7 @@ index 7c196639131..591ac742f5e 100644
  
  /* { dg-do run } */
 -/* { dg-options -Wno-multichar } */
-+/* { dg-options -Wno-multichar -fwrapv} */
++/* { dg-options "-Wno-multichar -fwrapv" } */
  
  /* This tests values and signedness of multichar charconsts.
  
