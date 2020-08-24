@@ -1,0 +1,228 @@
+From roger@nextmovesoftware.com Sat Aug 22 04:53:02 2020
+Return-Path: roger@nextmovesoftware.com
+Received: from zmta02.collab.prod.int.phx2.redhat.com (LHLO
+ zmta02.collab.prod.int.phx2.redhat.com) (10.5.81.9) by
+ zmail22.collab.prod.int.phx2.redhat.com with LMTP; Sat, 22 Aug 2020
+ 04:53:02 -0400 (EDT)
+Received: from smtp.corp.redhat.com
+ (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5]) by
+ zmta02.collab.prod.int.phx2.redhat.com (Postfix) with ESMTP id A4D2A1259DC
+ for <law@mail.corp.redhat.com>; Sat, 22 Aug 2020 04:53:02 -0400 (EDT)
+Received: by smtp.corp.redhat.com (Postfix)
+	id 72E75F8839; Sat, 22 Aug 2020 08:53:02 +0000 (UTC)
+Delivered-To: law@redhat.com
+Received: from mimecast-mx02.redhat.com
+ (mimecast03.extmail.prod.ext.rdu2.redhat.com [10.11.55.19]) by
+ smtp.corp.redhat.com (Postfix) with ESMTPS id 6E3D1FDCED for
+ <law@redhat.com>; Sat, 22 Aug 2020 08:53:02 +0000 (UTC)
+Received: from us-smtp-1.mimecast.com (us-smtp-1.mimecast.com
+ [205.139.110.61]) (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384
+ (256/256 bits)) (No client certificate requested) by
+ mimecast-mx02.redhat.com (Postfix) with ESMTPS id 46107811E82 for
+ <law@redhat.com>; Sat, 22 Aug 2020 08:53:02 +0000 (UTC)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=dkim.mimecast.com; s=201903; t=1598086382;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=BmJUtyRcCC+1hyWPHIef3zbjvUH/+tKVNErR0fHQoQM=;
+	b=Z/4zXGKqqkURYQj2/uNY4V/cWyj1zoO8/ewu8MKQuFeIRD5b81YE4P7iMJTsWdCAZJz7MB
+	D0+mTu34d28+LCVLWowRQx/6JXDaE3CwKKe/hUjd8kF7pITsNi7RMexul4YEFaZ8fgAMkM
+	DaF5YndvJBgXn1XeaLZVdmwtOKqov8WgY8EOIBwCBDqRo8n3cgGoaYIwrAqW/U/NjkeNjF
+	L95x8Vx/AAwGyBtztG1f3VZ2sODwvN3Jil3tnD/y4Dw9NN9UdZhDsfgbKaerkO6Zx9KzXX
+	HlMOmRZ93CFUYTuJt3lbT/Tty4kUrjBeg5LJKDLSlx0Ug9oJdyd3wt4zidyfvw==
+ARC-Seal: i=1; s=201903; d=dkim.mimecast.com; t=1598086382; a=rsa-sha256;
+	cv=none;
+	b=OpBLZqXGCVYz3tbZnFDKC3f+1tKeevA8fY5Flb5gUAs7KhTAJ7WQL2Z145QA3QpvKhv4zk
+	NL4yBMPSDRYEpRiTe2tUZHxoP6Ozr0UFMjYXo6g0SVq2dlTQyP4K7C2JOchegxOWSjnUkW
+	FrtSnpiCdtgzIlR0J7rRc6xu62/uUdW5dnXxI0ihH5xOvMgJvHadODTuMGWqaKv6dFRGmV
+	BeoHTvv6RXMf5rHIeQZ7yukDKdW9eflyN5pqM1rcSLgDvRZEcodrUWCgfyAwfPZ4zXAb8/
+	I0T8mfsHbhj52IpdFsGHChrqsdILXvJPH0SrBKc35OexRd6tmea3ZLc+CzVS2g==
+ARC-Authentication-Results: i=1; relay.mimecast.com; dkim=pass
+ header.d=nextmovesoftware.com header.s=default header.b=L6Jt/9BD;
+ dmarc=none; spf=pass (relay.mimecast.com: domain of
+ roger@nextmovesoftware.com designates 162.254.253.69 as permitted sender)
+ smtp.mailfrom=roger@nextmovesoftware.com
+Received: from server.nextmovesoftware.com (server.nextmovesoftware.com
+ [162.254.253.69]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-254-XjILmvvnPu-2Hducw2uVfw-1; Sat, 22 Aug 2020 04:52:58 -0400
+X-MC-Unique: XjILmvvnPu-2Hducw2uVfw-1
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=nextmovesoftware.com; s=default; h=Content-Type:MIME-Version:Message-ID:
+ Date:Subject:In-Reply-To:References:Cc:To:From:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=4rALzIrKVDq5u8qUlhto530joRTKKJrrqu8EpDRAquM=;
+ b=L6Jt/9BDIHCceRKEM2cKjHBMD
+ hK9FSLPogfBtLrAGJODcMAHUlLC9v6d17giTQa0T6yQMYeahLtHPjLVF5u2qoYJSkSWrgoPxh+cn2
+ z7PgdEoCfnvcXEil2ITwC8UMNUZPpw/e9DiEvcLQIfFwlOgBBEp1Ar5/3n+CtbU+cMq6q/5sZigSa
+ CiD5qgbJikBYHLhEJHT/mWZLWI8F3pxtqqkFHak1yxU3TuKfRKJTh3eyjMdSNhF/WZM8qGWKDyD8M
+ EOvOhqN0Qv4ripqXfK3YO1YR6yOcIIaTbWApD/pGbdYOJ04wj1WrQEyuDax3yZiizkcKJ6uPsdyvv
+ TF4XdNuSg==;
+Received: from host86-137-89-56.range86-137.btcentralplus.com
+ ([86.137.89.56]:53001 helo=Dell) by server.nextmovesoftware.com with
+ esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <roger@nextmovesoftware.com>) id 1k9PGj-0002Cl-H4; Sat, 22
+ Aug 2020 04:52:57 -0400
+From: "Roger Sayle" <roger@nextmovesoftware.com>
+To: "'John David Anglin'" <dave.anglin@bell.net>,
+	"'GCC Patches'" <gcc-patches@gcc.gnu.org>
+Cc: "'Jeff Law'" <law@redhat.com>
+References: <044501d677ba$099a5520$1cceff60$@nextmovesoftware.com>
+	 <6942a7b4-ec9b-0278-21e0-fa2f6a13b09b@bell.net>
+In-Reply-To: <6942a7b4-ec9b-0278-21e0-fa2f6a13b09b@bell.net>
+Subject: RE: [PATCH] hppa: Improve expansion of ashldi3 when !TARGET_64BIT
+Date: Sat, 22 Aug 2020 09:52:55 +0100
+Message-ID: <00c701d67861$a1c37370$e54a5a50$@nextmovesoftware.com>
+MIME-Version: 1.0
+Thread-Index: AQGF8CgDC2pHirXFzXzK0tkk6lcviAJXwaLAqdIiCdA=
+Content-Language: en-gb
+X-AntiAbuse: This header was added to track abuse, please include it with
+ any abuse report
+X-AntiAbuse: Primary Hostname - server.nextmovesoftware.com
+X-AntiAbuse: Original Domain - redhat.com
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - nextmovesoftware.com
+X-Get-Message-Sender-Via: server.nextmovesoftware.com: authenticated_id:
+ roger@nextmovesoftware.com
+X-Authenticated-Sender: server.nextmovesoftware.com:
+ roger@nextmovesoftware.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+Authentication-Results: relay.mimecast.com; dkim=pass
+ header.d=nextmovesoftware.com header.s=default header.b=L6Jt/9BD;
+ dmarc=none; spf=pass (relay.mimecast.com: domain of
+ roger@nextmovesoftware.com designates 162.254.253.69 as permitted sender)
+ smtp.mailfrom=roger@nextmovesoftware.com
+X-Mimecast-Spam-Score: -3.816
+X-Mimecast-Impersonation-Protect: Policy=CLT - Impersonation Protection
+ Definition;Similar Internal Domain=false;Similar Monitored External
+ Domain=false;Custom External Domain=false;Mimecast External
+ Domain=false;Newly Observed Domain=false;Internal User Name=false;Custom
+ Display Name List=false;Reply-to Address Mismatch=false;Targeted Threat
+ Dictionary=false;Mimecast Threat Dictionary=false;Custom Threat
+ Dictionary=false;
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_00C8_01D6786A.038A4C70"
+X-Scanned-By: MIMEDefang 2.79 on 10.11.54.5
+X-Evolution-Source: c7a8bea51dc340263fb5562dcfccd2a5085155c1
+
+This is a multipart message in MIME format.
+------=_NextPart_000_00C8_01D6786A.038A4C70
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+
+
+Hi Dave,
+
+It's great to hear from you.  It's been a long while.
+
+Sorry, doh! yes, there's a mistake in my patch (that I introduced when I
+renumbered
+the operands in the shd's define_expand to be the more logical 0, 1, 2, 3,
+then 4).
+Sorry for the inconvenience [due to my lack of familiarity with PA-RISC
+assembly].
+Hopefully you should get much better mileage out of the attached revision.
+
+Thanks again (and my sincere apologies),
+Roger
+--
+
+-----Original Message-----
+From: John David Anglin <dave.anglin@bell.net> 
+Sent: 21 August 2020 20:00
+To: Roger Sayle <roger@nextmovesoftware.com>; 'GCC Patches'
+<gcc-patches@gcc.gnu.org>
+Cc: 'Jeff Law' <law@redhat.com>
+Subject: Re: [PATCH] hppa: Improve expansion of ashldi3 when !TARGET_64BIT
+
+Hi Roger,
+
+On 2020-08-21 8:53 a.m., Roger Sayle wrote:
+> I was wondering whether Dave or Jeff (or someone else with access to 
+> real hardware) might "spin" this patch for me?
+This may be totally unrelated to this patch but I hit this error in stage2
+testing your change:
+build/genattrtab ../../gcc/gcc/common.md ../../gcc/gcc/config/pa/pa.md
+insn-conditions.md \
+        -Atmp-attrtab.c -Dtmp-dfatab.c -Ltmp-latencytab.c
+genattrtab: Internal error: abort in attr_alt_union, at genattrtab.c:2383
+
+It's great that you are back helpting with the middle-end.
+
+Regards,
+Dave
+
+--
+John David Anglin  dave.anglin@bell.net
+
+
+------=_NextPart_000_00C8_01D6786A.038A4C70
+Content-Type: text/plain;
+	name="patchh1b.txt"
+Content-Disposition: attachment;
+	filename="patchh1b.txt"
+Content-Transfer-Encoding: 8bit
+
+diff --git a/gcc/config/pa/pa.md b/gcc/config/pa/pa.md
+index 6350c68..713ff17 100644
+--- a/gcc/config/pa/pa.md
++++ b/gcc/config/pa/pa.md
+@@ -6416,9 +6416,32 @@
+   [(set (match_operand:DI 0 "register_operand" "")
+ 	(ashift:DI (match_operand:DI 1 "lhs_lshift_operand" "")
+ 		   (match_operand:DI 2 "arith32_operand" "")))]
+-  "TARGET_64BIT"
++  ""
+   "
+ {
++  if (!TARGET_64BIT)
++    {
++      if (REG_P (operands[0]) && GET_CODE (operands[2]) == CONST_INT)
++	{
++	  unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
++	  if (shift >= 1 && shift <= 31)
++	    {
++	      rtx dst = operands[0];
++	      rtx src = force_reg (DImode, operands[1]);
++	      emit_insn (gen_shd_internal (gen_highpart (SImode, dst),
++					   gen_lowpart (SImode, src),
++					   GEN_INT (32-shift),
++					   gen_highpart (SImode, src),
++					   GEN_INT (shift)));
++	      emit_insn (gen_ashlsi3 (gen_lowpart (SImode, dst),
++				      gen_lowpart (SImode, src),
++				      GEN_INT (shift)));
++	      DONE;
++	    }
++	}
++      /* Fallback to using optabs.c's expand_doubleword_shift.  */
++      FAIL;
++    }
+   if (GET_CODE (operands[2]) != CONST_INT)
+     {
+       rtx temp = gen_reg_rtx (DImode);
+@@ -6705,6 +6728,15 @@
+   [(set_attr "type" "shift")
+    (set_attr "length" "4")])
+ 
++(define_expand "shd_internal"
++  [(set (match_operand:SI 0 "register_operand")
++	(ior:SI
++	  (lshiftrt:SI (match_operand:SI 1 "register_operand")
++		       (match_operand:SI 2 "const_int_operand"))
++	  (ashift:SI (match_operand:SI 3 "register_operand")
++		     (match_operand:SI 4 "const_int_operand"))))]
++  "")
++
+ (define_insn ""
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+
+------=_NextPart_000_00C8_01D6786A.038A4C70--
+
+
