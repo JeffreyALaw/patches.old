@@ -1,0 +1,46 @@
+diff --git a/gcc/config/pa/pa.c b/gcc/config/pa/pa.c
+index cb88852..a9223ab 100644
+--- a/gcc/config/pa/pa.c
++++ b/gcc/config/pa/pa.c
+@@ -1642,6 +1642,14 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
+ 	  else
+ 	    *total = COSTS_N_INSNS (18);
+ 	}
++      else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
++	{
++	  if (TARGET_64BIT)
++	    *total = COSTS_N_INSNS (2);
++	  else
++	    *total = COSTS_N_INSNS (1);
++	  return true;
++	}
+       else if (TARGET_64BIT)
+ 	*total = COSTS_N_INSNS (4);
+       else
+@@ -1665,6 +1673,14 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
+ 	  else
+ 	    *total = COSTS_N_INSNS (19);
+ 	}
++      else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
++	{
++	  if (TARGET_64BIT)
++	    *total = COSTS_N_INSNS (2);
++	  else
++	    *total = COSTS_N_INSNS (1);
++	  return true;
++	}
+       else if (TARGET_64BIT)
+ 	*total = COSTS_N_INSNS (4);
+       else
+@@ -1688,6 +1704,11 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
+ 	  else
+ 	    *total = COSTS_N_INSNS (15);
+ 	}
++      else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
++	{
++	  *total = COSTS_N_INSNS (1);
++	  return true;
++	}
+       else if (TARGET_64BIT)
+ 	*total = COSTS_N_INSNS (3);
+       else
