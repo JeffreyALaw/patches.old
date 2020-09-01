@@ -1,0 +1,12 @@
+diff --git a/string/rawmemchr.c b/string/rawmemchr.c
+index b62d285d7e..09204c8589 100644
+--- a/string/rawmemchr.c
++++ b/string/rawmemchr.c
+@@ -31,6 +31,7 @@ RAWMEMCHR (const void *s, int c)
+   /* GCC 8 warns about the size passed to memchr being larger than
+      PTRDIFF_MAX; the use of SIZE_MAX is deliberate here.  */
+   DIAG_IGNORE_NEEDS_COMMENT (8, "-Wstringop-overflow=");
++  DIAG_IGNORE_NEEDS_COMMENT (11, "-Wstringop-overread");
+ #endif
+   if (c != '\0')
+     return memchr (s, c, (size_t)-1);
