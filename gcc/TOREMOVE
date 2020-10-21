@@ -40,3 +40,5 @@ gcc/testsuite/gcc.dg/struct-by-value-1.c
 gcc/testsuite/gcc.dg/pr89350.c
 gcc/testsuite/gcc.dg/Walloca-1.c
 gcc/testsuite/gcc.dg/pr83527.c
+gcc/testsuite/gcc.dg/Wvla-parameter-2.c
+gcc/testsuite/gcc.dg/Wvla-parameter-3.c
