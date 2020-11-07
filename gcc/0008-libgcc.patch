@@ -1,0 +1,40 @@
+diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
+index e0a9fd712e7..b6f66ea0d69 100644
+--- a/libgcc/libgcc2.c
++++ b/libgcc/libgcc2.c
+@@ -75,9 +75,9 @@ __negdi2 (DWtype u)
+ Wtype
+ __addvSI3 (Wtype a, Wtype b)
+ {
+-  const Wtype w = (UWtype) a + (UWtype) b;
++  Wtype w;
+ 
+-  if (b >= 0 ? w < a : w > a)
++  if (__builtin_add_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -86,9 +86,9 @@ __addvSI3 (Wtype a, Wtype b)
+ SItype
+ __addvsi3 (SItype a, SItype b)
+ {
+-  const SItype w = (USItype) a + (USItype) b;
++  SItype w;
+ 
+-  if (b >= 0 ? w < a : w > a)
++  if (__builtin_add_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -100,9 +100,9 @@ __addvsi3 (SItype a, SItype b)
+ DWtype
+ __addvDI3 (DWtype a, DWtype b)
+ {
+-  const DWtype w = (UDWtype) a + (UDWtype) b;
++  DWtype w;
+ 
+-  if (b >= 0 ? w < a : w > a)
++  if (__builtin_add_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
