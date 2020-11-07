@@ -1,5 +1,5 @@
 diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
-index e0a9fd712e7..b6f66ea0d69 100644
+index e0a9fd712e7..95a4f6dd27d 100644
 --- a/libgcc/libgcc2.c
 +++ b/libgcc/libgcc2.c
 @@ -75,9 +75,9 @@ __negdi2 (DWtype u)
@@ -35,6 +35,42 @@ index e0a9fd712e7..b6f66ea0d69 100644
  
 -  if (b >= 0 ? w < a : w > a)
 +  if (__builtin_add_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -113,9 +113,9 @@ __addvDI3 (DWtype a, DWtype b)
+ Wtype
+ __subvSI3 (Wtype a, Wtype b)
+ {
+-  const Wtype w = (UWtype) a - (UWtype) b;
++  Wtype w;
+ 
+-  if (b >= 0 ? w > a : w < a)
++  if (__builtin_sub_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -124,9 +124,9 @@ __subvSI3 (Wtype a, Wtype b)
+ SItype
+ __subvsi3 (SItype a, SItype b)
+ {
+-  const SItype w = (USItype) a - (USItype) b;
++  SItype w;
+ 
+-  if (b >= 0 ? w > a : w < a)
++  if (__builtin_sub_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -138,9 +138,9 @@ __subvsi3 (SItype a, SItype b)
+ DWtype
+ __subvDI3 (DWtype a, DWtype b)
+ {
+-  const DWtype w = (UDWtype) a - (UDWtype) b;
++  DWtype w;
+ 
+-  if (b >= 0 ? w > a : w < a)
++  if (__builtin_sub_overflow(a, b, &w))
      abort ();
  
    return w;
