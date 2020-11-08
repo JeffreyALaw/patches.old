@@ -161,44 +161,3 @@ index e0a9fd712e7..4e4defb9bce 100644
  	 aligned divisor. Normal iteration can drops the high order bit
  	 of the dividend. Therefore, first test-subtract iteration is a
  	 special case, saving its quotient bit in a separate location and
-@@ -1325,37 +1323,15 @@ __udivdi3 (UDWtype n, UDWtype d)
- cmp_return_type
- __cmpdi2 (DWtype a, DWtype b)
- {
--  const DWunion au = {.ll = a};
--  const DWunion bu = {.ll = b};
--
--  if (au.s.high < bu.s.high)
--    return 0;
--  else if (au.s.high > bu.s.high)
--    return 2;
--  if ((UWtype) au.s.low < (UWtype) bu.s.low)
--    return 0;
--  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
--    return 2;
--  return 1;
-+  return (a > b) - (a < b) + 1;
- }
- #endif
- 
- #ifdef L_ucmpdi2
- cmp_return_type
--__ucmpdi2 (DWtype a, DWtype b)
-+__ucmpdi2 (UDWtype a, UDWtype b)
- {
--  const DWunion au = {.ll = a};
--  const DWunion bu = {.ll = b};
--
--  if ((UWtype) au.s.high < (UWtype) bu.s.high)
--    return 0;
--  else if ((UWtype) au.s.high > (UWtype) bu.s.high)
--    return 2;
--  if ((UWtype) au.s.low < (UWtype) bu.s.low)
--    return 0;
--  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
--    return 2;
--  return 1;
-+  return (a > b) - (a < b) + 1;
- }
- #endif
- 
