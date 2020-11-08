@@ -1,5 +1,5 @@
 diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
-index e0a9fd712e7..99a2ab5deb8 100644
+index e0a9fd712e7..c3fa7b57798 100644
 --- a/libgcc/libgcc2.c
 +++ b/libgcc/libgcc2.c
 @@ -75,9 +75,9 @@ __negdi2 (DWtype u)
@@ -74,7 +74,34 @@ index e0a9fd712e7..99a2ab5deb8 100644
      abort ();
  
    return w;
-@@ -178,23 +178,23 @@ __mulvsi3 (SItype a, SItype b)
+@@ -151,22 +151,20 @@ __subvDI3 (DWtype a, DWtype b)
+ Wtype
+ __mulvSI3 (Wtype a, Wtype b)
+ {
+-  const DWtype w = (DWtype) a * (DWtype) b;
++  Wtype w;
+ 
+-  if ((Wtype) (w >> W_TYPE_SIZE) != (Wtype) w >> (W_TYPE_SIZE - 1))
++  if (__builtin_mul_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+ }
+ #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+-#undef WORD_SIZE
+-#define WORD_SIZE (sizeof (SItype) * __CHAR_BIT__)
+ SItype
+ __mulvsi3 (SItype a, SItype b)
+ {
+-  const DItype w = (DItype) a * (DItype) b;
++  DItype w;
+ 
+-  if ((SItype) (w >> WORD_SIZE) != (SItype) w >> (WORD_SIZE-1))
++  if (__builtin_mul_overflow(a, b, &w))
+     abort ();
+ 
+   return w;
+@@ -178,23 +176,23 @@ __mulvsi3 (SItype a, SItype b)
  Wtype
  __negvSI2 (Wtype a)
  {
@@ -104,7 +131,7 @@ index e0a9fd712e7..99a2ab5deb8 100644
  }
  #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
  #endif
-@@ -203,9 +203,9 @@ __negvsi2 (SItype a)
+@@ -203,9 +201,9 @@ __negvsi2 (SItype a)
  DWtype
  __negvDI2 (DWtype a)
  {
