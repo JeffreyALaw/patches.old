@@ -43,5 +43,6 @@ gcc/testsuite/gcc.dg/Wvla-parameter-2.c
 gcc/testsuite/gcc.dg/Wvla-parameter-3.c
 gcc/testsuite/gcc.dg/pr94600-5.c
 gcc/testsuite/gcc.dg/pr94600-7.c
+gcc/testsuite/gcc.dg/pr84877.c
 gcc/testsuite/gcc.dg/torture/stackalign/setjmp-1.c
 gcc/testsuite/gcc.c-torture/execute/built-in-setjmp.c
