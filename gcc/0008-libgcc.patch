@@ -1,5 +1,5 @@
 diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
-index e0a9fd712e7..12938dbb65d 100644
+index e0a9fd712e7..4e4defb9bce 100644
 --- a/libgcc/libgcc2.c
 +++ b/libgcc/libgcc2.c
 @@ -75,9 +75,9 @@ __negdi2 (DWtype u)
@@ -161,3 +161,57 @@ index e0a9fd712e7..12938dbb65d 100644
  	 aligned divisor. Normal iteration can drops the high order bit
  	 of the dividend. Therefore, first test-subtract iteration is a
  	 special case, saving its quotient bit in a separate location and
+@@ -1325,37 +1323,15 @@ __udivdi3 (UDWtype n, UDWtype d)
+ cmp_return_type
+ __cmpdi2 (DWtype a, DWtype b)
+ {
+-  const DWunion au = {.ll = a};
+-  const DWunion bu = {.ll = b};
+-
+-  if (au.s.high < bu.s.high)
+-    return 0;
+-  else if (au.s.high > bu.s.high)
+-    return 2;
+-  if ((UWtype) au.s.low < (UWtype) bu.s.low)
+-    return 0;
+-  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
+-    return 2;
+-  return 1;
++  return (a > b) - (a < b) + 1;
+ }
+ #endif
+ 
+ #ifdef L_ucmpdi2
+ cmp_return_type
+-__ucmpdi2 (DWtype a, DWtype b)
++__ucmpdi2 (UDWtype a, UDWtype b)
+ {
+-  const DWunion au = {.ll = a};
+-  const DWunion bu = {.ll = b};
+-
+-  if ((UWtype) au.s.high < (UWtype) bu.s.high)
+-    return 0;
+-  else if ((UWtype) au.s.high > (UWtype) bu.s.high)
+-    return 2;
+-  if ((UWtype) au.s.low < (UWtype) bu.s.low)
+-    return 0;
+-  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
+-    return 2;
+-  return 1;
++  return (a > b) - (a < b) + 1;
+ }
+ #endif
+ 
+diff --git a/libgcc/libgcc2.h b/libgcc/libgcc2.h
+index 1c20ffcaae3..22a27062f82 100644
+--- a/libgcc/libgcc2.h
++++ b/libgcc/libgcc2.h
+@@ -402,7 +402,7 @@ extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
+ #endif
+ 
+ extern cmp_return_type __cmpdi2 (DWtype, DWtype);
+-extern cmp_return_type __ucmpdi2 (DWtype, DWtype);
++extern cmp_return_type __ucmpdi2 (UDWtype, UDWtype);
+ 
+ #if MIN_UNITS_PER_WORD > 1
+ extern SItype __bswapsi2 (SItype);
