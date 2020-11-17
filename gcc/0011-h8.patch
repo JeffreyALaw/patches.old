@@ -1025,7 +1025,7 @@ index bed712d830b..8fa6fde433a 100644
 +;;   (set_attr "length_table" "logicb")])
  
 diff --git a/gcc/config/h8300/combiner.md b/gcc/config/h8300/combiner.md
-index 4f49c7fba34..8d1c6498a18 100644
+index 4f49c7fba34..432c1d88a61 100644
 --- a/gcc/config/h8300/combiner.md
 +++ b/gcc/config/h8300/combiner.md
 @@ -4,85 +4,193 @@
@@ -2163,7 +2163,7 @@ index 4f49c7fba34..8d1c6498a18 100644
    {
      operands[3] = gen_rtx_REG (HImode, REGNO (operands[2]));
    })
-@@ -681,93 +1130,147 @@
+@@ -681,93 +1130,149 @@
    [(parallel [(set (match_dup 2)
  		   (ashift:HI (match_dup 2)
  			      (const_int 8)))
@@ -2325,9 +2325,9 @@ index 4f49c7fba34..8d1c6498a18 100644
 +;;					   (const_int 1)
 +;;					   (const_int 7))
 +;;			  (const_int 0))
-+;;		      (match_operand 1 "pc_or_label_operand" "")
-+;;		      (match_operand 2 "pc_or_label_operand" "")))]
-+;;  "operands[1] == pc_rtx || operands[2] == pc_rtx"
++;;		      (label_ref (match_operand 1 "" ""))
++;;		      (pc)))]
++;;  ""
 +;;  "#"
 +;;  ""
 +;;  [(set (cc0) (compare (match_dup 0)
@@ -2335,27 +2335,29 @@ index 4f49c7fba34..8d1c6498a18 100644
 +;;   (set (pc)
 +;;	(if_then_else (ge (cc0)
 +;;			  (const_int 0))
-+;;		      (match_dup 1)
-+;;		      (match_dup 2)))])
-+
-+;;(define_insn_and_split ""
++;;		      (label_ref (match_dup 1))
++;;		      (pc)))]
++;;  "")
++;; 
++;; (define_insn_and_split ""
 +;;  [(set (pc)
-+;;	(if_then_else (ne (zero_extract:SI (subreg:SI (match_operand:QI 0 "register_operand" "") 0)
-+;;					   (const_int 1)
-+;;					   (const_int 7))
-+;;			  (const_int 0))
-+;;		      (match_operand 1 "pc_or_label_operand" "")
-+;;		      (match_operand 2 "pc_or_label_operand" "")))]
-+;;  "operands[1] == pc_rtx || operands[2] == pc_rtx"
-+;;  "#"
-+;;  ""
-+;;  [(set (cc0) (compare (match_dup 0)
-+;;		       (const_int 0)))
-+;;   (set (pc)
-+;;	(if_then_else (lt (cc0)
-+;;			  (const_int 0))
-+;;		      (match_dup 1)
-+;;		      (match_dup 2)))])
++;; 	(if_then_else (ne (zero_extract:SI (subreg:SI (match_operand:QI 0 "register_operand" "") 0)
++;; 					   (const_int 1)
++;; 					   (const_int 7))
++;; 			  (const_int 0))
++;; 		      (label_ref (match_operand 1 "" ""))
++;; 		      (pc)))]
++;;   ""
++;;   "#"
++;;   ""
++;;   [(set (cc0) (compare (match_dup 0)
++;; 		       (const_int 0)))
++;;    (set (pc)
++;; 	(if_then_else (lt (cc0)
++;; 			  (const_int 0))
++;; 		      (label_ref (match_dup 1))
++;; 		      (pc)))]
++;;   "")
 diff --git a/gcc/config/h8300/divmod.md b/gcc/config/h8300/divmod.md
 index 7e0d7f09dc9..b5ab6b727bb 100644
 --- a/gcc/config/h8300/divmod.md
@@ -3365,10 +3367,10 @@ index 46ab2442576..7ed2453f433 100644
 -(include "peepholes.md")
 +;;(include "peepholes.md")
 diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
-index 3917cf18920..ee3c472f08b 100644
+index 3917cf18920..6c72724b669 100644
 --- a/gcc/config/h8300/jumpcall.md
 +++ b/gcc/config/h8300/jumpcall.md
-@@ -4,57 +4,42 @@
+@@ -4,75 +4,66 @@
  
  ;; Conditional jump instructions
  
@@ -3407,19 +3409,18 @@ index 3917cf18920..ee3c472f08b 100644
 -         [(match_operand:SI 1 "h8300_dst_operand" "")
 -          (match_operand:SI 2 "h8300_src_operand" "")]))
 -   (use (match_operand 3 ""))]
--  ""
--  {
--    h8300_expand_branch (operands);
--    DONE;
--  })
 +(define_insn_and_split "*branch"
 +  [(set (pc)
 +	(if_then_else (match_operator 0 "comparison_operator"
 +		       [(match_operand:QHSI 1 "h8300_dst_operand" "rQ")
 +			(match_operand:QHSI 2 "h8300_src_operand" "rQi")])
-+		      (match_operand 3 "pc_or_label_operand" "")
-+		      (match_operand 4 "pc_or_label_operand" "")))]
-+  "operands[3] == pc_rtx || operands[4] == pc_rtx"
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   ""
+-  {
+-    h8300_expand_branch (operands);
+-    DONE;
+-  })
 +  "#"
 +  "reload_completed"
 +  [(set (reg:CC CC_REG)
@@ -3427,20 +3428,22 @@ index 3917cf18920..ee3c472f08b 100644
 +   (set (pc)
 +	(if_then_else (match_op_dup 0
 +		       [(reg:CC CC_REG) (const_int 0)])
-+		      (match_dup 3) (match_dup 4)))]
++		      (label_ref (match_dup 3)) (pc)))]
 +  "")
  
 -(define_insn "branch"
 +(define_insn "*branch_1"
    [(set (pc)
- 	(if_then_else (match_operator 2 "comparison_operator"
+-	(if_then_else (match_operator 2 "comparison_operator"
 -		       [(cc0) (const_int 0)])
-+		       [(reg:CC CC_REG) (const_int 0)])
- 		      (match_operand 0 "pc_or_label_operand" "")
- 		      (match_operand 1 "pc_or_label_operand" "")))]
+-		      (match_operand 0 "pc_or_label_operand" "")
+-		      (match_operand 1 "pc_or_label_operand" "")))]
 -  "operands[0] == pc_rtx || operands[1] == pc_rtx"
-+  "(reload_completed
-+    && (operands[0] == pc_rtx || operands[1] == pc_rtx))"
++	(if_then_else (match_operator 1 "comparison_operator"
++		       [(reg:CC CC_REG) (const_int 0)])
++		      (label_ref (match_operand 0 "" ""))
++		      (pc)))]
++  "reload_completed"
  {
 -  if ((cc_status.flags & CC_OVERFLOW_UNUSABLE) != 0
 -      && (GET_CODE (operands[2]) == GT
@@ -3451,11 +3454,52 @@ index 3917cf18920..ee3c472f08b 100644
 -      cc_status.flags &= ~CC_OVERFLOW_UNUSABLE;
 -      return 0;
 -    }
--
-   if (operands[0] != pc_rtx)
-     {
-       if (get_attr_length (insn) == 2)
-@@ -109,8 +94,7 @@
++  if (get_attr_length (insn) == 2)
++    return "b%j1	%l0";
++  else if (get_attr_length (insn) == 4)
++    return "b%j1	%l0:16";
++  else
++    return "b%k1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
++}
++ [(set_attr "type" "branch")
++   (set_attr "cc" "none")])
+ 
+-  if (operands[0] != pc_rtx)
+-    {
+-      if (get_attr_length (insn) == 2)
+-	return "b%j2	%l0";
+-      else if (get_attr_length (insn) == 4)
+-	return "b%j2	%l0:16";
+-      else
+-	return "b%k2	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
+-    }
++
++(define_insn "*branch_1_false"
++  [(set (pc)
++	(if_then_else (match_operator 1 "comparison_operator"
++		       [(reg:CC CC_REG) (const_int 0)])
++		      (pc)
++		      (label_ref (match_operand 0 "" ""))))]
++  "reload_completed"
++{
++  if (get_attr_length (insn) == 2)
++    return "b%k1	%l0";
++  else if (get_attr_length (insn) == 4)
++    return "b%k1	%l0:16";
+   else
+-    {
+-      if (get_attr_length (insn) == 2)
+-	return "b%k2	%l1";
+-      else if (get_attr_length (insn) == 4)
+-	return "b%k2	%l1:16";
+-      else
+-	return "b%j2	.Lh8BR%=\;jmp	@%l1\\n.Lh8BR%=:";
+-    }
++    return "b%j1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
+ }
+  [(set_attr "type" "branch")
+    (set_attr "cc" "none")])
+@@ -109,8 +100,7 @@
      }
  }
    [(set_attr "type" "bitbranch")
@@ -3465,7 +3509,7 @@ index 3917cf18920..ee3c472f08b 100644
  
  (define_insn "*brabs"
    [(set (pc)
-@@ -134,8 +118,7 @@
+@@ -134,8 +124,7 @@
      }
  }
    [(set_attr "type" "bitbranch")
@@ -5475,10 +5519,90 @@ index 4b96a7c4a40..572a29fb2d9 100644
 -   (set_attr "length" "2")])
 +  [(set_attr "length" "2")])
 diff --git a/gcc/config/h8300/peepholes.md b/gcc/config/h8300/peepholes.md
-index 8442cd80a5e..bd6901877ee 100644
+index 8442cd80a5e..80330e2dccc 100644
 --- a/gcc/config/h8300/peepholes.md
 +++ b/gcc/config/h8300/peepholes.md
-@@ -433,96 +433,6 @@
+@@ -367,10 +367,10 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (match_operand:HI 0 "register_operand" "")
+ 	(unspec:HI [(match_dup 0)
+@@ -379,9 +379,10 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))])
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
++  "")
+ 
+ ;; The SImode version of the previous pattern.
+ 
+@@ -392,10 +393,10 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (match_operand:SI 0 "register_operand" "")
+ 	(unspec:SI [(match_dup 0)
+@@ -404,9 +405,10 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))])
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
++  "")
+ 
+ (define_peephole2
+   [(parallel [(set (cc0)
+@@ -416,113 +418,23 @@
+ 			    (const_int 0)))
+ 	      (clobber (scratch:QI))])
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 1 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[4] = ((GET_CODE (operands[4]) == EQ)
++    operands[3] = ((GET_CODE (operands[1]) == EQ)
+ 		   ? gen_rtx_GE (VOIDmode, cc0_rtx, const0_rtx)
  		   : gen_rtx_LT (VOIDmode, cc0_rtx, const0_rtx));
    })
  
@@ -5575,7 +5699,7 @@ index 8442cd80a5e..bd6901877ee 100644
  ;; If a load of mem:SI is followed by an AND that turns off the upper
  ;; half, then we can load mem:HI instead.
  
-@@ -546,20 +456,6 @@
+@@ -546,20 +458,6 @@
      operands[4] = gen_lowpart (HImode, operands[1]);
    })
  
@@ -5596,14 +5720,708 @@ index 8442cd80a5e..bd6901877ee 100644
  ;; (compare (reg:HI) (const_int)) takes 4 bytes, so we try to achieve
  ;; the equivalent with shorter sequences.  Here is the summary.  Cases
  ;; are grouped for each define_peephole2.
+@@ -596,23 +494,23 @@
+ 	(compare (match_operand:HI 0 "register_operand" "")
+ 		 (match_operand:HI 1 "incdec_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "INTVAL (operands[1]) != 0 && peep2_reg_dead_p (1, operands[0])"
+   [(set (match_dup 0)
+ 	(unspec:HI [(match_dup 0)
+-		    (match_dup 5)]
++		    (match_dup 4)]
+ 		   UNSPEC_INCDEC))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (- INTVAL (operands[1]));
++    operands[4] = GEN_INT (- INTVAL (operands[1]));
+   })
+ 
+ ;; Transform
+@@ -630,25 +528,25 @@
+ 	(compare (match_operand:HI 0 "register_operand" "")
+ 		 (match_operand:HI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtle_operator"
++	(if_then_else (match_operator 2 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))"
+   [(parallel [(set (match_dup 0)
+ 		   (ashiftrt:HI (match_dup 0)
+-				(match_dup 5)))
++				(match_dup 4)))
+ 	      (clobber (scratch:QI))])
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 2)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[4] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+   })
+ 
+ ;; Transform
+@@ -666,26 +564,26 @@
+ 	(compare (match_operand:HI 0 "register_operand" "")
+ 		 (match_operand:HI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtuleu_operator"
++	(if_then_else (match_operator 2 "gtuleu_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))"
+   [(parallel [(set (match_dup 0)
+ 		   (ashiftrt:HI (match_dup 0)
+-				(match_dup 5)))
++				(match_dup 4)))
+ 	      (clobber (scratch:QI))])
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 6)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 5)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+-    operands[6] = gen_rtx_fmt_ee (GET_CODE (operands[4]) == GTU ? NE : EQ,
++    operands[4] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[2]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -706,16 +604,17 @@
+    (set (pc)
+ 	(if_then_else (match_operator 1 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (cc0) (compare (and:HI (match_dup 0)
+ 			       (const_int -256))
+ 		       (const_int 0)))
+    (set (pc)
+ 	(if_then_else (match_dup 1)
+-		      (match_dup 2)
+-		      (match_dup 3)))])
++		      (label_ref (match_dup 2))
++		      (pc)))]
++  "")
+ 
+ ;; Transform
+ ;;
+@@ -734,18 +633,18 @@
+    (set (pc)
+ 	(if_then_else (match_operator 1 "gtuleu_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (cc0) (compare (and:HI (match_dup 0)
+ 			       (const_int -256))
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 3)
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[4] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == GTU ? NE : EQ,
++    operands[3] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -826,23 +725,23 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "incdec_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "INTVAL (operands[1]) != 0 && peep2_reg_dead_p (1, operands[0])"
+   [(set (match_dup 0)
+ 	(unspec:SI [(match_dup 0)
+-		    (match_dup 5)]
++		    (match_dup 4)]
+ 		   UNSPEC_INCDEC))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (- INTVAL (operands[1]));
++    operands[4] = GEN_INT (- INTVAL (operands[1]));
+   })
+ 
+ ;; Transform
+@@ -860,10 +759,10 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == -131072
+        || INTVAL (operands[1]) == -65536
+@@ -871,15 +770,15 @@
+        || INTVAL (operands[1]) == 131072)"
+   [(set (match_dup 0)
+ 	(plus:SI (match_dup 0)
+-		 (match_dup 5)))
++		 (match_dup 4)))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (- INTVAL (operands[1]));
++    operands[4] = GEN_INT (- INTVAL (operands[1]));
+   })
+ 
+ ;; Transform
+@@ -898,10 +797,10 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && ((INTVAL (operands[1]) & 0x00ff) == INTVAL (operands[1])
+        || (INTVAL (operands[1]) & 0xff00) == INTVAL (operands[1])
+@@ -915,9 +814,10 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))])
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
++  "")
+ 
+ ;; Transform
+ ;;
+@@ -935,10 +835,10 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && ((INTVAL (operands[1]) | 0x00ff) == -1
+        || (INTVAL (operands[1]) | 0xff00) == -1)
+@@ -946,17 +846,17 @@
+    && INTVAL (operands[1]) != -2"
+   [(set (match_dup 0)
+ 	(xor:SI (match_dup 0)
+-		(match_dup 5)))
++		(match_dup 4)))
+    (set (match_dup 0)
+ 	(not:SI (match_dup 0)))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (INTVAL (operands[1]) ^ -1);
++    operands[4] = GEN_INT (INTVAL (operands[1]) ^ -1);
+   })
+ 
+ ;; Transform
+@@ -975,16 +875,16 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == -2147483647 - 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 1073741824))"
+   [(set (match_dup 0)
+ 	(rotate:SI (match_dup 0)
+-		   (match_dup 5)))
++		   (match_dup 4)))
+    (set (match_dup 0)
+ 	(unspec:SI [(match_dup 0)
+ 		    (const_int -1)]
+@@ -992,11 +892,11 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (INTVAL (operands[1]) == -2147483647 - 1 ? 1 : 2);
++    operands[4] = GEN_INT (INTVAL (operands[1]) == -2147483647 - 1 ? 1 : 2);
+   })
+ 
+ ;; Transform
+@@ -1014,33 +914,33 @@
+ ;; same compare insn immediately before this one.
+ 
+ (define_peephole2
+-  [(match_scratch:SI 5 "r")
++  [(match_scratch:SI 4 "r")
+    (set (cc0)
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtle_operator"
++	(if_then_else (match_operator 2 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "!peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))
+    && !same_cmp_preceding_p (insn)"
+-  [(set (match_dup 5)
++  [(set (match_dup 4)
+ 	(match_dup 0))
+-   (parallel [(set (match_dup 5)
+-		   (ashiftrt:SI (match_dup 5)
+-				(match_dup 6)))
++   (parallel [(set (match_dup 4)
++		   (ashiftrt:SI (match_dup 4)
++				(match_dup 5)))
+ 	      (clobber (scratch:QI))])
+-   (set (cc0) (compare (match_dup 5)
++   (set (cc0) (compare (match_dup 4)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 2)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[6] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+   })
+ 
+ ;; Transform
+@@ -1058,34 +958,34 @@
+ ;; same compare insn immediately before this one.
+ 
+ (define_peephole2
+-  [(match_scratch:SI 5 "r")
++  [(match_scratch:SI 4 "r")
+    (set (cc0)
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtuleu_operator"
++	(if_then_else (match_operator 2 "gtuleu_operator"
+ 		         [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "!peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))
+    && !same_cmp_preceding_p (insn)"
+-  [(set (match_dup 5)
++  [(set (match_dup 4)
+ 	(match_dup 0))
+-   (parallel [(set (match_dup 5)
+-		   (ashiftrt:SI (match_dup 5)
+-				(match_dup 6)))
++   (parallel [(set (match_dup 4)
++		   (ashiftrt:SI (match_dup 4)
++				(match_dup 5)))
+ 	      (clobber (scratch:QI))])
+-   (set (cc0) (compare (match_dup 5)
++   (set (cc0) (compare (match_dup 4)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 7)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 6)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[6] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+-    operands[7] = gen_rtx_fmt_ee (GET_CODE (operands[4]) == GTU ? NE : EQ,
++    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[6] = gen_rtx_fmt_ee (GET_CODE (operands[2]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -1104,25 +1004,25 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtle_operator"
++	(if_then_else (match_operator 2 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))"
+   [(parallel [(set (match_dup 0)
+ 		   (ashiftrt:SI (match_dup 0)
+-				(match_dup 5)))
++				(match_dup 4)))
+ 	      (clobber (scratch:QI))])
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 2)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[4] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+   })
+ 
+ ;; Transform
+@@ -1140,26 +1040,26 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtuleu_operator"
++	(if_then_else (match_operator 2 "gtuleu_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 1
+        || (TARGET_H8300S && INTVAL (operands[1]) == 3))"
+   [(parallel [(set (match_dup 0)
+ 		   (ashiftrt:SI (match_dup 0)
+-				(match_dup 5)))
++				(match_dup 4)))
+ 	      (clobber (scratch:QI))])
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 6)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 5)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
+-    operands[6] = gen_rtx_fmt_ee (GET_CODE (operands[4]) == GTU ? NE : EQ,
++    operands[4] = GEN_INT (exact_log2 (INTVAL (operands[1]) + 1));
++    operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[2]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -1179,10 +1079,10 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtle_operator"
++	(if_then_else (match_operator 2 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && (INTVAL (operands[1]) == 3
+        || INTVAL (operands[1]) == 7
+@@ -1193,15 +1093,15 @@
+        || INTVAL (operands[1]) == 255)"
+   [(set (match_dup 0)
+ 	(and:SI (match_dup 0)
+-		(match_dup 5)))
++		(match_dup 4)))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 2)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (~INTVAL (operands[1]));
++    operands[4] = GEN_INT (~INTVAL (operands[1]));
+   })
+ 
+ ;; Transform
+@@ -1220,10 +1120,10 @@
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "const_int_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "gtuleu_operator"
++	(if_then_else (match_operator 2 "gtuleu_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 3 "" ""))
++		      (pc)))]
+   "peep2_reg_dead_p (1, operands[0])
+    && ((TARGET_H8300H && INTVAL (operands[1]) == 3)
+ 	|| INTVAL (operands[1]) == 7
+@@ -1234,16 +1134,16 @@
+ 	|| INTVAL (operands[1]) == 255)"
+   [(set (match_dup 0)
+ 	(and:SI (match_dup 0)
+-		(match_dup 5)))
++		(match_dup 4)))
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 6)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 5)
++		      (label_ref (match_dup 3))
++		      (pc)))]
+   {
+-    operands[5] = GEN_INT (~INTVAL (operands[1]));
+-    operands[6] = gen_rtx_fmt_ee (GET_CODE (operands[4]) == GTU ? NE : EQ,
++    operands[4] = GEN_INT (~INTVAL (operands[1]));
++    operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[2]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -1264,16 +1164,17 @@
+    (set (pc)
+ 	(if_then_else (match_operator 1 "gtle_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (cc0) (compare (and:SI (match_dup 0)
+ 			       (const_int -65536))
+ 		       (const_int 0)))
+    (set (pc)
+ 	(if_then_else (match_dup 1)
+-		      (match_dup 2)
+-		      (match_dup 3)))])
++		      (label_ref (match_dup 2))
++		      (pc)))]
++  "")
+ 
+ ;; Transform
+ ;;
+@@ -1292,18 +1193,18 @@
+    (set (pc)
+ 	(if_then_else (match_operator 1 "gtuleu_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   ""
+   [(set (cc0) (compare (and:SI (match_dup 0)
+ 			       (const_int -65536))
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_dup 4)
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_dup 3)
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[4] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == GTU ? NE : EQ,
++    operands[3] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == GTU ? NE : EQ,
+ 				  VOIDmode, cc0_rtx, const0_rtx);
+   })
+ 
+@@ -1322,32 +1223,32 @@
+ ;; same compare insn.
+ 
+ (define_peephole2
+-  [(match_scratch:SI 5 "r")
++  [(match_scratch:SI 4 "r")
+    (set (cc0)
+ 	(compare (match_operand:SI 0 "register_operand" "")
+ 		 (match_operand:SI 1 "incdec_operand" "")))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "INTVAL (operands[1]) != 0
+    && !peep2_reg_dead_p (1, operands[0])
+    && !same_cmp_following_p (insn)"
+-  [(set (match_dup 5)
++  [(set (match_dup 4)
+ 	(match_dup 0))
+-   (set (match_dup 5)
+-	(unspec:SI [(match_dup 5)
+-		    (match_dup 6)]
++   (set (match_dup 4)
++	(unspec:SI [(match_dup 4)
++		    (match_dup 5)]
+ 		   UNSPEC_INCDEC))
+-   (set (cc0) (compare (match_dup 5)
++   (set (cc0) (compare (match_dup 4)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+-    operands[6] = GEN_INT (- INTVAL (operands[1]));
++    operands[5] = GEN_INT (- INTVAL (operands[1]));
+   })
+ 
+ ;; Narrow the mode of testing if possible.
+@@ -1359,28 +1260,28 @@
+    (set (cc0) (compare (match_dup 0)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_operator 4 "eqne_operator"
++	(if_then_else (match_operator 3 "eqne_operator"
+ 		       [(cc0) (const_int 0)])
+-		      (match_operand 2 "pc_or_label_operand" "")
+-		      (match_operand 3 "pc_or_label_operand" "")))]
++		      (label_ref (match_operand 2 "" ""))
++		      (pc)))]
+   "((const_int_qi_operand (operands[1], QImode)
+      || (GET_MODE (operands[0]) == SImode
+ 	 && const_int_hi_operand (operands[1], HImode)))
+     && peep2_reg_dead_p (2, operands[0]))"
+-  [(set (match_dup 5) (match_dup 7))
+-   (set (cc0) (compare (match_dup 5)
++  [(set (match_dup 4) (match_dup 6))
++   (set (cc0) (compare (match_dup 4)
+ 		       (const_int 0)))
+    (set (pc)
+-	(if_then_else (match_op_dup 4 [(cc0) (const_int 0)])
+-		      (match_dup 2)
+-		      (match_dup 3)))]
++	(if_then_else (match_op_dup 3 [(cc0) (const_int 0)])
++		      (label_ref (match_dup 2))
++		      (pc)))]
+   {
+     enum machine_mode mode;
+ 
+     mode = const_int_qi_operand (operands[1], QImode) ? QImode : HImode;
+-    operands[5] = gen_rtx_REG (mode, REGNO (operands[0]));
+-    operands[6] = gen_int_mode (INTVAL (operands[1]), mode);
+-    operands[7] = gen_rtx_AND (mode, operands[5], operands[6]);
++    operands[4] = gen_rtx_REG (mode, REGNO (operands[0]));
++    operands[5] = gen_int_mode (INTVAL (operands[1]), mode);
++    operands[6] = gen_rtx_AND (mode, operands[4], operands[5]);
+   })
+ 
+ ;; These triggers right at the end of allocation of locals in the
 diff --git a/gcc/config/h8300/predicates.md b/gcc/config/h8300/predicates.md
-index b530c2cb23e..616d771610b 100644
+index b530c2cb23e..fc1dda3e485 100644
 --- a/gcc/config/h8300/predicates.md
 +++ b/gcc/config/h8300/predicates.md
-@@ -501,3 +501,13 @@
- (define_predicate "pc_or_label_operand"
-   (match_code "pc,label_ref"))
+@@ -496,8 +496,12 @@
+   return (code == IOR || code == XOR);
+ })
  
+-;; Used to detect valid targets for conditional branches
+-;; Used to detect (pc) or (label_ref) in some jumping patterns
+-(define_predicate "pc_or_label_operand"
+-  (match_code "pc,label_ref"))
+-
 +(define_predicate "simple_memory_operand"
 +  (match_code "mem")
 +{
@@ -5613,7 +6431,6 @@ index b530c2cb23e..616d771610b 100644
 +    return 1;
 +  return 0;
 +})
-+
 diff --git a/gcc/config/h8300/proepi.md b/gcc/config/h8300/proepi.md
 index 9d19ff54084..44d59682496 100644
 --- a/gcc/config/h8300/proepi.md
