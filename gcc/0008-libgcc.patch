@@ -1,5 +1,5 @@
 diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
-index cf0ca299c72..d278e527c1d 100644
+index cf0ca299c72..05ff8fac892 100644
 --- a/libgcc/libgcc2.c
 +++ b/libgcc/libgcc2.c
 @@ -214,37 +214,25 @@ __negvDI2 (DWtype a)
@@ -48,7 +48,7 @@ index cf0ca299c72..d278e527c1d 100644
  }
  #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
  #endif
-@@ -253,144 +241,32 @@ __absvsi2 (SItype a)
+@@ -253,144 +241,35 @@ __absvsi2 (SItype a)
  DWtype
  __absvDI2 (DWtype a)
  {
@@ -81,10 +81,10 @@ index cf0ca299c72..d278e527c1d 100644
 -     but the checked multiplication needs only two.  */
 -  const DWunion uu = {.ll = u};
 -  const DWunion vv = {.ll = v};
-+  DWtype t;
-+  const DWunion u = {.ll = a};
-+  const DWunion v = {.ll = b};
-+  DWunion w = {.ll = __umulsidi3 (u.s.low, v.s.low)};
++  SItype t;
++  volatile DWunion u = {.ll = a};
++  volatile DWunion v = {.ll = b};
++  volatile DWunion w = {.ll = __umulsidi3 (u.s.low, v.s.low)};
  
 -  if (__builtin_expect (uu.s.high == uu.s.low >> (W_TYPE_SIZE - 1), 1))
 -    {
@@ -204,6 +204,9 @@ index cf0ca299c72..d278e527c1d 100644
  
 -  /* Overflow.  */
 -  abort ();
++   /* If both high words are nonzero, then there's an overflow.  */
++   if (u.s.high && v.s.high)
++     abort ();
 +  return w.ll;
  }
  #endif
