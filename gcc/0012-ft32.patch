@@ -1,0 +1,13 @@
+diff --git a/gcc/config/ft32/ft32.md b/gcc/config/ft32/ft32.md
+index 8918bb7cd58..4aae04b8cb2 100644
+--- a/gcc/config/ft32/ft32.md
++++ b/gcc/config/ft32/ft32.md
+@@ -91,7 +91,7 @@
+ (define_insn "umulsidi3"
+   [(set (match_operand:DI 0 "register_operand" "=r,r")
+     (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
+-         (zero_extend:DI (match_operand:SI 2 "ft32_rimm_operand" "r,KA"))))
++         (zero_extend:DI (match_operand:SI 2 "register_operand" "r,KA"))))
+    (clobber (reg:CC CC_REG))]
+   ""
+   "mul.l  $cc,%1,%2\;muluh.l %h0,%1,%2\;move.l   %0,$cc")
