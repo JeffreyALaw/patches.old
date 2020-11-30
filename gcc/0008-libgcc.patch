@@ -1,0 +1,69 @@
+diff --git a/libgcc/libgcc2.c b/libgcc/libgcc2.c
+index 61de3b42e1d..9d165504f3f 100644
+--- a/libgcc/libgcc2.c
++++ b/libgcc/libgcc2.c
+@@ -801,21 +801,6 @@ const UQItype __popcount_tab[256] =
+ };
+ #endif
+ 
+-#if defined(L_popcountsi2) || defined(L_popcountdi2)
+-#define POPCOUNTCST2(x) (((UWtype) x << __CHAR_BIT__) | x)
+-#define POPCOUNTCST4(x) (((UWtype) x << (2 * __CHAR_BIT__)) | x)
+-#define POPCOUNTCST8(x) (((UWtype) x << (4 * __CHAR_BIT__)) | x)
+-#if W_TYPE_SIZE == __CHAR_BIT__
+-#define POPCOUNTCST(x) x
+-#elif W_TYPE_SIZE == 2 * __CHAR_BIT__
+-#define POPCOUNTCST(x) POPCOUNTCST2 (x)
+-#elif W_TYPE_SIZE == 4 * __CHAR_BIT__
+-#define POPCOUNTCST(x) POPCOUNTCST4 (POPCOUNTCST2 (x))
+-#elif W_TYPE_SIZE == 8 * __CHAR_BIT__
+-#define POPCOUNTCST(x) POPCOUNTCST8 (POPCOUNTCST4 (POPCOUNTCST2 (x)))
+-#endif
+-#endif
+-
+ #ifdef L_popcountsi2
+ #undef int
+ int
+@@ -824,11 +809,11 @@ __popcountSI2 (UWtype x)
+   /* Force table lookup on targets like AVR and RL78 which only
+      pretend they have LIBGCC2_UNITS_PER_WORD 4, but actually
+      have 1, and other small word targets.  */
+-#if __SIZEOF_INT__ > 2 && defined (POPCOUNTCST) && __CHAR_BIT__ == 8
+-  x = x - ((x >> 1) & POPCOUNTCST (0x55));
+-  x = (x & POPCOUNTCST (0x33)) + ((x >> 2) & POPCOUNTCST (0x33));
+-  x = (x + (x >> 4)) & POPCOUNTCST (0x0F);
+-  return (x * POPCOUNTCST (0x01)) >> (W_TYPE_SIZE - __CHAR_BIT__);
++#if __SIZEOF_INT__ > 2 && __CHAR_BIT__ == 8
++  x = x - ((x >> 1) & (~(UWtype) 0 / 3));
++  x = (x & (~(UWtype) 0 / 5)) + ((x >> 2) & (~(UWtype) 0 / 5));
++  x = (x + (x >> 4)) & (~(UWtype) 0 / 17);
++  return (x * (~(UWtype) 0 / 255)) >> (W_TYPE_SIZE - __CHAR_BIT__);
+ #else
+   int i, ret = 0;
+ 
+@@ -848,17 +833,17 @@ __popcountDI2 (UDWtype x)
+   /* Force table lookup on targets like AVR and RL78 which only
+      pretend they have LIBGCC2_UNITS_PER_WORD 4, but actually
+      have 1, and other small word targets.  */
+-#if __SIZEOF_INT__ > 2 && defined (POPCOUNTCST) && __CHAR_BIT__ == 8
++#if __SIZEOF_INT__ > 2 && __CHAR_BIT__ == 8
+   const DWunion uu = {.ll = x};
+   UWtype x1 = uu.s.low, x2 = uu.s.high;
+-  x1 = x1 - ((x1 >> 1) & POPCOUNTCST (0x55));
+-  x2 = x2 - ((x2 >> 1) & POPCOUNTCST (0x55));
+-  x1 = (x1 & POPCOUNTCST (0x33)) + ((x1 >> 2) & POPCOUNTCST (0x33));
+-  x2 = (x2 & POPCOUNTCST (0x33)) + ((x2 >> 2) & POPCOUNTCST (0x33));
+-  x1 = (x1 + (x1 >> 4)) & POPCOUNTCST (0x0F);
+-  x2 = (x2 + (x2 >> 4)) & POPCOUNTCST (0x0F);
++  x1 = x1 - ((x1 >> 1) & (~(UWtype) 0 / 3));
++  x2 = x2 - ((x2 >> 1) & (~(UWtype) 0 / 3));
++  x1 = (x1 & (~(UWtype) 0 / 5)) + ((x1 >> 2) & (~(UWtype) 0 / 5));
++  x2 = (x2 & (~(UWtype) 0 / 5)) + ((x2 >> 2) & (~(UWtype) 0 / 5));
++  x1 = (x1 + (x1 >> 4)) & (~(UWtype) 0 / 17);
++  x2 = (x2 + (x2 >> 4)) & (~(UWtype) 0 / 17);
+   x1 += x2;
+-  return (x1 * POPCOUNTCST (0x01)) >> (W_TYPE_SIZE - __CHAR_BIT__);
++  return (x1 * (~(UWtype) 0 / 255)) >> (W_TYPE_SIZE - __CHAR_BIT__);
+ #else
+   int i, ret = 0;
+ 
