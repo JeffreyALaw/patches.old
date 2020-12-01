@@ -1,0 +1,239 @@
+diff --git a/gcc/config/h8300/addsub.md b/gcc/config/h8300/addsub.md
+index d0877c008bf..1f0a8cf2822 100644
+--- a/gcc/config/h8300/addsub.md
++++ b/gcc/config/h8300/addsub.md
+@@ -19,7 +19,7 @@
+   [(parallel [(set (match_dup 0) (plus:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*addqi3_clobber_flags"
++(define_insn "*addqi3_flags<cczn>"
+   [(set (match_operand:QI 0 "h8300_dst_operand" "=rQ")
+ 	(plus:QI (match_operand:QI 1 "h8300_dst_operand" "%0")
+ 		 (match_operand:QI 2 "h8300_src_operand" "rQi")))
+@@ -38,18 +38,41 @@
+   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*addhi3_clobber_flags"
++(define_insn "*addhi3_flags<cczn>"
+   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r")
+ 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0")
+-		 (match_operand:HI 2 "h8300_src_operand" "L,N,J,n,r")))
++		 (match_operand:HI 2 "h8300_src_operand" "M,O,J,n,r")))
+    (clobber (reg:CC CC_REG))]
+   "reload_completed && !TARGET_H8300SX"
+-  "@
+-   adds	%2,%S0
+-   subs	%G2,%S0
+-   add.b	%t2,%t0
+-   add.w	%T2,%T0
+-   add.w	%T2,%T0"
++  "*
++  {
++    switch (which_alternative)
++      {
++      case 0:
++	return \"inc %T2,%T0\";
++      case 1:
++	return \"dec %G2,%T0\";
++      case 2:
++	return \"add.b	%t2,%t0\";
++      case 3:
++	{
++	  /* If the constant is 4 or -4 and we do not need the
++	     flags, then we can use adds/subs which is two bytes
++	     shorter.  */
++	  rtx x = XVECEXP (PATTERN (insn), 0, 1);
++	  bool flags_needed = GET_CODE (x) == CLOBBER;
++	  if (flags_needed && INTVAL (operands[2]) == 4)
++	    return \"adds	%2,%S0\";
++	  if (flags_needed && INTVAL (operands[2]) == -4)
++	    return \"subs	%G2,%S0\";
++	  return \"add.w	%T2,%T0\";
++	}
++      case 4:
++	return \"add.w	%T2,%T0\";
++      default:
++	gcc_unreachable ();
++      }
++  }"
+   [(set_attr "length" "2,2,2,4,2")])
+ 
+ (define_insn_and_split "*addhi3_h8sx"
+@@ -62,7 +85,7 @@
+   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*addhi3_h8sx_clobber_flags"
++(define_insn "*addhi3_h8sx_flags<cczn>"
+   [(set (match_operand:HI 0 "h8300_dst_operand" "=rU,rU,r,rQ")
+ 	(plus:HI (match_operand:HI 1 "h8300_dst_operand" "%0,0,0,0")
+ 		 (match_operand:HI 2 "h8300_src_operand" "P3>X,P3<X,J,rQi")))
+@@ -98,14 +121,15 @@
+   [(parallel [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*addsi_clobber_flags"
++(define_insn "*addsi_flags<cczn>"
+   [(set (match_operand:SI 0 "h8300_dst_operand" "=rQ,rQ")
+ 	(plus:SI (match_operand:SI 1 "h8300_dst_operand" "%0,0")
+ 		 (match_operand:SI 2 "h8300_src_operand" "i,rQ")))
+    (clobber (reg:CC CC_REG))]
+   "reload_completed && h8300_operands_match_p (operands)"
+ {
+-  return output_plussi (operands, false);
++  rtx x = XVECEXP (PATTERN (insn), 0, 1);
++  return output_plussi (operands, GET_CODE (x) != CLOBBER);
+ }
+   [(set (attr "length")
+ 	(symbol_ref "compute_plussi_length (operands, false)"))])
+@@ -130,7 +154,7 @@
+   [(parallel [(set (match_dup 0) (minus:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*subqi3_clobber_flags"
++(define_insn "*subqi3_flags<cc>"
+   [(set (match_operand:QI 0 "h8300_dst_operand" "=rQ")
+ 	(minus:QI (match_operand:QI 1 "h8300_dst_operand" "0")
+ 		  (match_operand:QI 2 "h8300_dst_operand" "rQ")))
+@@ -149,7 +173,7 @@
+   [(parallel [(set (match_dup 0) (minus:HSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*sub<mode>3_clobber_flags"
++(define_insn "*sub<mode>3_flags<cc>"
+   [(set (match_operand:HSI 0 "h8300_dst_operand" "=rQ,rQ")
+ 	(minus:HSI (match_operand:HSI 1 "h8300_dst_operand" "0,0")
+ 		   (match_operand:HSI 2 "h8300_src_operand" "rQ,i")))
+@@ -183,12 +207,15 @@
+   [(parallel [(set (match_dup 0) (neg:QHSI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*neg<mode>2_clobber_flags"
++(define_insn "*neg<mode>2_flags<cc>"
+   [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
+ 	(neg:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+   "reload_completed"
+   {
++    rtx x = XVECEXP (PATTERN (insn), 0, 1);
++    if (GET_CODE (x) != CLOBBER)
++	printf("Yow!\n");
+     if (<MODE>mode == E_QImode)
+       return "neg	%X0";
+     if (<MODE>mode == E_HImode)
+diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
+index 31e23b238cc..75fbab11302 100644
+--- a/gcc/config/h8300/h8300.c
++++ b/gcc/config/h8300/h8300.c
+@@ -1946,13 +1946,14 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
+ {
+   if (op1 == const0_rtx
+       && (cond == EQ || cond == NE || cond == LT || cond == GE)
+-      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+-          || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
++      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == AND
+           || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+           || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
+ 	  || GET_CODE (op0) == REG || GET_CODE (op0) == MULT))
+     return CCZNmode;
+ 
++  /* This covers MINUS, NEG and others that set condition codes
++     like a comparison.  */
+   return CCmode;
+ }
+ 
+diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
+index 7c9cc324f39..932f74eb88f 100644
+--- a/gcc/config/h8300/h8300.md
++++ b/gcc/config/h8300/h8300.md
+@@ -134,6 +134,39 @@
+ (define_attr "old_cc" "none,none_0hit,set_znv,set_zn,compare,clobber"
+   (const_string "clobber"))
+ 
++;; So the idea here is to define iterators and substitutions so that we
++;; can easily modify the patterns with CC clobbers into a pattern
++;; which sets appropriate condition codes
++
++;; The modes we're supporting.  This is used when we want to generate
++;; multiple patterns where only the mode differs from a single template
++(define_mode_iterator H8cc [CC CCZN])
++
++;; This is used to generate multiple define_substs from a single
++;; template for the different variants we might have.
++(define_mode_attr cc [(CC "cc") (CCZN "cczn")])
++
++;; The primary substitution pattern.  <cc> is used to create multiple
++;; substitutions based on the CC bits that are set.
++;;
++;; The mode iterator sets the actual mode on the condition code
++;; REG expression.
++(define_subst "subst_<cc>"
++  [(set (match_operand 0 "")
++	(match_operand 1 ""))
++   (clobber (reg:CC CC_REG))]
++  ""
++  [(set (reg:H8cc CC_REG)
++	(compare:H8cc (match_dup 1) (const_int 0)))
++   (set (match_dup 0) (match_dup 1))])
++
++
++;; So when we see <cc> or <cczn> in a define_insn pattern, we'll
++;; apply the subst_cczn or subset_cc define_subst to generate a
++;; new pattern that compare-elim can use
++(define_subst_attr "cczn" "subst_cczn" "" "_cczn")
++(define_subst_attr "cc" "subst_cc" "" "_cc")
++
+ ;; Type of delay slot.  NONE means the instruction has no delay slot.
+ ;; JUMP means it is an unconditional jump that (if short enough)
+ ;; could be implemented using bra/s.
+diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
+index c07dbaf999c..49d1e4312ca 100644
+--- a/gcc/config/h8300/jumpcall.md
++++ b/gcc/config/h8300/jumpcall.md
+@@ -23,18 +23,18 @@
+   ""
+   "#"
+   "reload_completed"
+-  [(set (reg:CC CC_REG)
+-	(compare:CC (match_dup 1) (match_dup 2)))
++  [(set (reg:H8cc CC_REG)
++	(compare:H8cc (match_dup 1) (match_dup 2)))
+    (set (pc)
+ 	(if_then_else (match_op_dup 0
+-		       [(reg:CC CC_REG) (const_int 0)])
++		       [(reg:H8cc CC_REG) (const_int 0)])
+ 		      (label_ref (match_dup 3)) (pc)))]
+   "")
+ 
+ (define_insn "*branch_1"
+   [(set (pc)
+ 	(if_then_else (match_operator 1 "comparison_operator"
+-		       [(reg:CC CC_REG) (const_int 0)])
++		       [(reg:H8cc CC_REG) (const_int 0)])
+ 		      (label_ref (match_operand 0 "" ""))
+ 		      (pc)))]
+   "reload_completed"
+@@ -52,7 +52,7 @@
+ (define_insn "*branch_1_false"
+   [(set (pc)
+ 	(if_then_else (match_operator 1 "comparison_operator"
+-		       [(reg:CC CC_REG) (const_int 0)])
++		       [(reg:H8cc CC_REG) (const_int 0)])
+ 		      (pc)
+ 		      (label_ref (match_operand 0 "" ""))))]
+   "reload_completed"
+diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
+index eb99c20b55d..94f4781a6e4 100644
+--- a/gcc/config/h8300/logical.md
++++ b/gcc/config/h8300/logical.md
+@@ -264,7 +264,7 @@
+   [(parallel [(set (match_dup 0) (not:QHSI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "one_cmpl<mode>2_clobber_flags"
++(define_insn "one_cmpl<mode>2_flags<cczn>"
+   [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
+ 	(not:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))
+    (clobber (reg:CC CC_REG))]
