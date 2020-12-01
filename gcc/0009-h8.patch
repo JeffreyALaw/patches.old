@@ -1,5 +1,5 @@
 diff --git a/gcc/config/h8300/addsub.md b/gcc/config/h8300/addsub.md
-index d0877c008bf..1f0a8cf2822 100644
+index d0877c008bf..23583b0cfce 100644
 --- a/gcc/config/h8300/addsub.md
 +++ b/gcc/config/h8300/addsub.md
 @@ -19,7 +19,7 @@
@@ -106,7 +106,7 @@ index d0877c008bf..1f0a8cf2822 100644
    [(set (match_operand:HSI 0 "h8300_dst_operand" "=rQ,rQ")
  	(minus:HSI (match_operand:HSI 1 "h8300_dst_operand" "0,0")
  		   (match_operand:HSI 2 "h8300_src_operand" "rQ,i")))
-@@ -183,12 +207,15 @@
+@@ -183,7 +207,7 @@
    [(parallel [(set (match_dup 0) (neg:QHSI (match_dup 1)))
  	      (clobber (reg:CC CC_REG))])])
  
@@ -115,35 +115,6 @@ index d0877c008bf..1f0a8cf2822 100644
    [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
  	(neg:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))
     (clobber (reg:CC CC_REG))]
-   "reload_completed"
-   {
-+    rtx x = XVECEXP (PATTERN (insn), 0, 1);
-+    if (GET_CODE (x) != CLOBBER)
-+	printf("Yow!\n");
-     if (<MODE>mode == E_QImode)
-       return "neg	%X0";
-     if (<MODE>mode == E_HImode)
-diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 31e23b238cc..75fbab11302 100644
---- a/gcc/config/h8300/h8300.c
-+++ b/gcc/config/h8300/h8300.c
-@@ -1946,13 +1946,14 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
- {
-   if (op1 == const0_rtx
-       && (cond == EQ || cond == NE || cond == LT || cond == GE)
--      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
--          || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
-+      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == AND
-           || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
-           || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
- 	  || GET_CODE (op0) == REG || GET_CODE (op0) == MULT))
-     return CCZNmode;
- 
-+  /* This covers MINUS, NEG and others that set condition codes
-+     like a comparison.  */
-   return CCmode;
- }
- 
 diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
 index 7c9cc324f39..932f74eb88f 100644
 --- a/gcc/config/h8300/h8300.md
