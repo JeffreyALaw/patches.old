@@ -93,7 +93,7 @@ index d0877c008bf..23583b0cfce 100644
  	      (clobber (reg:CC CC_REG))])])
  
 -(define_insn "*subqi3_clobber_flags"
-+(define_insn "*subqi3_flags<cc>"
++(define_insn "*subqi3_flags<cczn>"
    [(set (match_operand:QI 0 "h8300_dst_operand" "=rQ")
  	(minus:QI (match_operand:QI 1 "h8300_dst_operand" "0")
  		  (match_operand:QI 2 "h8300_dst_operand" "rQ")))
@@ -102,7 +102,7 @@ index d0877c008bf..23583b0cfce 100644
  	      (clobber (reg:CC CC_REG))])])
  
 -(define_insn "*sub<mode>3_clobber_flags"
-+(define_insn "*sub<mode>3_flags<cc>"
++(define_insn "*sub<mode>3_flags<cczn>"
    [(set (match_operand:HSI 0 "h8300_dst_operand" "=rQ,rQ")
  	(minus:HSI (match_operand:HSI 1 "h8300_dst_operand" "0,0")
  		   (match_operand:HSI 2 "h8300_src_operand" "rQ,i")))
@@ -111,7 +111,7 @@ index d0877c008bf..23583b0cfce 100644
  	      (clobber (reg:CC CC_REG))])])
  
 -(define_insn "*neg<mode>2_clobber_flags"
-+(define_insn "*neg<mode>2_flags<cc>"
++(define_insn "*neg<mode>2_flags<cczn>"
    [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
  	(neg:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))
     (clobber (reg:CC CC_REG))]
