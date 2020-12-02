@@ -47,3 +47,5 @@ gcc/testsuite/gcc.dg/pr84877.c
 gcc/testsuite/gcc.dg/torture/stackalign/setjmp-1.c
 gcc/testsuite/gcc.c-torture/execute/built-in-setjmp.c
 gcc/testsuite/gcc.dg/pr49496.c
+gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-1.c
+gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-11.c
