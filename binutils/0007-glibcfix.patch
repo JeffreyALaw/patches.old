@@ -1,0 +1,83 @@
+
+Hi Jim, Hi Jeff,
+
+  Would one or both of you mind trying out the attached patch ?
+
+  I think that it should work, although I am not sure if it ought
+  to be extended so that the all_symbols_read and cleanup plugin
+  functions are actually called.
+
+Cheers
+  Nick
+
+plugin.patch
+
+diff --git a/bfd/plugin.c b/bfd/plugin.c
+index bed98520da..3a52554141 100644
+--- a/bfd/plugin.c
++++ b/bfd/plugin.c
+@@ -127,10 +127,10 @@ message (int level ATTRIBUTE_UNUSED,
+ struct plugin_list_entry
+ {
+   /* These must be initialized for each IR object with LTO wrapper.  */
+-  ld_plugin_claim_file_handler claim_file;
+-  ld_plugin_all_symbols_read_handler all_symbols_read;
+-  ld_plugin_all_symbols_read_handler cleanup_handler;
+-  bfd_boolean has_symbol_type;
++  ld_plugin_claim_file_handler        claim_file;
++  ld_plugin_all_symbols_read_handler  all_symbols_read_handler;
++  ld_plugin_cleanup_handler           cleanup_handler;
++  bfd_boolean                         has_symbol_type;
+ 
+   struct plugin_list_entry *next;
+ 
+@@ -158,6 +158,23 @@ register_claim_file (ld_plugin_claim_file_handler handler)
+   return LDPS_OK;
+ }
+ 
++static enum ld_plugin_status
++register_all_symbols_read (ld_plugin_all_symbols_read_handler handler)
++{
++  BFD_ASSERT (current_plugin != NULL);
++  current_plugin->all_symbols_read_handler = handler;
++  return LDPS_OK;
++}
++
++/* Register a cleanup handler.  */
++static enum ld_plugin_status
++register_cleanup (ld_plugin_cleanup_handler handler)
++{
++  BFD_ASSERT (current_plugin != NULL);
++  current_plugin->cleanup_handler = handler;
++  return LDPS_OK;
++}
++
+ static enum ld_plugin_status
+ add_symbols (void * handle,
+ 	     int nsyms,
+@@ -256,7 +273,7 @@ try_load_plugin (const char *                pname,
+ 		 bfd_boolean                 build_list_p)
+ {
+   void *plugin_handle;
+-  struct ld_plugin_tv tv[5];
++  struct ld_plugin_tv tv[7];
+   int i;
+   ld_plugin_onload onload;
+   enum ld_plugin_status status;
+@@ -329,6 +346,14 @@ try_load_plugin (const char *                pname,
+   tv[i].tv_tag = LDPT_ADD_SYMBOLS_V2;
+   tv[i].tv_u.tv_add_symbols = add_symbols_v2;
+ 
++  ++i;
++  tv[i].tv_tag = LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK;
++  tv[i].tv_u.tv_register_all_symbols_read = register_all_symbols_read;
++
++  ++i;
++  tv[i].tv_tag = LDPT_REGISTER_CLEANUP_HOOK;
++  tv[i].tv_u.tv_register_cleanup = register_cleanup;
++
+   ++i;
+   tv[i].tv_tag = LDPT_NULL;
+   tv[i].tv_u.tv_val = 0;
+
+
