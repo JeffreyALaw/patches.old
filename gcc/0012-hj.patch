@@ -1,159 +1,255 @@
 
 
-When definitions marked with used attribute and unmarked definitions are
-placed in the section with the same name, switch to a new section if the
-SECTION_RETAIN bit doesn't match.
+On Mon, Dec 14, 2020 at 6:30 PM Jeff Law <law@redhat.com> wrote:
+>
+>
+>
+> On 12/14/20 7:03 PM, H.J. Lu wrote:
+>> On Mon, Dec 14, 2020 at 5:17 PM H.J. Lu <hjl.tools@gmail.com> wrote:
+>>> On Mon, Dec 14, 2020 at 5:16 PM H.J. Lu <hjl.tools@gmail.com> wrote:
+>>>> On Mon, Dec 14, 2020 at 4:51 PM Jeff Law <law@redhat.com> wrote:
+>>>>> The SHF_GNU_RETAIN patches are causing problems that are not fixed by
+>>>>> your pending code to swtich sections when SECTION_RETAIN doesn't match.
+>>>>>
+>>>>> After the SHF_GNU_RETAIN patches cr16-elf gets this building its far-pic
+>>>>> libgcc:
+>>>>>
+>>>>>
+>>>>> /tmp/ccwNNMIe.s: Assembler messages:
+>>>>> /tmp/ccwNNMIe.s:277: Error: operation combines symbols in different segments
+>>>>> /tmp/ccwNNMIe.s:305: Error: operation combines symbols in different segments
+>>>>> /tmp/ccwNNMIe.s:277: Error: can't resolve `.LFE6' {.text section} -
+>>>>> `.LFB6' {.text.call___do_global_dtors_aux section}
+>>>>> /tmp/ccwNNMIe.s:305: Error: can't resolve `.LFE8' {.text section} -
+>>>>> `.LFB8' {.text.call_frame_dummy section}
+>>>>>
+>>>>>
+>>>>> Which corresponds to this hunk of code:
+>>>>>         .section        .text.call___do_global_dtors_aux,"axR",@progbits
+>>>>>         .align  4
+>>>>>         .type   _call___do_global_dtors_aux, @function
+>>>>> _call___do_global_dtors_aux:
+>>>>> .LFB6:
+>>>>>         push    ra
+>>>>> .LCFI6:
+>>>>> #APP
+>>>>> # 442 "/home/gcc/gcc/libgcc/crtstuff.c" 1
+>>>>>                 .section        .fini
+>>>>> # 0 "" 2
+>>>>> #NO_APP
+>>>>>         loadd   ___do_global_dtors_aux@cGOT (r12), (r1,r0)
+>>>>>         jal     (r1,r0)
+>>>>> #APP
+>>>>> # 442 "/home/gcc/gcc/libgcc/crtstuff.c" 1
+>>>>>                 .section        .text
+>>>>> # 0 "" 2
+>>>>> #NO_APP
+>>>>>         popret  ra
+>>>>> .LFE6:
+>>>>>
+>>>>>
+>>>>> Where we try to take the difference of the LBB and LBE symbols and
+>>>>> naturally the assembler complains because they're in different sections.
+>>>>>
+>>>>> Before the SHF_GNU_RETAIN patches we weren't switching into the
+>>>>> __do_global_dtors_aux section, instead we just switched into .text,
+>>>>> which worked as the LBB/LBE symbols ended up in the same section.
+>>>>>
+>>>>> The compilation line to show this:
+>>>>>
+>>>>> [law@localhost libgcc]$ /home/tmp/cr16-elf/gcc/./gcc/xgcc
+>>>>> -B/home/tmp/cr16-elf/gcc/./gcc/ -B/home/law/installed/cr16-elf/bin/
+>>>>> -B/home/law/installed/cr16-elf/lib/ -isystem
+>>>>> /home/law/installed/cr16-elf/include -isystem
+>>>>> /home/law/installed/cr16-elf/sys-include  -fPIC -mcr16cplus
+>>>>> -mdata-model=far -g -O2 -O2 -g -O2 -DIN_GCC
+>>>>> -DCROSS_DIRECTORY_STRUCTURE  -W -Wall -Wno-narrowing -Wwrite-strings
+>>>>> -Wcast-qual -Wno-error=format-diag -Wstrict-prototypes
+>>>>> -Wmissing-prototypes -Wno-error=format-diag -Wold-style-definition
+>>>>> -isystem ./include  -I. -I. -I../../.././gcc -I/home/gcc/gcc/libgcc
+>>>>> -I/home/gcc/gcc/libgcc/. -I/home/gcc/gcc/libgcc/../gcc
+>>>>> -I/home/gcc/gcc/libgcc/../include   -g0  -finhibit-size-directive
+>>>>> -fno-inline -fno-exceptions -fno-zero-initialized-in-bss
+>>>>> -fno-toplevel-reorder -fno-tree-vectorize -fbuilding-libgcc
+>>>>> -fno-stack-protector  -Dinhibit_libc  -I. -I. -I../../.././gcc
+>>>>> -I/home/gcc/gcc/libgcc -I/home/gcc/gcc/libgcc/.
+>>>>> -I/home/gcc/gcc/libgcc/../gcc -I/home/gcc/gcc/libgcc/../include  -o
+>>>>> crtbegin.o -MT crtbegin.o -MD -MP -MF crtbegin.dep  -c
+>>>>> /home/gcc/gcc/libgcc/crtstuff.c -DCRT_BEGIN -save-temps
+>>>>>
+>>>>> Naturally failure to build libgcc is catastrophic to port correctness...
+>>>> The code is very fragile:
+>>>>
+>>>> [hjl@gnu-cfl-2 retain-1]$ cat x.i
+>>>> static void __attribute__((used))
+>>>> __do_global_dtors_aux (void)
+>>>> {
+>>>>   static _Bool completed;
+>>>>
+>>>>   if (__builtin_expect (completed, 0))
+>>>>     return;
+>>>>   completed = 1;
+>>>> }
+>>>>
+>>>> static void __attribute__((__used__))
+>>>> call___do_global_dtors_aux (void)
+>>>> {
+>>>>   asm ("\t.section\t.fini");
+>>>>   __do_global_dtors_aux ();
+>>>>   asm ("\t.section\t.text");
+>>>> }
+>>>> [hjl@gnu-cfl-2 retain-1]$
+>>>>
+>>>> It will also fail with -ffunction-sections with GCC 10.  We can add a
+>>>> switch to turn off
+>>>> SECTION_RETAIN for this case.
+>>>>
+>>> Another possibility is to use pushsection and popsection.
+>>>
+>> 2 possibilities:
+>>
+>> 1.  Use .pushsection and .popsection for HAVE_GAS_SHF_GNU_RETAIN.
+>> 2.  Require USE_INITFINI_ARRAY for HAVE_GAS_SHF_GNU_RETAIN.
+>>
+>> Does cr16-elf support .init_array which is more than 20 years old.  I am leaning
+>> toward .init_array.   Which do you prefer?
+> I'd lean towards the latter as well.  I suspect we've got other ports to
+> fix as well.
+
+Like this?
+
+-- 
+H.J.
+
+
+0001-Require-.init_array-.fini_array-support-for-SHF_GNU_.patch
+
+From 6788ff59443585389e0b21d17bad691ea82e79cc Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Mon, 14 Dec 2020 20:10:13 -0800
+Subject: [PATCH] Require .init_array/.fini_array support for SHF_GNU_RETAIN
+
+Since SHF_GNU_RETAIN support doesn't work for constructors and destructors
+with
+
+---
+static void __attribute__((used))
+__do_global_dtors_aux (void)
+{
+  static _Bool completed;
+
+  if (__builtin_expect (completed, 0))
+    return;
+  completed = 1;
+}
+
+static void __attribute__((__used__))
+call___do_global_dtors_aux (void)
+{
+  asm ("\t.section\t.fini");
+  __do_global_dtors_aux ();
+  asm ("\t.section\t.text");
+}
+---
+
+use SHF_GNU_RETAIN only if .init_array/.fini_array section is supported.
 
 gcc/
 
-	PR target/98146
-	* output.h (switch_to_section): Add a tree argument, default to
-	nullptr.
-	* varasm.c (get_section): If the SECTION_RETAIN bit doesn't match,
-	return and switch to a new section later.
-	(assemble_start_function): Pass decl to switch_to_section.
-	(assemble_variable): Likewise.
-	(switch_to_section): If the SECTION_RETAIN bit doesn't match,
-	switch to a new section.
+	* defaults.h (SUPPORTS_SHF_GNU_RETAIN): New.
+	* varasm.c (get_section): Replace HAVE_GAS_SHF_GNU_RETAIN with
+	SUPPORTS_SHF_GNU_RETAIN.
+	(resolve_unique_section): Likewise.
+	(get_variable_section): Likewise.
+	(switch_to_section): Likewise.
 
 gcc/testsuite/
 
-	PR target/98146
-	* c-c++-common/attr-used-5.c: New test.
-	* c-c++-common/attr-used-6.c: Likewise.
-	* c-c++-common/attr-used-7.c: Likewise.
-	* c-c++-common/attr-used-8.c: Likewise.
-	* c-c++-common/attr-used-9.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_R_flag_in_section): Also check
+	HAVE_INITFINI_ARRAY_SUPPORT != 0.
 ---
- gcc/output.h                             |  2 +-
- gcc/testsuite/c-c++-common/attr-used-5.c | 26 ++++++++++++++++++++
- gcc/testsuite/c-c++-common/attr-used-6.c | 26 ++++++++++++++++++++
- gcc/testsuite/c-c++-common/attr-used-7.c |  8 +++++++
- gcc/testsuite/c-c++-common/attr-used-8.c |  8 +++++++
- gcc/testsuite/c-c++-common/attr-used-9.c | 28 ++++++++++++++++++++++
- gcc/varasm.c                             | 30 ++++++++++++++++++++----
- 7 files changed, 123 insertions(+), 5 deletions(-)
- create mode 100644 gcc/testsuite/c-c++-common/attr-used-5.c
- create mode 100644 gcc/testsuite/c-c++-common/attr-used-6.c
- create mode 100644 gcc/testsuite/c-c++-common/attr-used-7.c
- create mode 100644 gcc/testsuite/c-c++-common/attr-used-8.c
- create mode 100644 gcc/testsuite/c-c++-common/attr-used-9.c
+ gcc/defaults.h                        | 11 +++++++++++
+ gcc/testsuite/lib/target-supports.exp |  2 +-
+ gcc/varasm.c                          |  8 ++++----
+ 3 files changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/gcc/output.h b/gcc/output.h
-index fa8ace1f394..1f9af46da1d 100644
---- a/gcc/output.h
-+++ b/gcc/output.h
-@@ -548,7 +548,7 @@ extern void switch_to_other_text_partition (void);
- extern section *get_cdtor_priority_section (int, bool);
+diff --git a/gcc/defaults.h b/gcc/defaults.h
+index f1a38626624..80a84dde2d6 100644
+--- a/gcc/defaults.h
++++ b/gcc/defaults.h
+@@ -286,6 +286,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ #endif
+ #endif
  
- extern bool unlikely_text_section_p (section *);
--extern void switch_to_section (section *);
-+extern void switch_to_section (section *, tree = nullptr);
- extern void output_section_asm_op (const void *);
++/* This determines whether or not we support marking sections with
++   SHF_GNU_RETAIN flag.  Also require .init_array/.fini_array section
++   for constructors and destructors.  */
++#ifndef SUPPORTS_SHF_GNU_RETAIN
++#if HAVE_GAS_SHF_GNU_RETAIN && HAVE_INITFINI_ARRAY_SUPPORT
++#define SUPPORTS_SHF_GNU_RETAIN 1
++#else
++#define SUPPORTS_SHF_GNU_RETAIN 0
++#endif
++#endif
++
+ /* This determines whether or not we support link-once semantics.  */
+ #ifndef SUPPORTS_ONE_ONLY
+ #ifdef MAKE_DECL_ONE_ONLY
+diff --git a/gcc/testsuite/lib/target-supports.exp b/gcc/testsuite/lib/target-supports.exp
+index 3c02f763e7e..11343d0192f 100644
+--- a/gcc/testsuite/lib/target-supports.exp
++++ b/gcc/testsuite/lib/target-supports.exp
+@@ -10840,7 +10840,7 @@ proc check_effective_target_R_flag_in_section { } {
  
- extern void record_tm_clone_pair (tree, tree);
+ 	set f [open $src "w"]
+ 	puts $f "#include \"../../auto-host.h\""
+-	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0"
++	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0 || HAVE_INITFINI_ARRAY_SUPPORT == 0"
+ 	puts $f "# error Assembler does not support 'R' flag in .section directive."
+ 	puts $f "#endif"
+ 	close $f
 diff --git a/gcc/varasm.c b/gcc/varasm.c
-index 0fac3688828..c5ea29c4e4c 100644
+index 077f474d6ec..4c50fc3f80f 100644
 --- a/gcc/varasm.c
 +++ b/gcc/varasm.c
-@@ -342,6 +342,11 @@ get_section (const char *name, unsigned int flags, tree decl,
- 	      sect->common.flags |= (SECTION_WRITE | SECTION_RELRO);
- 	      return sect;
- 	    }
-+	  /* If the SECTION_RETAIN bit doesn't match, return and switch
-+	     to a new section later.  */
-+	  if ((sect->common.flags & SECTION_RETAIN)
-+	      != (flags & SECTION_RETAIN))
-+	    return sect;
- 	  /* Sanity check user variables for flag changes.  */
- 	  if (sect->named.decl != NULL
- 	      && DECL_P (sect->named.decl)
-@@ -1852,7 +1857,7 @@ assemble_start_function (tree decl, const char *fnname)
+@@ -292,7 +292,7 @@ get_section (const char *name, unsigned int flags, tree decl,
+   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
+ 					    INSERT);
+   flags |= SECTION_NAMED;
+-  if (HAVE_GAS_SHF_GNU_RETAIN
++  if (SUPPORTS_SHF_GNU_RETAIN
+       && decl != nullptr
+       && DECL_P (decl)
+       && DECL_PRESERVE_P (decl))
+@@ -482,7 +482,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
+   if (DECL_SECTION_NAME (decl) == NULL
+       && targetm_common.have_named_sections
+       && (flag_function_or_data_sections
+-	  || (HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
++	  || (SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
+ 	  || DECL_COMDAT_GROUP (decl)))
+     {
+       targetm.asm_out.unique_section (decl, reloc);
+@@ -1222,7 +1222,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
+     vnode->get_constructor ();
  
-   /* Switch to the correct text section for the start of the function.  */
- 
--  switch_to_section (function_section (decl));
-+  switch_to_section (function_section (decl), decl);
-   if (crtl->has_bb_partition && !hot_label_written)
-     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
- 
-@@ -2348,7 +2353,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
- 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
- 	handle_vtv_comdat_section (sect, decl);
-       else
--	switch_to_section (sect);
-+	switch_to_section (sect, decl);
-       if (align > BITS_PER_UNIT)
- 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-       assemble_variable_contents (decl, name, dont_output_data,
-@@ -7715,10 +7720,27 @@ output_section_asm_op (const void *directive)
-    the current section is NEW_SECTION.  */
- 
- void
--switch_to_section (section *new_section)
-+switch_to_section (section *new_section, tree decl)
+   if (DECL_COMMON (decl)
+-      && !(HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
++      && !(SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
+     {
+       /* If the decl has been given an explicit section name, or it resides
+ 	 in a non-generic address space, then it isn't common, and shouldn't
+@@ -7751,7 +7751,7 @@ switch_to_section (section *new_section, tree decl)
  {
    if (in_section == new_section)
--    return;
-+    {
-+      if (HAVE_GAS_SHF_GNU_RETAIN
-+	  && (new_section->common.flags & SECTION_NAMED)
-+	  && decl != nullptr
-+	  && (!!DECL_PRESERVE_P (decl)
-+	      != !!(new_section->common.flags & SECTION_RETAIN)))
-+	{
-+	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
-+	     section.  */
-+	  if (DECL_PRESERVE_P (decl))
-+	    new_section->common.flags |= SECTION_RETAIN;
-+	  else
-+	    new_section->common.flags &= ~(SECTION_RETAIN
-+					   | SECTION_DECLARED);
-+	}
-+      else
-+	return;
-+    }
- 
-   if (new_section->common.flags & SECTION_FORGET)
-     in_section = NULL;
-
-
-diff --git a/gcc/varasm.c b/gcc/varasm.c
-index c5ea29c4e4c..346b3bea890 100644
---- a/gcc/varasm.c
-+++ b/gcc/varasm.c
-@@ -7732,11 +7732,27 @@ switch_to_section (section *new_section, tree decl)
- 	{
- 	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
- 	     section.  */
-+	  tree used_decl, no_used_decl;
-+
- 	  if (DECL_PRESERVE_P (decl))
--	    new_section->common.flags |= SECTION_RETAIN;
-+	    {
-+	      new_section->common.flags |= SECTION_RETAIN;
-+	      used_decl = decl;
-+	      no_used_decl = new_section->named.decl;
-+	    }
- 	  else
--	    new_section->common.flags &= ~(SECTION_RETAIN
--					   | SECTION_DECLARED);
-+	    {
-+	      new_section->common.flags &= ~(SECTION_RETAIN
-+					     | SECTION_DECLARED);
-+	      used_decl = new_section->named.decl;
-+	      no_used_decl = decl;
-+	    }
-+	  warning (OPT_Wattributes,
-+		   "%+qD without %<used%> attribute and %qD with "
-+		   "%<used%> attribute are placed in a section with "
-+		   "the same name", no_used_decl, used_decl);
-+	  inform (DECL_SOURCE_LOCATION (used_decl),
-+		  "%qD was declared here", used_decl);
- 	}
-       else
- 	return;
+     {
+-      if (HAVE_GAS_SHF_GNU_RETAIN
++      if (SUPPORTS_SHF_GNU_RETAIN
+ 	  && (new_section->common.flags & SECTION_NAMED)
+ 	  && decl != nullptr
+ 	  && DECL_P (decl)
 -- 
-2.28.0
+2.29.2
 
 
