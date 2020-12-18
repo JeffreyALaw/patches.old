@@ -1,0 +1,169 @@
+commit fcbc90909135a99aac58480d94947a8ae40319f9
+Author: Jeff Law <law@redhat.com>
+Date:   Thu Dec 17 23:08:56 2020 -0700
+
+    Revert "Update gamma functions from code in picolibc"
+    
+    This reverts commit b2f3d593ff6074b945eb0ff925c2740e98a88ae0.
+
+diff --git a/newlib/libm/math/er_lgamma.c b/newlib/libm/math/er_lgamma.c
+index 5c88548fb..386a8a73b 100644
+--- a/newlib/libm/math/er_lgamma.c
++++ b/newlib/libm/math/er_lgamma.c
+@@ -12,9 +12,9 @@
+  *
+  */
+ 
+-/* __ieee754_lgamma_r(x)
++/* __ieee754_lgamma_r(x, signgamp)
+  * Reentrant version of the logarithm of the Gamma function 
+- * with signgam for the sign of Gamma(x). 
++ * with user provide pointer for the sign of Gamma(x). 
+  *
+  * Method:
+  *   1. Argument Reduction for 0 < x <= 8
+@@ -212,9 +212,8 @@ static double zero=  0.00000000000000000000e+00;
+ #ifdef __STDC__
+ 	double __ieee754_lgamma_r(double x, int *signgamp)
+ #else
+-	double __ieee754_lgamma_r(x, signgamp)
+-	double x;
+-	int *signgamp;
++	double __ieee754_lgamma_r(x,signgamp)
++	double x; int *signgamp;
+ #endif
+ {
+ 	double t,y,z,nadj = 0.0,p,p1,p2,p3,q,r,w;
+@@ -225,14 +224,8 @@ static double zero=  0.00000000000000000000e+00;
+     /* purge off +-inf, NaN, +-0, and negative arguments */
+ 	*signgamp = 1;
+ 	ix = hx&0x7fffffff;
+-	if(ix>=0x7ff00000) {
+-	    return x*x;
+-	}
+-	if((ix|lx)==0) {
+-	    if(hx<0)
+-	        *signgamp = -1;
+-	    return one/(x-x);
+-	}
++	if(ix>=0x7ff00000) return x*x;
++	if((ix|lx)==0) return one/zero;
+ 	if(ix<0x3b900000) {	/* |x|<2**-70, return -log(|x|) */
+ 	    if(hx<0) {
+ 	        *signgamp = -1;
+@@ -240,13 +233,10 @@ static double zero=  0.00000000000000000000e+00;
+ 	    } else return -__ieee754_log(x);
+ 	}
+ 	if(hx<0) {
+-	    if(ix>=0x43300000) { /* |x|>=2**52, must be -integer */
+-		return one/(x-x); /* -integer */
+-	    }
++	    if(ix>=0x43300000) 	/* |x|>=2**52, must be -integer */
++		return one/zero;
+ 	    t = sin_pi(x);
+-	    if(t==zero) {
+-		return one/(x-x); /* -integer */
+-	    }
++	    if(t==zero) return one/zero; /* -integer */
+ 	    nadj = __ieee754_log(pi/fabs(t*x));
+ 	    if(t<zero) *signgamp = -1;
+ 	    x = -x;
+@@ -317,4 +307,3 @@ static double zero=  0.00000000000000000000e+00;
+ 	if(hx<0) r = nadj - r;
+ 	return r;
+ }
+-
+diff --git a/newlib/libm/math/erf_lgamma.c b/newlib/libm/math/erf_lgamma.c
+index f88f63092..3c6ba02af 100644
+--- a/newlib/libm/math/erf_lgamma.c
++++ b/newlib/libm/math/erf_lgamma.c
+@@ -147,9 +147,8 @@ static float zero=  0.0000000000e+00;
+ #ifdef __STDC__
+ 	float __ieee754_lgammaf_r(float x, int *signgamp)
+ #else
+-	float __ieee754_lgammaf_r(x, signgamp)
+-	float x;
+-	int *signgamp;
++	float __ieee754_lgammaf_r(x,signgamp)
++	float x; int *signgamp;
+ #endif
+ {
+ 	float t,y,z,nadj = 0.0,p,p1,p2,p3,q,r,w;
+@@ -160,14 +159,8 @@ static float zero=  0.0000000000e+00;
+     /* purge off +-inf, NaN, +-0, and negative arguments */
+ 	*signgamp = 1;
+ 	ix = hx&0x7fffffff;
+-	if(ix>=0x7f800000) {
+-	    return x*x;
+-	}
+-	if(ix==0) {
+-	    if(hx<0)
+-	        *signgamp = -1;
+-	    return one/(x-x);
+-	}
++	if(ix>=0x7f800000) return x*x;
++	if(ix==0) return one/zero;
+ 	if(ix<0x1c800000) {	/* |x|<2**-70, return -log(|x|) */
+ 	    if(hx<0) {
+ 	        *signgamp = -1;
+@@ -175,14 +168,10 @@ static float zero=  0.0000000000e+00;
+ 	    } else return -__ieee754_logf(x);
+ 	}
+ 	if(hx<0) {
+-	    if(ix>=0x4b000000) { 	/* |x|>=2**23, must be -integer */
+-		return one/(x-x);
+-	    }
++	    if(ix>=0x4b000000) 	/* |x|>=2**23, must be -integer */
++		return one/zero;
+ 	    t = sin_pif(x);
+-	    if(t==zero) {
+-		/* tgamma wants NaN instead of INFINITY */
+-		return one/(x-x); /* -integer */
+-	    }
++	    if(t==zero) return one/zero; /* -integer */
+ 	    nadj = __ieee754_logf(pi/fabsf(t*x));
+ 	    if(t<zero) *signgamp = -1;
+ 	    x = -x;
+diff --git a/newlib/libm/math/w_tgamma.c b/newlib/libm/math/w_tgamma.c
+index 0f90dd4c6..c09092510 100644
+--- a/newlib/libm/math/w_tgamma.c
++++ b/newlib/libm/math/w_tgamma.c
+@@ -33,11 +33,11 @@
+ #else
+ 	if(_LIB_VERSION == _IEEE_) return y;
+ 
+-	if(!finite(y)) {
+-	  if(x < 0.0 && floor(x)==x)
+-	    errno = EDOM;
+-	  else if (finite(x))
+-	    errno = ERANGE;
++	if(!finite(y)&&finite(x)) {
++	  if(floor(x)==x&&x<=0.0)
++	    return __kernel_standard(x,x,41); /* tgamma pole */
++	  else
++	    return __kernel_standard(x,x,40); /* tgamma overflow */
+ 	}
+ 	return y;
+ #endif
+diff --git a/newlib/libm/math/wf_tgamma.c b/newlib/libm/math/wf_tgamma.c
+index 80aacf757..88567b2eb 100644
+--- a/newlib/libm/math/wf_tgamma.c
++++ b/newlib/libm/math/wf_tgamma.c
+@@ -30,10 +30,13 @@
+ #else
+ 	if(_LIB_VERSION == _IEEE_) return y;
+ 
+-	if(x < 0.0 && floor(x)==x)
+-	    errno = EDOM;
+-	  else if (finite(x))
+-	    errno = ERANGE;
++	if(!finitef(y)&&finitef(x)) {
++	  if(floorf(x)==x&&x<=(float)0.0)
++	    /* tgammaf pole */
++	    return (float)__kernel_standard((double)x,(double)x,141);
++	  else
++	    /* tgammaf overflow */
++	    return (float)__kernel_standard((double)x,(double)x,140);
+ 	}
+ 	return y;
+ #endif
