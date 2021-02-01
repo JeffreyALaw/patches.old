@@ -1,0 +1,67 @@
+diff --git a/gcc/sched-deps.c b/gcc/sched-deps.c
+index 28b9d38ab3f..b1bc529663a 100644
+--- a/gcc/sched-deps.c
++++ b/gcc/sched-deps.c
+@@ -991,7 +991,7 @@ ask_dependency_caches (dep_t dep)
+ 	/* There is no existing dep so it should be created.  */
+ 	return DEP_CREATED;
+ 
+-      if (!(current_sched_info->flags & DO_SPECULATION)
++      if (!spec_dependency_cache
+ 	  || !bitmap_bit_p (&spec_dependency_cache[insn_luid], elem_luid))
+ 	{
+ 	  if ((present_dep_types | (DEP_STATUS (dep) & DEP_TYPES))
+@@ -1062,7 +1062,7 @@ set_dependency_caches (dep_t dep)
+ 
+       if (ds & SPECULATIVE)
+ 	{
+-	  gcc_assert (current_sched_info->flags & DO_SPECULATION);
++	  gcc_assert (spec_dependency_cache);
+ 	  bitmap_set_bit (&spec_dependency_cache[insn_luid], elem_luid);
+ 	}
+     }
+@@ -1116,7 +1116,7 @@ change_spec_dep_to_hard (sd_iterator_def sd_it)
+ 
+   DEP_STATUS (dep) &= ~SPECULATIVE;
+ 
+-  if (true_dependency_cache != NULL)
++  if (spec_dependency_cache != NULL)
+     /* Clear the cache entry.  */
+     bitmap_clear_bit (&spec_dependency_cache[INSN_LUID (insn)],
+ 		      INSN_LUID (elem));
+@@ -1439,7 +1439,7 @@ sd_delete_dep (sd_iterator_def sd_it)
+       bitmap_clear_bit (&control_dependency_cache[insn_luid], elem_luid);
+       bitmap_clear_bit (&output_dependency_cache[insn_luid], elem_luid);
+ 
+-      if (current_sched_info->flags & DO_SPECULATION)
++      if (spec_dependency_cache)
+ 	bitmap_clear_bit (&spec_dependency_cache[insn_luid], elem_luid);
+     }
+ 
+@@ -4153,7 +4153,7 @@ extend_dependency_caches (int n, bool create_p)
+ 	  bitmap_initialize (&anti_dependency_cache[i], 0);
+ 	  bitmap_initialize (&control_dependency_cache[i], 0);
+ 
+-          if (current_sched_info->flags & DO_SPECULATION)
++          if (spec_dependency_cache)
+             bitmap_initialize (&spec_dependency_cache[i], 0);
+ 	}
+       cache_size = luid;
+@@ -4184,7 +4184,7 @@ sched_deps_finish (void)
+ 	  bitmap_clear (&anti_dependency_cache[i]);
+ 	  bitmap_clear (&control_dependency_cache[i]);
+ 
+-          if (sched_deps_info->generate_spec_deps)
++          if (spec_dependency_cache)
+             bitmap_clear (&spec_dependency_cache[i]);
+ 	}
+       free (true_dependency_cache);
+@@ -4196,7 +4196,7 @@ sched_deps_finish (void)
+       free (control_dependency_cache);
+       control_dependency_cache = NULL;
+ 
+-      if (sched_deps_info->generate_spec_deps)
++      if (spec_dependency_cache)
+         {
+           free (spec_dependency_cache);
+           spec_dependency_cache = NULL;
