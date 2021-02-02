@@ -50,3 +50,4 @@ gcc/testsuite/gcc.dg/pr49496.c
 gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-1.c
 gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-11.c
 gcc/testsuite/gcc.c-torture/compile/20001226-1.c
+gcc/testsuite/gcc.dg/pr97459-6.c
