@@ -51,3 +51,14 @@ gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-1.c
 gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-11.c
 gcc/testsuite/gcc.c-torture/compile/20001226-1.c
 gcc/testsuite/gcc.dg/pr97459-6.c
+gcc/testsuite/c-c++-common/ubsan/null-1.c
+gcc/testsuite/c-c++-common/ubsan/null-2.c
+gcc/testsuite/c-c++-common/ubsan/null-4.c
+gcc/testsuite/c-c++-common/ubsan/null-5.c
+gcc/testsuite/c-c++-common/ubsan/null-6.c
+gcc/testsuite/c-c++-common/ubsan/null-7.c
+gcc/testsuite/c-c++-common/ubsan/null-8.c
+gcc/testsuite/c-c++-common/ubsan/null-9.c
+gcc/testsuite/c-c++-common/ubsan/null-10.c
+gcc/testsuite/c-c++-common/ubsan/null-11.c
+gcc/testsuite/c-c++-common/ubsan/pr59667.c
