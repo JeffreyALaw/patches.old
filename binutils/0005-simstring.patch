@@ -1,12 +1,12 @@
-diff --git a/sim/common/gentmap.c b/sim/common/gentmap.c
-index a606fad0e4f..e3af481dbaf 100644
---- a/sim/common/gentmap.c
-+++ b/sim/common/gentmap.c
-@@ -71,6 +71,7 @@ gen_targ_map_c (void)
-   printf ("#include <errno.h>\n");
-   printf ("#include <fcntl.h>\n");
-   printf ("#include \"ansidecl.h\"\n");
-+  printf ("#include <string.h>\n");
-   printf ("#include \"gdb/callback.h\"\n");
-   printf ("#include \"targ-vals.h\"\n");
-   printf ("\n");
+diff --git a/bfd/bfd-in.h b/bfd/bfd-in.h
+index c9a76731475..c877be5eb6f 100644
+--- a/bfd/bfd-in.h
++++ b/bfd/bfd-in.h
+@@ -37,6 +37,7 @@ extern "C" {
+ #include "bfd_stdint.h"
+ #include "diagnostics.h"
+ #include <stdarg.h>
++#include <string.h>
+ #include <sys/stat.h>
+ 
+ #if defined (__STDC__) || defined (ALMOST_STDC) || defined (HAVE_STRINGIZE)
