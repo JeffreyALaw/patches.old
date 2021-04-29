@@ -64,4 +64,3 @@ gcc/testsuite/c-c++-common/ubsan/null-10.c
 gcc/testsuite/c-c++-common/ubsan/null-11.c
 gcc/testsuite/c-c++-common/ubsan/pr59667.c
 gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
-gcc/testsuite/gcc.dg/Wrestrict-8.c
