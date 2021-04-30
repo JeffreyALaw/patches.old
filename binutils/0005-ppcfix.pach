@@ -1,0 +1,14 @@
+diff --git a/opcodes/ppc-dis.c b/opcodes/ppc-dis.c
+index 739195a9910..9f3d229683e 100644
+--- a/opcodes/ppc-dis.c
++++ b/opcodes/ppc-dis.c
+@@ -1068,7 +1068,8 @@ print_insn_powerpc (bfd_vma memaddr,
+ 	      && ((insn & ((-1ULL << 50) | (0x3fULL << 26)))
+ 		  == ((1ULL << 58) | (1ULL << 52) | (57ULL << 26)) /* pld */))
+ 	    {
+-	      for (int i = 0; i < 2; i++)
++	      int i;
++	      for (i = 0; i < 2; i++)
+ 		if (print_got_plt (private_data (info)->special + i, d34, info))
+ 		  break;
+ 	    }
