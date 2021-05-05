@@ -17,7 +17,7 @@ index 5ec66add127..f2377cb17e2 100644
  		       (label_ref (match_operand 3 "" ""))
                        (pc)))
 -   (clobber (cc0))]
-+   (reg:CC CC_REGNUM))]
++   (clobber (reg:CC CC_REGNUM))]
    ""
    "cmp<tIsa>\t%2, %1\;b%d0\t%l3"
    [(set_attr "length" "6,6")]
