@@ -25,7 +25,7 @@ index 5ec66add127..f2377cb17e2 100644
  
  (define_expand "cmp<mode>"
 -  [(parallel [(set (cc0)
-+  [(parallel [(reg:CC CC_REGNUM)
++  [(parallel [(set (reg:CC CC_REGNUM)
      (compare (match_operand:CR16IM 0 "register_operand" "")
  	     (match_operand:CR16IM 1 "nonmemory_operand" "")))
      (clobber (match_scratch:HI 2 "=r"))] ) ]
