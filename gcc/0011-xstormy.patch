@@ -1,0 +1,22 @@
+diff --git a/gcc/builtins.c b/gcc/builtins.c
+index 6f67eb7eeb5..5e7adfb4a92 100644
+--- a/gcc/builtins.c
++++ b/gcc/builtins.c
+@@ -6777,7 +6777,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
+ 	 PTR+offset, we have to replace it.  */
+       emit_move_insn (ptr, XEXP (to, 0));
+       to = replace_equiv_address (to, ptr);
+-      emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
++      expand_inc (rem, GEN_INT (-blksize));
+     }
+ 
+   /* Iterate over power-of-two block sizes from the maximum length to
+@@ -6813,7 +6813,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
+ 	{
+ 	  emit_move_insn (ptr, XEXP (to, 0));
+ 	  to = replace_equiv_address (to, ptr);
+-	  emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
++          expand_inc (rem, GEN_INT (-blksize));
+ 	}
+ 
+       if (label)
