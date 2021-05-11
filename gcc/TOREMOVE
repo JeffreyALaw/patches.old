@@ -64,7 +64,8 @@ gcc/testsuite/c-c++-common/ubsan/null-10.c
 gcc/testsuite/c-c++-common/ubsan/null-11.c
 gcc/testsuite/c-c++-common/ubsan/pr59667.c
 gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
-gcc/testsuite/c-c++-common/missing-header-3.c
+gcc/testsuite/c-c++-common/missing-header-1.c
 gcc/testsuite/c-c++-common/missing-header-2.c
+gcc/testsuite/c-c++-common/missing-header-3.c
 gcc/testsuite/c-c++-common/missing-header-4.c
 gcc/testsuite/c-c++-common/p98943.c
