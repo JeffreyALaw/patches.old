@@ -1,0 +1,663 @@
+diff --git a/libgloss/v850/_exit.c b/libgloss/v850/_exit.c
+index b45ae96c..44d4132b 100644
+--- a/libgloss/v850/_exit.c
++++ b/libgloss/v850/_exit.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/chmod.c b/libgloss/v850/chmod.c
+index c86e5c90..01ccd97b 100644
+--- a/libgloss/v850/chmod.c
++++ b/libgloss/v850/chmod.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/chown.c b/libgloss/v850/chown.c
+index 0344d77a..c34a9d6e 100644
+--- a/libgloss/v850/chown.c
++++ b/libgloss/v850/chown.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/close.c b/libgloss/v850/close.c
+index 3c62f68e..40301f6a 100644
+--- a/libgloss/v850/close.c
++++ b/libgloss/v850/close.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/creat.c b/libgloss/v850/creat.c
+index 8d468a68..4989fc0f 100644
+--- a/libgloss/v850/creat.c
++++ b/libgloss/v850/creat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/execv.c b/libgloss/v850/execv.c
+index 5286be68..38d74b41 100644
+--- a/libgloss/v850/execv.c
++++ b/libgloss/v850/execv.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/execve.c b/libgloss/v850/execve.c
+index b8d97f91..3efb98a1 100644
+--- a/libgloss/v850/execve.c
++++ b/libgloss/v850/execve.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/fork.c b/libgloss/v850/fork.c
+index 116116c1..50bf5fa3 100644
+--- a/libgloss/v850/fork.c
++++ b/libgloss/v850/fork.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/fstat.c b/libgloss/v850/fstat.c
+index e8783b37..9c1cecea 100644
+--- a/libgloss/v850/fstat.c
++++ b/libgloss/v850/fstat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/getpid.c b/libgloss/v850/getpid.c
+index 18fd1494..32ac7fbf 100644
+--- a/libgloss/v850/getpid.c
++++ b/libgloss/v850/getpid.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/gettime.c b/libgloss/v850/gettime.c
+index fc47532a..7a99f8af 100644
+--- a/libgloss/v850/gettime.c
++++ b/libgloss/v850/gettime.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include "sys/time.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/isatty.c b/libgloss/v850/isatty.c
+index 95d2c0e8..248ab524 100644
+--- a/libgloss/v850/isatty.c
++++ b/libgloss/v850/isatty.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/kill.c b/libgloss/v850/kill.c
+index b8e53955..34e5db79 100644
+--- a/libgloss/v850/kill.c
++++ b/libgloss/v850/kill.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include <reent.h>
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/link.c b/libgloss/v850/link.c
+index 9776d799..f079d372 100644
+--- a/libgloss/v850/link.c
++++ b/libgloss/v850/link.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/lseek.c b/libgloss/v850/lseek.c
+index b5d3ef0c..75c5e0e8 100644
+--- a/libgloss/v850/lseek.c
++++ b/libgloss/v850/lseek.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/open.c b/libgloss/v850/open.c
+index 96616e52..e8f63f4f 100644
+--- a/libgloss/v850/open.c
++++ b/libgloss/v850/open.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/pipe.c b/libgloss/v850/pipe.c
+index 494a99e3..c5219798 100644
+--- a/libgloss/v850/pipe.c
++++ b/libgloss/v850/pipe.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/read.c b/libgloss/v850/read.c
+index ec064cbb..b55d1cb9 100644
+--- a/libgloss/v850/read.c
++++ b/libgloss/v850/read.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/stat.c b/libgloss/v850/stat.c
+index dc8351e1..b66a669d 100644
+--- a/libgloss/v850/stat.c
++++ b/libgloss/v850/stat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/time.c b/libgloss/v850/time.c
+index d0dc93f8..04ea03da 100644
+--- a/libgloss/v850/time.c
++++ b/libgloss/v850/time.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/times.c b/libgloss/v850/times.c
+index a558267f..242dffd8 100644
+--- a/libgloss/v850/times.c
++++ b/libgloss/v850/times.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include "sys/times.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/unlink.c b/libgloss/v850/unlink.c
+index c6261d3e..23c60ec5 100644
+--- a/libgloss/v850/unlink.c
++++ b/libgloss/v850/unlink.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/utime.c b/libgloss/v850/utime.c
+index ea1f7899..83ee9754 100644
+--- a/libgloss/v850/utime.c
++++ b/libgloss/v850/utime.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/wait.c b/libgloss/v850/wait.c
+index d8c96f05..9cab5ce7 100644
+--- a/libgloss/v850/wait.c
++++ b/libgloss/v850/wait.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/libgloss/v850/write.c b/libgloss/v850/write.c
+index 136ac9ec..07bec15d 100644
+--- a/libgloss/v850/write.c
++++ b/libgloss/v850/write.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/_exit.c b/newlib/libc/sys/sysnecv850/_exit.c
+index b45ae96c..44d4132b 100644
+--- a/newlib/libc/sys/sysnecv850/_exit.c
++++ b/newlib/libc/sys/sysnecv850/_exit.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/chmod.c b/newlib/libc/sys/sysnecv850/chmod.c
+index c86e5c90..01ccd97b 100644
+--- a/newlib/libc/sys/sysnecv850/chmod.c
++++ b/newlib/libc/sys/sysnecv850/chmod.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/chown.c b/newlib/libc/sys/sysnecv850/chown.c
+index 0344d77a..c34a9d6e 100644
+--- a/newlib/libc/sys/sysnecv850/chown.c
++++ b/newlib/libc/sys/sysnecv850/chown.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/close.c b/newlib/libc/sys/sysnecv850/close.c
+index 3c62f68e..40301f6a 100644
+--- a/newlib/libc/sys/sysnecv850/close.c
++++ b/newlib/libc/sys/sysnecv850/close.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/creat.c b/newlib/libc/sys/sysnecv850/creat.c
+index 8d468a68..4989fc0f 100644
+--- a/newlib/libc/sys/sysnecv850/creat.c
++++ b/newlib/libc/sys/sysnecv850/creat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/execv.c b/newlib/libc/sys/sysnecv850/execv.c
+index 5286be68..38d74b41 100644
+--- a/newlib/libc/sys/sysnecv850/execv.c
++++ b/newlib/libc/sys/sysnecv850/execv.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/execve.c b/newlib/libc/sys/sysnecv850/execve.c
+index b8d97f91..3efb98a1 100644
+--- a/newlib/libc/sys/sysnecv850/execve.c
++++ b/newlib/libc/sys/sysnecv850/execve.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/fork.c b/newlib/libc/sys/sysnecv850/fork.c
+index 116116c1..50bf5fa3 100644
+--- a/newlib/libc/sys/sysnecv850/fork.c
++++ b/newlib/libc/sys/sysnecv850/fork.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/fstat.c b/newlib/libc/sys/sysnecv850/fstat.c
+index b7eed0af..f6670390 100644
+--- a/newlib/libc/sys/sysnecv850/fstat.c
++++ b/newlib/libc/sys/sysnecv850/fstat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/getpid.c b/newlib/libc/sys/sysnecv850/getpid.c
+index 18fd1494..32ac7fbf 100644
+--- a/newlib/libc/sys/sysnecv850/getpid.c
++++ b/newlib/libc/sys/sysnecv850/getpid.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/gettime.c b/newlib/libc/sys/sysnecv850/gettime.c
+index fc47532a..7a99f8af 100644
+--- a/newlib/libc/sys/sysnecv850/gettime.c
++++ b/newlib/libc/sys/sysnecv850/gettime.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include "sys/time.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/isatty.c b/newlib/libc/sys/sysnecv850/isatty.c
+index 95d2c0e8..248ab524 100644
+--- a/newlib/libc/sys/sysnecv850/isatty.c
++++ b/newlib/libc/sys/sysnecv850/isatty.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/kill.c b/newlib/libc/sys/sysnecv850/kill.c
+index b8e53955..34e5db79 100644
+--- a/newlib/libc/sys/sysnecv850/kill.c
++++ b/newlib/libc/sys/sysnecv850/kill.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include <reent.h>
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/link.c b/newlib/libc/sys/sysnecv850/link.c
+index 9776d799..f079d372 100644
+--- a/newlib/libc/sys/sysnecv850/link.c
++++ b/newlib/libc/sys/sysnecv850/link.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/lseek.c b/newlib/libc/sys/sysnecv850/lseek.c
+index b5d3ef0c..75c5e0e8 100644
+--- a/newlib/libc/sys/sysnecv850/lseek.c
++++ b/newlib/libc/sys/sysnecv850/lseek.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/open.c b/newlib/libc/sys/sysnecv850/open.c
+index 96616e52..e8f63f4f 100644
+--- a/newlib/libc/sys/sysnecv850/open.c
++++ b/newlib/libc/sys/sysnecv850/open.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/pipe.c b/newlib/libc/sys/sysnecv850/pipe.c
+index 494a99e3..c5219798 100644
+--- a/newlib/libc/sys/sysnecv850/pipe.c
++++ b/newlib/libc/sys/sysnecv850/pipe.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/read.c b/newlib/libc/sys/sysnecv850/read.c
+index ec064cbb..b55d1cb9 100644
+--- a/newlib/libc/sys/sysnecv850/read.c
++++ b/newlib/libc/sys/sysnecv850/read.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/rename.c b/newlib/libc/sys/sysnecv850/rename.c
+index 9d9f7dbf..0d6e23c3 100644
+--- a/newlib/libc/sys/sysnecv850/rename.c
++++ b/newlib/libc/sys/sysnecv850/rename.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/stat.c b/newlib/libc/sys/sysnecv850/stat.c
+index dc8351e1..b66a669d 100644
+--- a/newlib/libc/sys/sysnecv850/stat.c
++++ b/newlib/libc/sys/sysnecv850/stat.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/time.c b/newlib/libc/sys/sysnecv850/time.c
+index d0dc93f8..04ea03da 100644
+--- a/newlib/libc/sys/sysnecv850/time.c
++++ b/newlib/libc/sys/sysnecv850/time.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/times.c b/newlib/libc/sys/sysnecv850/times.c
+index a558267f..242dffd8 100644
+--- a/newlib/libc/sys/sysnecv850/times.c
++++ b/newlib/libc/sys/sysnecv850/times.c
+@@ -4,7 +4,7 @@
+ #include "sys/syscall.h"
+ #include "sys/times.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/unlink.c b/newlib/libc/sys/sysnecv850/unlink.c
+index 34b712f0..eb19d5cb 100644
+--- a/newlib/libc/sys/sysnecv850/unlink.c
++++ b/newlib/libc/sys/sysnecv850/unlink.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/utime.c b/newlib/libc/sys/sysnecv850/utime.c
+index ea1f7899..83ee9754 100644
+--- a/newlib/libc/sys/sysnecv850/utime.c
++++ b/newlib/libc/sys/sysnecv850/utime.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/wait.c b/newlib/libc/sys/sysnecv850/wait.c
+index d8c96f05..9cab5ce7 100644
+--- a/newlib/libc/sys/sysnecv850/wait.c
++++ b/newlib/libc/sys/sysnecv850/wait.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
+diff --git a/newlib/libc/sys/sysnecv850/write.c b/newlib/libc/sys/sysnecv850/write.c
+index 136ac9ec..07bec15d 100644
+--- a/newlib/libc/sys/sysnecv850/write.c
++++ b/newlib/libc/sys/sysnecv850/write.c
+@@ -3,7 +3,7 @@
+ #include <sys/stat.h>
+ #include "sys/syscall.h"
+ 
+-int errno;
++extern int errno;
+ 
+ int __trap0 (int function, int p1, int p2, int p3);
+ 
