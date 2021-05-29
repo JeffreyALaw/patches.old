@@ -1,0 +1,142 @@
+diff --git a/gcc/config/h8300/addsub.md b/gcc/config/h8300/addsub.md
+index 3585bffa9fc..ee3da9e5cd2 100644
+--- a/gcc/config/h8300/addsub.md
++++ b/gcc/config/h8300/addsub.md
+@@ -239,3 +239,83 @@
+   "reload_completed"
+   "xor.w\\t#32768,%e0"
+   [(set_attr "length" "4")])
++
++
++;; Basic overflow checking support.  These are nowhere near complete, but
++;; are sufficient to speed up the testsuite enough that the overflow
++;; tests are much less likely to timeout.
++(define_expand "addv<mode>4"
++  [(parallel
++    [(set (reg:CCV CC_REG)
++	  (eq:CCV
++	    (plus:<OVF>
++	      (sign_extend:<OVF> (match_operand:QHSI 1 "register_operand" ""))
++	      (sign_extend:<OVF> (match_operand:QHSI 2 "register_operand" "")))
++	    (sign_extend:<OVF> (plus:QHSI (match_dup 1) (match_dup 2)))))
++     (set (match_operand:QHSI 0 "register_operand" "")
++	  (plus:QHSI (match_dup 1) (match_dup 2)))])
++   (set (pc) (if_then_else
++	       (eq (reg:CCV CC_REG) (const_int 0))
++	       (label_ref (match_operand 3))
++	       (pc)))])
++
++(define_expand "subv<mode>4"
++  [(parallel
++    [(set (reg:CCV CC_REG)
++	  (eq:CCV
++	    (minus:<OVF>
++	      (sign_extend:<OVF> (match_operand:QHSI 1 "register_operand" ""))
++	      (sign_extend:<OVF> (match_operand:QHSI 2 "register_operand" "")))
++	    (sign_extend:<OVF> (plus:QHSI (match_dup 1) (match_dup 2)))))
++     (set (match_operand:QHSI 0 "register_operand" "")
++	  (minus:QHSI (match_dup 1) (match_dup 2)))])
++   (set (pc) (if_then_else
++	       (eq (reg:CCV CC_REG) (const_int 0))
++	       (label_ref (match_operand 3))
++	       (pc)))])
++
++(define_insn "*addv<mode>4"
++  [(set (reg:CCV CC_REG)
++	(eq:CCV (plus:<OVF>
++		   (sign_extend:<OVF>
++		     (match_operand:QHSI 1 "register_operand" "%0"))
++		   (sign_extend:<OVF>
++		     (match_operand:QHSI 2 "register_operand" "r")))
++		 (sign_extend:<OVF> (plus:QHSI (match_dup 1) (match_dup 2)))))
++  (set (match_operand:QHSI 0 "register_operand" "=r")
++       (plus:QHSI (match_dup 1) (match_dup 2)))]
++  ""
++{
++  if (GET_MODE (operands[0]) == QImode)
++    return "add.b %X2,%X0";
++  else if (GET_MODE (operands[0]) == HImode)
++    return "add.w %T2,%T0";
++  else if (GET_MODE (operands[0]) == SImode)
++    return "add.w %S2,%S0";
++  else
++   gcc_unreachable ();
++}
++  [(set_attr "length" "2")])
++
++(define_insn "*subvqi4"
++  [(set (reg:CCV CC_REG)
++	(eq:CCV (minus:<OVF>
++		   (sign_extend:<OVF>
++		     (match_operand:QHSI 1 "register_operand" "0"))
++		   (sign_extend:<OVF>
++		     (match_operand:QHSI 2 "register_operand" "r")))
++		 (sign_extend:<OVF> (plus:QHSI (match_dup 1) (match_dup 2)))))
++  (set (match_operand:QHSI 0 "register_operand" "=r")
++       (minus:QHSI (match_dup 1) (match_dup 2)))]
++  ""
++{
++  if (GET_MODE (operands[0]) == QImode)
++    return "sub.b %X2,%X0";
++  else if (GET_MODE (operands[0]) == HImode)
++    return "sub.w %T2,%T0";
++  else if (GET_MODE (operands[0]) == SImode)
++    return "sub.w %S2,%S0";
++  else
++   gcc_unreachable ();
++}
++  [(set_attr "length" "2")])
+diff --git a/gcc/config/h8300/h8300-modes.def b/gcc/config/h8300/h8300-modes.def
+index 23b777b2966..8726a33f508 100644
+--- a/gcc/config/h8300/h8300-modes.def
++++ b/gcc/config/h8300/h8300-modes.def
+@@ -19,3 +19,4 @@
+ 
+ CC_MODE (CCZN);
+ CC_MODE (CCZNV);
++CC_MODE (CCV);
+diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
+index 9a42547a92c..e55aed8444e 100644
+--- a/gcc/config/h8300/h8300.md
++++ b/gcc/config/h8300/h8300.md
+@@ -68,6 +68,10 @@
+    (FP_REG	11)
+    (CC_REG	12)])
+ 
++;; Map from an integer mode to the next wider integer mode
++;; Useful for constructing the overflow patterns
++(define_mode_attr OVF [(QI "HI") (HI "SI") (SI "DI")])
++
+ ;; ----------------------------------------------------------------------
+ ;; ATTRIBUTES
+ ;; ----------------------------------------------------------------------
+diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
+index 49d1e4312ca..ebb13632954 100644
+--- a/gcc/config/h8300/jumpcall.md
++++ b/gcc/config/h8300/jumpcall.md
+@@ -48,6 +48,25 @@
+ }
+  [(set_attr "type" "branch")])
+ 
++;; This is the bare minimum to support the builtin overflow
++;; checking patterns.  It could possibly be merged into the
++;; other branch patterns given time and interest.
++(define_insn "*branch_1_ov"
++  [(set (pc)
++	(if_then_else (eq (reg:CCV CC_REG) (const_int 0))
++		      (label_ref (match_operand 0 "" ""))
++		      (pc)))]
++  ""
++{
++  if (get_attr_length (insn) == 2)
++    return "bvs	%l0";
++  else if (get_attr_length (insn) == 4)
++    return "bvs	%l0:16";
++  else
++    return "bvc	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
++}
++ [(set_attr "type" "branch")])
++
+ 
+ (define_insn "*branch_1_false"
+   [(set (pc)
