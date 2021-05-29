@@ -58,7 +58,7 @@ index 3585bffa9fc..ee3da9e5cd2 100644
 +  else if (GET_MODE (operands[0]) == HImode)
 +    return "add.w %T2,%T0";
 +  else if (GET_MODE (operands[0]) == SImode)
-+    return "add.w %S2,%S0";
++    return "add.l %S2,%S0";
 +  else
 +   gcc_unreachable ();
 +}
@@ -81,7 +81,7 @@ index 3585bffa9fc..ee3da9e5cd2 100644
 +  else if (GET_MODE (operands[0]) == HImode)
 +    return "sub.w %T2,%T0";
 +  else if (GET_MODE (operands[0]) == SImode)
-+    return "sub.w %S2,%S0";
++    return "sub.l %S2,%S0";
 +  else
 +   gcc_unreachable ();
 +}
