@@ -1,0 +1,23 @@
+Revert part of Mike's change.  This seemsm to trigger man regressions
+in the gcc testsuite, including gcc.dg/strlenopt-6.c which fails with:
+
+Missing size for memory-region
+core: 2 byte read to unmapped address 0xe at 0xe
+program stopped with signal 11 (Segmentation fault).
+
+diff --git a/sim/cris/sim-if.c b/sim/cris/sim-if.c
+index 6613a93ecc5..0dac00e0b97 100644
+--- a/sim/cris/sim-if.c
++++ b/sim/cris/sim-if.c
+@@ -879,8 +879,9 @@ sim_open (SIM_OPEN_KIND kind, host_callback *callback, struct bfd *abfd,
+ 
+   /* Allocate core managed memory if none specified by user.  */
+   if (sim_core_read_buffer (sd, NULL, read_map, &c, startmem, 1) == 0)
+-    sim_do_commandf (sd, "memory region 0x%" PRIx32 ",0x%" PRIu32,
+-		     startmem, endmem - startmem);
++    sim_do_commandf (sd, "memory region 0x%lx,0x%lx", startmem,
++                    endmem - startmem);
++
+ 
+   /* Allocate simulator I/O managed memory if none specified by user.  */
+   if (cris_have_900000xxif)
