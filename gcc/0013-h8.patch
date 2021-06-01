@@ -112,105 +112,121 @@ index 9a42547a92c..e596987a6a6 100644
  
  (include "movepush.md")
 diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
-index eb99c20b55d..5e4d8c16bd4 100644
+index eb99c20b55d..d778d24c580 100644
 --- a/gcc/config/h8300/logical.md
 +++ b/gcc/config/h8300/logical.md
-@@ -55,35 +55,13 @@
-   [(set_attr "length" "8,*,8")
-    (set_attr "length_table" "*,logicb,*")])
+@@ -1,11 +1,20 @@
++;; Generic for binary logicals across the supported integer modes
++(define_expand "<code><mode>3"
++  [(set (match_operand:QHSI 0 "register_operand" "")
++	(logicals:QHSI (match_operand:QHSI 1 "register_operand" "")
++		       (match_operand:QHSI 2 "h8300_src_operand" "")))]
++  ""
++  "")
++
++;; There's a ton of cleanup to do from here below.
+ ;; ----------------------------------------------------------------------
+ ;; AND INSTRUCTIONS
+ ;; ----------------------------------------------------------------------
  
--(define_insn_and_split "andqi3_1"
--  [(set (match_operand:QI 0 "bit_operand" "=U,r")
--	(and:QI (match_operand:QI 1 "bit_operand" "%0,0")
--		(match_operand:QI 2 "h8300_src_operand" "Y0,rn")))]
--  "register_operand (operands[0], QImode)
--   || single_zero_operand (operands[2], QImode)"
--  "#"
+-(define_insn "bclrqi_msx"
+-  [(set (match_operand:QI 0 "bit_register_indirect_operand" "=WU")
+-	(and:QI (match_operand:QI 1 "bit_register_indirect_operand" "%0")
+-		(match_operand:QI 2 "single_zero_operand" "Y0")))]
++(define_insn "bclr<mode>_msx"
++  [(set (match_operand:QHI 0 "bit_register_indirect_operand" "=WU")
++	(and:QHI (match_operand:QHI 1 "bit_register_indirect_operand" "%0")
++		 (match_operand:QHI 2 "single_zero_operand" "Y0")))]
+   "TARGET_H8300SX && rtx_equal_p (operands[0], operands[1])"
+   "bclr\\t%W2,%0"
+   [(set_attr "length" "8")])
+@@ -24,21 +33,13 @@
+     operands[2] = GEN_INT ((INTVAL (operands[2])) >> 8);
+   })
+ 
+-(define_insn "bclrhi_msx"
+-  [(set (match_operand:HI 0 "bit_register_indirect_operand" "=m")
+-	(and:HI (match_operand:HI 1 "bit_register_indirect_operand" "%0")
+-		(match_operand:HI 2 "single_zero_operand" "Y0")))]
+-  "TARGET_H8300SX"
+-  "bclr\\t%W2,%0"
+-  [(set_attr "length" "8")])
+-
+ (define_insn_and_split "*andqi3_2"
+   [(set (match_operand:QI 0 "bit_operand" "=U,rQ,r")
+ 	(and:QI (match_operand:QI 1 "bit_operand" "%0,0,WU")
+ 		(match_operand:QI 2 "h8300_src_operand" "Y0,rQi,IP1>X")))]
+   "TARGET_H8300SX"
+   "#"
 -  "reload_completed"
--  [(parallel [(set (match_dup 0) (and:QI (match_dup 1) (match_dup 2)))
--	      (clobber (reg:CC CC_REG))])])
--
--(define_insn "andqi3_1_clobber_flags"
--  [(set (match_operand:QI 0 "bit_operand" "=U,r")
--	(and:QI (match_operand:QI 1 "bit_operand" "%0,0")
--		(match_operand:QI 2 "h8300_src_operand" "Y0,rn")))
--   (clobber (reg:CC CC_REG))]
--  "register_operand (operands[0], QImode)
--   || single_zero_operand (operands[2], QImode)"
--  "@
--   bclr %W2,%R0
--   and  %X2,%X0"
--  [(set_attr "length" "2,8")])
--
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (and:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -62,7 +63,7 @@
+   "register_operand (operands[0], QImode)
+    || single_zero_operand (operands[2], QImode)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (and:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -78,13 +79,6 @@
+    and  %X2,%X0"
+   [(set_attr "length" "2,8")])
+ 
 -(define_expand "and<mode>3"
 -  [(set (match_operand:QHSI 0 "register_operand" "")
 -	(and:QHSI (match_operand:QHSI 1 "register_operand" "")
 -		  (match_operand:QHSI 2 "h8300_src_operand" "")))]
 -  ""
 -  "")
-+(define_insn "andqi3_1"
-+  [(set (match_operand:QI 0 "bit_operand" "=U")
-+	(and:QI (match_operand:QI 1 "bit_operand" "%0")
-+		(match_operand:QI 2 "single_zero_operand" "Y0")))]
-+  "GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) == MEM"
-+  "bclr %W2,%R0"
-+  [(set_attr "length" "8")])
- 
+-
  (define_insn_and_split "*andor<mode>3"
    [(set (match_operand:QHSI 0 "register_operand" "=r")
-@@ -189,23 +167,24 @@
-   [(set_attr "length" "8")])
- 
- (define_insn_and_split "<code>qi3_1"
--  [(set (match_operand:QI 0 "bit_operand" "=U,rQ")
-+  [(set (match_operand:QI 0 "bit_operand" "=U,Q")
- 	(ors:QI (match_operand:QI 1 "bit_operand" "%0,0")
--		(match_operand:QI 2 "h8300_src_operand" "Y2,rQi")))]
--  "TARGET_H8300SX || register_operand (operands[0], QImode)
--   || single_one_operand (operands[2], QImode)"
-+		(match_operand:QI 2 "h8300_src_operand" "Y2,Qi")))]
-+  "(GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) == MEM
-+    && (TARGET_H8300SX || register_operand (operands[0], QImode)
-+	|| single_one_operand (operands[2], QImode)))"
+ 	(ior:QHSI (and:QHSI (match_operand:QHSI 2 "register_operand" "r")
+@@ -95,7 +89,7 @@
+     || (<MODE>mode == SImode
+ 	&& (INTVAL (operands[3]) & 0xffff) != 0))"
    "#"
-   "reload_completed"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (ior:QHSI (and:QHSI (match_dup 2)
+ 						     (match_dup 3))
+ 					   (match_dup 1)))
+@@ -150,7 +144,7 @@
+ 		(match_operand:SI 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (ior:SI (and:SI (ashift:SI (match_dup 2)
+ 							    (const_int 8))
+ 						 (const_int 65280))
+@@ -195,7 +189,7 @@
+   "TARGET_H8300SX || register_operand (operands[0], QImode)
+    || single_one_operand (operands[2], QImode)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
    [(parallel [(set (match_dup 0) (ors:QI (match_dup 1) (match_dup 2)))
  	      (clobber (reg:CC CC_REG))])])
  
- (define_insn "<code>qi3_1_clobber_flags"
--  [(set (match_operand:QI 0 "bit_operand" "=U,rQ")
-+  [(set (match_operand:QI 0 "bit_operand" "=U,Q")
- 	(ors:QI (match_operand:QI 1 "bit_operand" "%0,0")
--		(match_operand:QI 2 "h8300_src_operand" "Y2,rQi")))
-+		(match_operand:QI 2 "h8300_src_operand" "Y2,Qi")))
-    (clobber (reg:CC CC_REG))]
--  "TARGET_H8300SX || register_operand (operands[0], QImode)
--   || single_one_operand (operands[2], QImode)"
-+  "(GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) == MEM
-+    && (TARGET_H8300SX || single_one_operand (operands[2], QImode)))"
-   {
-     if (which_alternative == 0)
-       return <CODE> == IOR ? "bset\\t%V2,%R0" : "bnot\\t%V2,%R0";
-@@ -216,39 +195,40 @@
+@@ -216,39 +210,32 @@
    [(set_attr "length" "8,*")
     (set_attr "length_table" "*,logicb")])
  
-+;; ----------------------------------------------------------------------
-+;; {AND,IOR,XOR}{QI3, HI3,SI3} PATTERNS
-+;; ----------------------------------------------------------------------
-+
- (define_expand "<code><mode>3"
-   [(set (match_operand:QHSI 0 "register_operand" "")
+-(define_expand "<code><mode>3"
+-  [(set (match_operand:QHSI 0 "register_operand" "")
 -	(ors:QHSI (match_operand:QHSI 1 "register_operand" "")
 -		  (match_operand:QHSI 2 "h8300_src_operand" "")))]
-+	(logicals:QHSI (match_operand:QHSI 1 "register_operand" "")
-+		       (match_operand:QHSI 2 "h8300_src_operand" "")))]
-   ""
-   "")
- 
--;; ----------------------------------------------------------------------
--;; {AND,IOR,XOR}{HI3,SI3} PATTERNS
--;; ----------------------------------------------------------------------
+-  ""
+-  "")
+-
+ ;; ----------------------------------------------------------------------
+ ;; {AND,IOR,XOR}{HI3,SI3} PATTERNS
+ ;; ----------------------------------------------------------------------
  
  (define_insn_and_split "*logical<mode>3"
 -  [(set (match_operand:HSI 0 "h8300_dst_operand" "=rQ")
@@ -223,10 +239,10 @@ index eb99c20b55d..5e4d8c16bd4 100644
 +	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))]
    "h8300_operands_match_p (operands)"
    "#"
-   "reload_completed"
+-  "reload_completed"
++  "&& reload_completed"
    [(parallel [(set (match_dup 0)
--		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
-+		   (logicals:QHSI (match_dup 1) (match_dup 2)))
+ 		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
  	      (clobber (reg:CC CC_REG))])])
  
 -(define_insn "*logical<mode>3_clobber_flags"
@@ -234,7 +250,7 @@ index eb99c20b55d..5e4d8c16bd4 100644
 -	(match_operator:HSI 3 "bit_operator"
 -	  [(match_operand:HSI 1 "h8300_dst_operand" "%0")
 -	   (match_operand:HSI 2 "h8300_src_operand" "rQi")]))
-+(define_insn "*logical<mode>3_<cczn>"
++(define_insn "*<code><mode>3_clobber_flags"
 +  [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
 +	(logicals:QHSI
 +	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
@@ -249,7 +265,12 @@ index eb99c20b55d..5e4d8c16bd4 100644
  
  
  ;; ----------------------------------------------------------------------
-@@ -264,7 +244,7 @@
+@@ -260,11 +247,11 @@
+ 	(not:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
    [(parallel [(set (match_dup 0) (not:QHSI (match_dup 1)))
  	      (clobber (reg:CC CC_REG))])])
  
