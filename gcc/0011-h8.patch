@@ -151,7 +151,7 @@ index 722c147fe4f..82cb161d126 100644
  		   (match_dup 1))
  	      (clobber (reg:CC CC_REG))])])
 diff --git a/gcc/config/h8300/combiner.md b/gcc/config/h8300/combiner.md
-index 20e19da0419..4c84b7337f6 100644
+index 20e19da0419..067f26678c1 100644
 --- a/gcc/config/h8300/combiner.md
 +++ b/gcc/config/h8300/combiner.md
 @@ -11,7 +11,7 @@
@@ -226,24 +226,15 @@ index 20e19da0419..4c84b7337f6 100644
    [(parallel [(set (match_dup 0)
  		   (zero_extract:SI (match_dup 1) (const_int 16) (const_int 8)))
  	      (clobber (reg:CC CC_REG))])])
-@@ -201,7 +201,7 @@
- 			 (const_int 23)))]
-   ""
+@@ -271,7 +271,7 @@
+   "exact_log2 (INTVAL (operands[3])) < 16
+    && INTVAL (operands[2]) + exact_log2 (INTVAL (operands[3])) == 31"
    "#"
--  "&& reload_completed"
-+  "&& && reload_completed"
+-  ""
++  "&& reload_completed"
    [(parallel [(set (match_dup 0)
- 		   (ashift:SI (match_dup 0)
- 			      (const_int 1)))
-@@ -224,7 +224,7 @@
- 		(const_int 2147450880)))]
-   ""
-   "#"
--  "&& reload_completed"
-+  "&& && reload_completed"
-   [(parallel [(set (match_dup 0)
- 		   (ashift:SI (match_dup 0)
- 			      (const_int 16)))
+ 		   (and:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
+ 			   (match_dup 3)))
 @@ -318,7 +318,7 @@
  		 (match_operand:SI 2 "register_operand" "0")))]
    ""
@@ -433,6 +424,42 @@ index 20e19da0419..4c84b7337f6 100644
    [(parallel [(set (match_dup 0)
  		   (ior:SI (and:SI (match_dup 1) (const_int 1))
  			   (lshiftrt:SI (match_dup 1) (const_int 1))))
+@@ -1147,7 +1147,7 @@
+ 				(const_int 8)) 1))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (subreg:QI (lshiftrt:HI (match_dup 1)
+ 							 (const_int 8)) 1))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -1169,7 +1169,7 @@
+ 				(const_int 8)) 3))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 8)) 3))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -1190,7 +1190,7 @@
+    (clobber (match_scratch:SI 2 "=&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 16)) 3))
+ 	      (clobber (match_dup 2))
+@@ -1213,7 +1213,7 @@
+    (clobber (match_scratch:SI 2 "=&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (subreg:QI (lshiftrt:SI (match_dup 1) (const_int 24)) 3))
+ 	      (clobber (match_dup 2))
 diff --git a/gcc/config/h8300/divmod.md b/gcc/config/h8300/divmod.md
 index b5ab6b727bb..67f253cf424 100644
 --- a/gcc/config/h8300/divmod.md
@@ -550,7 +577,7 @@ index 7631230ac33..bc10179dac5 100644
  	      (clobber (reg:CC CC_REG))])])
  
 diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
-index 49d1e4312ca..c43a93e0de4 100644
+index 49d1e4312ca..7b6a66a96ef 100644
 --- a/gcc/config/h8300/jumpcall.md
 +++ b/gcc/config/h8300/jumpcall.md
 @@ -22,7 +22,7 @@
@@ -562,24 +589,19 @@ index 49d1e4312ca..c43a93e0de4 100644
    [(set (reg:H8cc CC_REG)
  	(compare:H8cc (match_dup 1) (match_dup 2)))
     (set (pc)
-@@ -37,7 +37,7 @@
- 		       [(reg:H8cc CC_REG) (const_int 0)])
- 		      (label_ref (match_operand 0 "" ""))
- 		      (pc)))]
--  "reload_completed"
-+  "&& reload_completed"
- {
-   if (get_attr_length (insn) == 2)
-     return "b%j1	%l0";
-@@ -55,7 +55,7 @@
- 		       [(reg:H8cc CC_REG) (const_int 0)])
- 		      (pc)
- 		      (label_ref (match_operand 0 "" ""))))]
--  "reload_completed"
-+  "&& reload_completed"
- {
-   if (get_attr_length (insn) == 2)
-     return "b%k1	%l0";
+diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
+index d778d24c580..34cf74e24ee 100644
+--- a/gcc/config/h8300/logical.md
++++ b/gcc/config/h8300/logical.md
+@@ -223,7 +223,7 @@
+   "#"
+   "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+-		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
++		   (logicals:QHSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+ (define_insn "*<code><mode>3_clobber_flags"
 diff --git a/gcc/config/h8300/movepush.md b/gcc/config/h8300/movepush.md
 index b106cd54f5d..9ce00fb656c 100644
 --- a/gcc/config/h8300/movepush.md
