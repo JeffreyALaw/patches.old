@@ -1,0 +1,841 @@
+diff --git a/gcc/config/h8300/addsub.md b/gcc/config/h8300/addsub.md
+index 3585bffa9fc..b1eb0d20188 100644
+--- a/gcc/config/h8300/addsub.md
++++ b/gcc/config/h8300/addsub.md
+@@ -15,7 +15,7 @@
+ 		 (match_operand:QI 2 "h8300_src_operand" "rQi")))]
+   "h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (plus:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -34,7 +34,7 @@
+ 		 (match_operand:HI 2 "h8300_src_operand" "L,N,J,n,r")))]
+   "!TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -81,7 +81,7 @@
+ 		 (match_operand:HI 2 "h8300_src_operand" "P3>X,P3<X,J,rQi")))]
+   "TARGET_H8300SX && h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (plus:HI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -117,7 +117,7 @@
+ 		 (match_operand:SI 2 "h8300_src_operand" "i,rQ")))]
+   "h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -150,7 +150,7 @@
+ 		  (match_operand:QI 2 "h8300_dst_operand" "rQ")))]
+   "h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (minus:QI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -169,7 +169,7 @@
+ 		   (match_operand:HSI 2 "h8300_src_operand" "rQ,i")))]
+   "h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (minus:HSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -203,7 +203,7 @@
+ 	(neg:QHSI (match_operand:QHSI 1 "h8300_dst_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (neg:QHSI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -228,7 +228,7 @@
+ 	(neg:SF (match_operand:SF 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (neg:SF (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+   
+diff --git a/gcc/config/h8300/bitfield.md b/gcc/config/h8300/bitfield.md
+index 722c147fe4f..82cb161d126 100644
+--- a/gcc/config/h8300/bitfield.md
++++ b/gcc/config/h8300/bitfield.md
+@@ -24,7 +24,7 @@
+   "(TARGET_H8300SX)
+     && (1 << INTVAL (operands[2])) == INTVAL (operands[3])"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:HI (xor:HI (match_dup 1) (match_dup 3))
+ 				    (const_int 1)
+@@ -54,7 +54,7 @@
+ 			 (match_operand 2 "const_int_operand" "n,n")))]
+   "INTVAL (operands[2]) < 16"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:SI (match_dup 1) (const_int 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -84,7 +84,7 @@
+   "INTVAL (operands[2]) < 16
+     && (1 << INTVAL (operands[2])) == INTVAL (operands[3])"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:SI (xor:SI (match_dup 1) (match_dup 3))
+ 				    (const_int 1)
+@@ -159,7 +159,7 @@
+ 	(match_operand:HI 2 "register_operand" "r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:HI (match_dup 0) (const_int 1) (match_dup 1))
+ 		   (match_dup 2))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -231,7 +231,7 @@
+ 	  (match_operand:HI 3 "bit_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 4 [(zero_extract:HI (match_dup 1)
+ 						     (const_int 1)
+@@ -262,7 +262,7 @@
+ 			   (match_operand:HI 4 "immediate_operand" "n"))]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 5 [(zero_extract:HI (match_dup 1)
+ 						     (const_int 1)
+@@ -293,7 +293,7 @@
+ 			 (match_operand:QI 3 "immediate_operand" "n")))]
+   "TARGET_H8300SX && INTVAL (operands[2]) + INTVAL (operands[3]) <= 8"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:QI (match_dup 1) (match_dup 2) (match_dup 3)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -319,7 +319,7 @@
+ 	(match_operand:QI 1 "register_operand" "r"))]
+   "TARGET_H8300SX && INTVAL (operands[2]) + INTVAL (operands[3]) <= 8"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:QI (match_dup 0) (match_dup 2) (match_dup 3))
+ 		   (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+diff --git a/gcc/config/h8300/combiner.md b/gcc/config/h8300/combiner.md
+index 20e19da0419..4c84b7337f6 100644
+--- a/gcc/config/h8300/combiner.md
++++ b/gcc/config/h8300/combiner.md
+@@ -11,7 +11,7 @@
+ 	(match_operand:SI 2 "register_operand" "r"))]
+   "INTVAL (operands[1]) < 16"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+ 		   (match_dup 2))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -34,7 +34,7 @@
+ 		     (match_operand:SI 3 "const_int_operand" "n")))]
+   "INTVAL (operands[1]) < 16 && INTVAL (operands[3]) < 16"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+ 		   (lshiftrt:SI (match_dup 2) (match_dup 3)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -58,7 +58,7 @@
+ 		     (const_int 16)))]
+   "INTVAL (operands[1]) < 16"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+ 		   (lshiftrt:SI (match_dup 2) (const_int 16)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -81,7 +81,7 @@
+ 	(match_operand:SI 1 "register_operand" "r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 8) (const_int 8))
+ 		   (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -104,7 +104,7 @@
+ 		     (const_int 8)))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 8) (const_int 8))
+ 		   (lshiftrt:SI (match_dup 1) (const_int 8)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -129,7 +129,7 @@
+ 			 (const_int 8)))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:SI (match_dup 1) (const_int 8) (const_int 8)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -153,7 +153,7 @@
+ 			 (const_int 16)))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:SI (match_dup 1) (const_int 8) (const_int 16)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -176,7 +176,7 @@
+    (clobber (match_scratch:SI 2 "=&r"))]
+   "TARGET_H8300H"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (zero_extract:SI (match_dup 1) (const_int 16) (const_int 8)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -201,7 +201,7 @@
+ 			 (const_int 23)))]
+   ""
+   "#"
+-  "&& reload_completed"
++  "&& && reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ashift:SI (match_dup 0)
+ 			      (const_int 1)))
+@@ -224,7 +224,7 @@
+ 		(const_int 2147450880)))]
+   ""
+   "#"
+-  "&& reload_completed"
++  "&& && reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ashift:SI (match_dup 0)
+ 			      (const_int 16)))
+@@ -318,7 +318,7 @@
+ 		 (match_operand:SI 2 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (plus:SI (mult:SI (match_dup 1) (const_int 65536))
+ 			    (match_dup 2)))
+@@ -341,7 +341,7 @@
+ 		 (zero_extend:SI (match_operand:HI 2 "register_operand" "0"))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (plus:SI (lshiftrt:SI (match_dup 1) (const_int 16))
+ 			    (zero_extend:SI (match_dup 2))))
+@@ -416,7 +416,7 @@
+ 	  (match_operand:HI 3 "register_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 1 [(zero_extend:HI (match_dup 2))
+ 				    (match_dup 3)]))
+@@ -442,7 +442,7 @@
+ 	  (match_operand:SI 3 "register_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 1 [(zero_extend:SI (match_dup 2))
+ 				    (match_dup 3)]))
+@@ -465,7 +465,7 @@
+ 	  (match_operand:SI 3 "register_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 1 [(zero_extend:SI (match_dup 2))
+ 				    (match_dup 3)]))
+@@ -489,7 +489,7 @@
+ 	  (match_operand:SI 3 "register_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 1 [(ashift:SI (match_dup 2) (const_int 16))
+ 				    (match_dup 3)]))
+@@ -514,7 +514,7 @@
+ 	  (match_operand:SI 3 "register_operand" "0")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (match_op_dup 1 [(lshiftrt:SI (match_dup 2) (const_int 16))
+ 				    (match_dup 3)]))
+@@ -540,7 +540,7 @@
+ 		(match_operand:HI 2 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:HI (ashift:HI (match_dup 1) (const_int 8))
+ 			   (match_dup 2)))
+@@ -563,7 +563,7 @@
+ 		(match_operand:HI 2 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:HI (lshiftrt:HI (match_dup 1) (const_int 8))
+ 			   (match_dup 2)))
+@@ -586,7 +586,7 @@
+ 			   (const_int 8))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:HI (zero_extend:HI (match_dup 1))
+ 			   (ashift:HI (match_dup 2) (const_int 8))))
+@@ -609,7 +609,7 @@
+ 			   (const_int 8))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:HI (zero_extend:HI (match_dup 1))
+ 			   (ashift:HI (subreg:HI (match_dup 2) 0)
+@@ -648,7 +648,7 @@
+ 			   (const_int 16))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (zero_extend:SI (match_dup 1))
+ 			   (ashift:SI (match_dup 2) (const_int 16))))
+@@ -692,7 +692,7 @@
+ 			     (const_int 16))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (match_dup 1) (const_int -65536))
+ 			   (lshiftrt:SI (match_dup 2) (const_int 16))))
+@@ -735,7 +735,7 @@
+ 		(zero_extend:SI (match_operand:QI 2 "general_operand_src" "r,g>"))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (match_dup 1) (const_int -256))
+ 			   (zero_extend:SI (match_dup 2))))
+@@ -758,7 +758,7 @@
+ 		(match_operand:SI 2 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (ashift:SI (match_dup 1) (const_int 31))
+ 			   (match_dup 2)))
+@@ -782,7 +782,7 @@
+ 		(match_operand:SI 4 "register_operand" "0")))]
+   "(INTVAL (operands[3]) & ~0xffff) == 0"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (ashift:SI (match_dup 1) (match_dup 2))
+ 				   (match_dup 3))
+@@ -815,7 +815,7 @@
+ 		(match_operand:SI 4 "register_operand" "0")))]
+   "((INTVAL (operands[3]) << INTVAL (operands[2])) & ~0xffff) == 0"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
+ 				   (match_dup 3))
+@@ -848,7 +848,7 @@
+ 		(match_operand:SI 3 "register_operand" "0")))]
+   "INTVAL (operands[2]) < 16"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (zero_extract:SI (match_dup 1)
+ 					    (const_int 1)
+@@ -875,7 +875,7 @@
+ 		(match_operand:SI 2 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (const_int 30))
+ 				   (const_int 2))
+@@ -902,7 +902,7 @@
+    (clobber (match_scratch:HI 3 "=&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (lshiftrt:SI (match_dup 1) (const_int 9))
+ 				   (const_int 4194304))
+@@ -993,7 +993,7 @@
+ 			     (const_int 1))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (ior:SI (and:SI (match_dup 1) (const_int 1))
+ 			   (lshiftrt:SI (match_dup 1) (const_int 1))))
+diff --git a/gcc/config/h8300/divmod.md b/gcc/config/h8300/divmod.md
+index b5ab6b727bb..67f253cf424 100644
+--- a/gcc/config/h8300/divmod.md
++++ b/gcc/config/h8300/divmod.md
+@@ -8,7 +8,7 @@
+ 		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (udiv:HSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -27,7 +27,7 @@
+ 		 (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (div:HSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -53,7 +53,7 @@
+ 	    (zero_extend:HI (match_dup 2)))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (truncate:QI
+ 				   (udiv:HI (match_dup 1)
+ 					    (zero_extend:HI (match_dup 2)))))
+@@ -97,7 +97,7 @@
+ 	    (sign_extend:HI (match_dup 2)))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (truncate:QI
+ 				   (div:HI (match_dup 1)
+ 					   (sign_extend:HI (match_dup 2)))))
+@@ -140,7 +140,7 @@
+ 	    (zero_extend:SI (match_dup 2)))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (truncate:HI
+ 				   (udiv:SI (match_dup 1)
+ 					    (zero_extend:SI (match_dup 2)))))
+@@ -183,7 +183,7 @@
+ 	    (sign_extend:SI (match_dup 2)))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (truncate:HI
+ 				   (div:SI (match_dup 1)
+ 					   (sign_extend:SI (match_dup 2)))))
+diff --git a/gcc/config/h8300/extensions.md b/gcc/config/h8300/extensions.md
+index 7631230ac33..bc10179dac5 100644
+--- a/gcc/config/h8300/extensions.md
++++ b/gcc/config/h8300/extensions.md
+@@ -16,7 +16,7 @@
+ 	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,g>")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (zero_extend:HI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -91,7 +91,7 @@
+ 	(zero_extend:SI (match_operand:QI 1 "register_operand" "0")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -114,7 +114,7 @@
+ 	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -137,7 +137,7 @@
+ 	(sign_extend:HI (match_operand:QI 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (sign_extend:HI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -172,7 +172,7 @@
+ 	(sign_extend:SI (match_operand:QI 1 "register_operand" "0")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -195,7 +195,7 @@
+ 	(sign_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
+index 49d1e4312ca..c43a93e0de4 100644
+--- a/gcc/config/h8300/jumpcall.md
++++ b/gcc/config/h8300/jumpcall.md
+@@ -22,7 +22,7 @@
+ 		      (pc)))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(set (reg:H8cc CC_REG)
+ 	(compare:H8cc (match_dup 1) (match_dup 2)))
+    (set (pc)
+@@ -37,7 +37,7 @@
+ 		       [(reg:H8cc CC_REG) (const_int 0)])
+ 		      (label_ref (match_operand 0 "" ""))
+ 		      (pc)))]
+-  "reload_completed"
++  "&& reload_completed"
+ {
+   if (get_attr_length (insn) == 2)
+     return "b%j1	%l0";
+@@ -55,7 +55,7 @@
+ 		       [(reg:H8cc CC_REG) (const_int 0)])
+ 		      (pc)
+ 		      (label_ref (match_operand 0 "" ""))))]
+-  "reload_completed"
++  "&& reload_completed"
+ {
+   if (get_attr_length (insn) == 2)
+     return "b%k1	%l0";
+diff --git a/gcc/config/h8300/movepush.md b/gcc/config/h8300/movepush.md
+index b106cd54f5d..9ce00fb656c 100644
+--- a/gcc/config/h8300/movepush.md
++++ b/gcc/config/h8300/movepush.md
+@@ -9,7 +9,7 @@
+ 	(match_operand:QI 1 "general_operand_src" " I,r>,r,n,m,r"))]
+   "!TARGET_H8300SX && h8300_move_ok (operands[0], operands[1])"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -32,7 +32,7 @@
+ 	(match_operand:QI 1 "general_operand_src" "P4>X,rQi"))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -69,7 +69,7 @@
+ 			 (match_operand:QI 1 "general_operand_src" "I,rmi>"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (strict_low_part (match_dup 0)) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -93,7 +93,7 @@
+   "!TARGET_H8300SX
+     && h8300_move_ok (operands[0], operands[1])"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -117,7 +117,7 @@
+ 	(match_operand:HI 1 "general_operand_src" "I,P3>X,P4>X,IP8>X,rQi"))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+   
+@@ -140,7 +140,7 @@
+ 			 (match_operand:HI 1 "general_operand_src" "I,P3>X,rmi"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (strict_low_part (match_dup 0)) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -163,7 +163,7 @@
+   "(TARGET_H8300S || TARGET_H8300H) && !TARGET_H8300SX
+     && h8300_move_ok (operands[0], operands[1])"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -240,7 +240,7 @@
+ 	(match_operand:SI 1 "general_operand_src" "I,P3>X,IP8>X,rQi,I,r,*a"))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -265,7 +265,7 @@
+ 	(match_operand:SF 1 "general_operand_src" "G,rQi"))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -287,7 +287,7 @@
+     && (register_operand (operands[0], SFmode)
+ 	|| register_operand (operands[1], SFmode))"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_dup 1))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -319,7 +319,7 @@
+ 	(match_operand:QHI 0 "register_no_sp_elim_operand" "r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (mem:QHI
+ 		     (pre_modify:P (reg:P SP_REG)
+ 				   (plus:P (reg:P SP_REG) (const_int -4))))
+diff --git a/gcc/config/h8300/multiply.md b/gcc/config/h8300/multiply.md
+index 56f2b6fb214..1d56d4797a7 100644
+--- a/gcc/config/h8300/multiply.md
++++ b/gcc/config/h8300/multiply.md
+@@ -21,7 +21,7 @@
+ 		 (match_operand:QI 2 "nibble_operand" "IP4>X")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (mult:HI (sign_extend:HI (match_dup 1)) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -41,7 +41,7 @@
+ 		 (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (mult:HI (sign_extend:HI (match_dup 1))
+ 			    (sign_extend:HI (match_dup 2))))
+@@ -73,7 +73,7 @@
+ 		 (match_operand:SI 2 "nibble_operand" "IP4>X")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (mult:SI (sign_extend:SI (match_dup 1)) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -93,7 +93,7 @@
+ 		 (sign_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (mult:SI (sign_extend:SI (match_dup 1))
+ 			    (sign_extend:SI (match_dup 2))))
+@@ -172,7 +172,7 @@
+ 		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
+   "TARGET_H8300SX"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (mult:HSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -195,7 +195,7 @@
+ 	  (const_int 32))))]
+   "TARGET_H8300SXMUL"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0)
+ 		   (truncate:SI (lshiftrt:DI (mult:DI
+ 					       (sign_extend:DI (match_dup 1))
+diff --git a/gcc/config/h8300/other.md b/gcc/config/h8300/other.md
+index 572a29fb2d9..c754227e1f0 100644
+--- a/gcc/config/h8300/other.md
++++ b/gcc/config/h8300/other.md
+@@ -7,7 +7,7 @@
+ 	(abs:SF (match_operand:SF 1 "register_operand" "0")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (abs:SF (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+diff --git a/gcc/config/h8300/shiftrotate.md b/gcc/config/h8300/shiftrotate.md
+index 4bf8fe14e0b..23140d9ade8 100644
+--- a/gcc/config/h8300/shiftrotate.md
++++ b/gcc/config/h8300/shiftrotate.md
+@@ -57,7 +57,7 @@
+ 	  (match_operand:QI 2 "const_int_operand" "")]))]
+   "h8300_operands_match_p (operands)"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -107,7 +107,7 @@
+ 	  (match_operand:QI 2 "nonmemory_operand" "r P5>X")]))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -158,7 +158,7 @@
+    (clobber (match_scratch:QI 4 "=X,&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (match_dup 4))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -186,7 +186,7 @@
+     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode,
+ 				     GET_CODE (operands[3])))"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -213,7 +213,7 @@
+    (clobber (match_scratch:QI 4 "=X,&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (match_dup 4))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -241,7 +241,7 @@
+     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode,
+ 				     GET_CODE (operands[3])))"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -268,7 +268,7 @@
+    (clobber (match_scratch:QI 4 "=X,&r"))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (match_dup 4))
+ 	      (clobber (reg:CC CC_REG))])])
+@@ -296,7 +296,7 @@
+     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode,
+ 				     GET_CODE (operands[3])))"
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+@@ -410,7 +410,7 @@
+ 		     (match_operand:QI 2 "immediate_operand" "")))]
+   ""
+   "#"
+-  "reload_completed"
++  "&& reload_completed"
+   [(parallel [(set (match_dup 0) (rotate:QHSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
