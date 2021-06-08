@@ -1,66 +1,73 @@
-diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
-index 34cf74e24ee..fae3c7cd0c5 100644
---- a/gcc/config/h8300/logical.md
-+++ b/gcc/config/h8300/logical.md
-@@ -62,22 +62,21 @@
- 		(match_operand:QI 2 "h8300_src_operand" "Y0,rn")))]
-   "register_operand (operands[0], QImode)
-    || single_zero_operand (operands[2], QImode)"
--  "#"
--  "&& reload_completed"
-+  "bclr %W2,%R0"
-+  "&& reload_completed && !single_zero_operand (operands[2], QImode)"
-   [(parallel [(set (match_dup 0) (and:QI (match_dup 1) (match_dup 2)))
--	      (clobber (reg:CC CC_REG))])])
-+	      (clobber (reg:CC CC_REG))])]
-+  ""
-+  [(set_attr "length" "8,2")])
+diff --git a/gcc/config/h8300/extensions.md b/gcc/config/h8300/extensions.md
+index bc10179dac5..74647c79cd8 100644
+--- a/gcc/config/h8300/extensions.md
++++ b/gcc/config/h8300/extensions.md
+@@ -20,7 +20,7 @@
+   [(parallel [(set (match_dup 0) (zero_extend:HI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
  
--(define_insn "andqi3_1_clobber_flags"
--  [(set (match_operand:QI 0 "bit_operand" "=U,r")
--	(and:QI (match_operand:QI 1 "bit_operand" "%0,0")
--		(match_operand:QI 2 "h8300_src_operand" "Y0,rn")))
-+(define_insn "*andqi3_1<cczn>"
-+  [(set (match_operand:QI 0 "register_operand" "=r")
-+	(and:QI (match_operand:QI 1 "register_operand" "%0")
-+		(match_operand:QI 2 "h8300_src_operand" "rn")))
+-(define_insn "*zero_extendqihi2_clobber_flags"
++(define_insn "*zero_extendqihi2<cczn>"
+   [(set (match_operand:HI 0 "register_operand" "=r,r")
+ 	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,g>")))
     (clobber (reg:CC CC_REG))]
--  "register_operand (operands[0], QImode)
--   || single_zero_operand (operands[2], QImode)"
--  "@
--   bclr %W2,%R0
--   and  %X2,%X0"
--  [(set_attr "length" "2,8")])
-+  ""
-+  "and  %X2,%X0"
-+  [(set_attr "length" "2")])
+@@ -95,7 +95,7 @@
+   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
  
- (define_insn_and_split "*andor<mode>3"
-   [(set (match_operand:QHSI 0 "register_operand" "=r")
-@@ -166,22 +165,14 @@
- ;; OR/XOR INSTRUCTIONS
- ;; ----------------------------------------------------------------------
+-(define_insn "*zero_extendqisi2_h8sx_clobber_flags"
++(define_insn "*zero_extendqisi2_h8sx<cczn>"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(zero_extend:SI (match_operand:QI 1 "register_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+@@ -118,7 +118,7 @@
+   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
  
--(define_insn "b<code>qi_msx"
--  [(set (match_operand:QI 0 "bit_register_indirect_operand" "=WU")
--	(ors:QI (match_operand:QI 1 "bit_register_indirect_operand" "%0")
--		(match_operand:QI 2 "single_one_operand" "Y2")))]
-+(define_insn "b<code><mode>_msx"
-+  [(set (match_operand:QHI 0 "bit_register_indirect_operand" "=WU")
-+	(ors:QHI (match_operand:QHI 1 "bit_register_indirect_operand" "%0")
-+		 (match_operand:QHI 2 "single_one_operand" "Y2")))]
-   "TARGET_H8300SX && rtx_equal_p (operands[0], operands[1])"
-   { return <CODE> == IOR ? "bset\\t%V2,%0" : "bnot\\t%V2,%0"; }
-   [(set_attr "length" "8")])
+-(define_insn "*zero_extendhisi2_clobber_flags"
++(define_insn "*zero_extendhisi2<cczn>"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+@@ -141,7 +141,7 @@
+   [(parallel [(set (match_dup 0) (sign_extend:HI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
  
--(define_insn "b<code>hi_msx"
--  [(set (match_operand:HI 0 "bit_register_indirect_operand" "=m")
--	(ors:HI (match_operand:HI 1 "bit_register_indirect_operand" "%0")
--		(match_operand:HI 2 "single_one_operand" "Y2")))]
--  "TARGET_H8300SX"
--  { return <CODE> == IOR ? "bset\\t%V2,%0" : "bnot\\t%V2,%0"; }
--  [(set_attr "length" "8")])
--
- (define_insn_and_split "<code>qi3_1"
-   [(set (match_operand:QI 0 "bit_operand" "=U,rQ")
- 	(ors:QI (match_operand:QI 1 "bit_operand" "%0,0")
+-(define_insn "*extendqihi2_clobber_flags"
++(define_insn "*extendqihi2<cczn>"
+   [(set (match_operand:HI 0 "register_operand" "=r")
+ 	(sign_extend:HI (match_operand:QI 1 "register_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+@@ -176,7 +176,7 @@
+   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*extendqisi2_h8sx_clobber_flags"
++(define_insn "*extendqisi2_h8sx<cczn>"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(sign_extend:SI (match_operand:QI 1 "register_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+@@ -199,7 +199,7 @@
+   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+ 	      (clobber (reg:CC CC_REG))])])
+ 
+-(define_insn "*extendhisi2_clobber_flags"
++(define_insn "*extendhisi2<cczn>"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(sign_extend:SI (match_operand:HI 1 "register_operand" "0")))
+    (clobber (reg:CC CC_REG))]
+diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
+index ef947aa468a..1077a2b6ae0 100644
+--- a/gcc/config/h8300/h8300.c
++++ b/gcc/config/h8300/h8300.c
+@@ -1950,7 +1950,9 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
+           || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
+           || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+           || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
+-	  || GET_CODE (op0) == REG || GET_CODE (op0) == MULT))
++	  || GET_CODE (op0) == MULT
++	  || GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND
++	  || REG_P (op0) || MEM_P (op0)))
+     return CCZNmode;
+ 
+   return CCmode;
