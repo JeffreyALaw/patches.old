@@ -9,54 +9,8 @@ mkdir -p ${TARGET}-installed
 mkdir -p ${TARGET}-obj/binutils
 mkdir -p ${TARGET}-obj/gcc
 
-# Step 0, setup source repositories & apply patches
-for repo in binutils-gdb gcc
-do
-  case $repo in
-    gcc)
-      url=git://gcc.gnu.org/git/gcc.git
-      ;;
-    binutils-gdb)
-      url=git://sourceware.org/git/binutils-gdb.git
-      ;;
-    default)
-      echo "Unknown repository"
-      exit 1
-      ;;
-  esac
-  
-  # If we have the docker volume, then use tar to clone into
-  # our local copy.  That's going to be much faster than git.
-  # Then update the local copy with the latest bits.  Otherwise
-  # just clone from upstream.
-  if [ -d /home/jlaw/jenkins/docker-volume/$repo ]; then
-    pushd /home/jlaw/jenkins/docker-volume
-    tar cf - ./$repo | (cd /home/jlaw/jenkins/workspace/${TARGET} ; tar xf - )
-    popd
-    pushd $repo
-    git checkout -q -- .
-    git pull
-    popd
-  else
-    pushd $repo
-    git clone $url $repo
-    popd
-  fi
-  
-done
-  
-for tool in binutils-gdb gcc; do
-  cd $tool
-  if [ -f ../patches/$tool/TOREMOVE ]; then
-    rm -f `cat ../patches/$tool/TOREMOVE`
-  fi
-  for patch in ../patches/$tool/*.patch; do
-    patch -p1 < $patch
-  done
-  cd ..
-done
-
-
+# We only need the binutils-gdb and gcc trees
+patches/jobs/setupsources.sh binutils-gdb gcc
 
 # Step 1, build binutils
 cd ${TARGET}-obj/binutils
@@ -96,11 +50,6 @@ if [ -f old-testresults/gas.sum.gz ]; then
 fi
 
 # No need to clean up, everything's run in an ephemeral container
-
-# Step #5, cleanup the temporary bits
-#rm -rf ${TARGET}-obj
-#rm -rf ${TARGET}-installed
-#rm -rf old-testresults
 
 # Step #6, compress testresults before archiving
 cd testresults
