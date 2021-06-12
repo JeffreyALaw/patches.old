@@ -10,7 +10,7 @@ mkdir -p ${TARGET}-obj/binutils
 mkdir -p ${TARGET}-obj/gcc
 
 # Step 0, setup source repositories & apply patches
-for repo in patches binutils-gdb gcc
+for repo in binutils-gdb gcc
 do
   case $repo in
     gcc)
@@ -18,9 +18,6 @@ do
       ;;
     binutils-gdb)
       url=git://sourceware.org/git/binutils-gdb.git
-      ;;
-    patches)
-      url=https://github.com/JeffreyALaw/patches
       ;;
     default)
       echo "Unknown repository"
@@ -98,11 +95,12 @@ if [ -f old-testresults/gas.sum.gz ]; then
   gcc/contrib/compare_tests old-testresults testresults || exit 255
 fi
 
+# No need to clean up, everything's run in an ephemeral container
 
 # Step #5, cleanup the temporary bits
-rm -rf ${TARGET}-obj
-rm -rf ${TARGET}-installed
-rm -rf old-testresults
+#rm -rf ${TARGET}-obj
+#rm -rf ${TARGET}-installed
+#rm -rf old-testresults
 
 # Step #6, compress testresults before archiving
 cd testresults
