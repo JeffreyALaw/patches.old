@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
+TARGET=$1
+shift
+
 # This script copies the requested sources from the docker
 # volume, updates them from their appropriate upstreams, then
 # applies ptaches
