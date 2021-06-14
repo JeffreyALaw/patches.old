@@ -16,6 +16,15 @@ for repo in $*; do
     binutils-gdb)
       url=git://sourceware.org/git/binutils-gdb.git
       ;;
+    newlib-cygwin)
+      url=https://sourceware.org/git/newlib-cygwin.git
+      ;;
+    glibc)
+      url=https://sourceware.org/git/glibc.git
+      ;;
+    linux)
+      url=https://github.com/torvalds/linux.git
+      ;;
     default)
       echo "Unknown repository"
       exit 1
