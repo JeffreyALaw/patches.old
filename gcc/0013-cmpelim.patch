@@ -1,0 +1,12 @@
+diff --git a/gcc/compare-elim.c b/gcc/compare-elim.c
+index 85085cd6973..607eadc3d96 100644
+--- a/gcc/compare-elim.c
++++ b/gcc/compare-elim.c
+@@ -906,6 +906,7 @@ try_eliminate_compare (struct comparison *cmp)
+ static unsigned int
+ execute_compare_elim_after_reload (void)
+ {
++  df_set_flags (DF_LR_RUN_DCE);
+   df_analyze ();
+ 
+   gcc_checking_assert (!all_compares.exists ());
