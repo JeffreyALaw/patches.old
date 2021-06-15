@@ -1,3 +1,10 @@
+Minor improvement to compare elimination
+
+gcc/
+	* compare-elim.c (try_eliminate_compare): Run DCE to clean things
+	before eliminating comparisons.
+
+	
 diff --git a/gcc/compare-elim.c b/gcc/compare-elim.c
 index 85085cd6973..607eadc3d96 100644
 --- a/gcc/compare-elim.c
