@@ -234,7 +234,7 @@ index 2b88325d2f7..0180da00827 100644
  #if 0
  /* Expand a conditional branch.  */
 diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
-index 07d36cf0ef4..b1289085ce6 100644
+index 07d36cf0ef4..72c335b2264 100644
 --- a/gcc/config/h8300/logical.md
 +++ b/gcc/config/h8300/logical.md
 @@ -1,3 +1,7 @@
@@ -254,19 +254,33 @@ index 07d36cf0ef4..b1289085ce6 100644
    [(set (match_operand:QI 0 "register_operand" "=r")
  	(ors:QI (match_operand:QI 1 "register_operand" "%0")
  		(match_operand:QI 2 "h8300_src_operand" "ri")))
-@@ -253,14 +257,25 @@
+@@ -251,16 +255,38 @@
+ 		   (logicals:QHSI (match_dup 1) (match_dup 2)))
+ 	      (clobber (reg:CC CC_REG))])])
  
- (define_insn "*<code><mode>3_clobber_flags"
+-(define_insn "*<code><mode>3_clobber_flags"
++(define_insn "*xor<mode>3_clobber_flags"
    [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
 -	(logicals:QHSI
-+	(ors:QHSI
++	(xor:QHSI
 +	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
 +	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
 +   (clobber (reg:CC CC_REG))]
 +  "h8300_operands_match_p (operands)"
-+  { return output_logical_op (<MODE>mode, <CODE>, operands, insn); }
++  { return output_logical_op (<MODE>mode, XOR, operands, insn); }
 +  [(set (attr "length")
-+	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands, insn)"))])
++	(symbol_ref "compute_logical_op_length (<MODE>mode, XOR, operands, insn)"))])
++
++(define_insn "*ior<mode>3<cczn>"
++  [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
++	(ior:QHSI
++	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
++	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
++   (clobber (reg:CC CC_REG))]
++  "h8300_operands_match_p (operands)"
++  { return output_logical_op (<MODE>mode, IOR, operands, insn); }
++  [(set (attr "length")
++	(symbol_ref "compute_logical_op_length (<MODE>mode, IOR, operands, insn)"))])
 +
 +(define_insn "*and<mode>3<cczn>"
 +  [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
