@@ -16,7 +16,7 @@ index af653292a9d..9d06feb1367 100644
  extern int compute_logical_op_cc (machine_mode, rtx *);
  extern int compute_a_shift_cc (rtx, rtx *);
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 2b88325d2f7..0180da00827 100644
+index 2b88325d2f7..1ad1b6b3273 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -1100,7 +1100,7 @@ h8300_and_costs (rtx x)
@@ -45,7 +45,7 @@ index 2b88325d2f7..0180da00827 100644
 +     supposed to set or clobber the condition codes.
 +
 +     This is important to know.  If we are setting condition codes, then we
-+     must do the operation in MODE and not in some smaller size. 
++     must do the operation in MODE and not in some smaller size.
 +
 +     The key is to look at the second object in the PARALLEL. If it is not
 +     a CLOBBER, then we care about the condition codes.  */
@@ -53,7 +53,7 @@ index 2b88325d2f7..0180da00827 100644
 +  gcc_assert (GET_CODE (pattern) == PARALLEL);
 +  rtx second_op = XVECEXP (pattern, 0, 1);
 +  bool cc_meaningful = (GET_CODE (second_op) != CLOBBER);
-+ 
++
    switch (code)
      {
      case AND:
@@ -102,7 +102,7 @@ index 2b88325d2f7..0180da00827 100644
 +     supposed to set or clobber the condition codes.
 +
 +     This is important to know.  If we are setting condition codes, then we
-+     must do the operation in MODE and not in some smaller size. 
++     must do the operation in MODE and not in some smaller size.
 +
 +     The key is to look at the second object in the PARALLEL. If it is not
 +     a CLOBBER, then we care about the condition codes.  */
@@ -114,7 +114,7 @@ index 2b88325d2f7..0180da00827 100644
 +      rtx second_op = XVECEXP (pattern, 0, 1);
 +      cc_meaningful = (GET_CODE (second_op) != CLOBBER);
 +    }
-+ 
++
    switch (mode)
      {
      case E_QImode:
@@ -144,14 +144,6 @@ index 2b88325d2f7..0180da00827 100644
  	{
  	  length = h8300_length_from_table (operands[1], operands[2],
  					    &logicl_length_table);
-@@ -3135,6 +3169,7 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
- 	    {
- 	      length += 2;
- 	    }
-+	  /* These two cases are extrs and extru which set usable cc.  */
- 	  else if (code == IOR
- 		   && w1 == 0xffff
- 		   && (w0 & 0x8000) != 0)
 @@ -3158,80 +3193,6 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
    return length;
  }
@@ -234,18 +226,10 @@ index 2b88325d2f7..0180da00827 100644
  #if 0
  /* Expand a conditional branch.  */
 diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
-index 07d36cf0ef4..72c335b2264 100644
+index 07d36cf0ef4..272575bd573 100644
 --- a/gcc/config/h8300/logical.md
 +++ b/gcc/config/h8300/logical.md
-@@ -1,3 +1,7 @@
-+;; There are specical cases of IOR/AND of SImode objects which are done in
-+;; pieces, but which ZN.  In particular the cases where extrs/extru are
-+;; involved.
-+
- ;; Generic for binary logicals across the supported integer modes
- (define_expand "<code><mode>3"
-   [(set (match_operand:QHSI 0 "register_operand" "")
-@@ -208,7 +212,7 @@
+@@ -208,7 +208,7 @@
    [(set_attr "length" "*")
     (set_attr "length_table" "logicb")])
  
@@ -254,46 +238,100 @@ index 07d36cf0ef4..72c335b2264 100644
    [(set (match_operand:QI 0 "register_operand" "=r")
  	(ors:QI (match_operand:QI 1 "register_operand" "%0")
  		(match_operand:QI 2 "h8300_src_operand" "ri")))
-@@ -251,16 +255,38 @@
+@@ -251,17 +251,16 @@
  		   (logicals:QHSI (match_dup 1) (match_dup 2)))
  	      (clobber (reg:CC CC_REG))])])
  
 -(define_insn "*<code><mode>3_clobber_flags"
-+(define_insn "*xor<mode>3_clobber_flags"
++(define_insn "*<code><mode>3<cczn>"
    [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
--	(logicals:QHSI
-+	(xor:QHSI
-+	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
-+	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
-+   (clobber (reg:CC CC_REG))]
-+  "h8300_operands_match_p (operands)"
-+  { return output_logical_op (<MODE>mode, XOR, operands, insn); }
-+  [(set (attr "length")
-+	(symbol_ref "compute_logical_op_length (<MODE>mode, XOR, operands, insn)"))])
-+
-+(define_insn "*ior<mode>3<cczn>"
-+  [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
-+	(ior:QHSI
-+	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
-+	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
-+   (clobber (reg:CC CC_REG))]
-+  "h8300_operands_match_p (operands)"
-+  { return output_logical_op (<MODE>mode, IOR, operands, insn); }
-+  [(set (attr "length")
-+	(symbol_ref "compute_logical_op_length (<MODE>mode, IOR, operands, insn)"))])
-+
-+(define_insn "*and<mode>3<cczn>"
-+  [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
-+	(and:QHSI
+ 	(logicals:QHSI
  	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
  	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
     (clobber (reg:CC CC_REG))]
    "h8300_operands_match_p (operands)"
 -  { return output_logical_op (<MODE>mode, <CODE>, operands); }
-+  { return output_logical_op (<MODE>mode, AND, operands, insn); }
++  { return output_logical_op (<MODE>mode, <CODE>, operands, insn); }
    [(set (attr "length")
 -	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands)"))])
-+	(symbol_ref "compute_logical_op_length (<MODE>mode, AND, operands, insn)"))])
- 
+-
++	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands, insn)"))])
  
  ;; ----------------------------------------------------------------------
+ ;; NOT INSTRUCTIONS
+diff --git a/gcc/config/i386/gcc-auto-profile b/gcc/config/i386/gcc-auto-profile
+deleted file mode 100755
+index 5da5c63cd84..00000000000
+--- a/gcc/config/i386/gcc-auto-profile
++++ /dev/null
+@@ -1,70 +0,0 @@
+-#!/bin/sh
+-# profile workload for gcc profile feedback (autofdo) using Linux perf
+-# auto generated. to regenerate for new CPUs run
+-# contrib/gen_autofdo_event.py --shell --all in gcc source
+-
+-# usages:
+-# gcc-auto-profile program             (profile program and children)
+-# gcc-auto-profile -a sleep X          (profile all for X secs, may need root)
+-# gcc-auto-profile -p PID sleep X      (profile PID)
+-# gcc-auto-profile --kernel -a sleep X (profile kernel)
+-# gcc-auto-profile --all -a sleep X    (profile kernel and user space)
+-
+-# identify branches taken event for CPU
+-#
+-
+-FLAGS=u
+-
+-if [ "$1" = "--kernel" ] ; then
+-  FLAGS=k
+-  shift
+-fi
+-if [ "$1" = "--all" ] ; then
+-  FLAGS=uk
+-  shift
+-fi
+-
+-if ! grep -q Intel /proc/cpuinfo ; then
+-  echo >&2 "Only Intel CPUs supported"
+-  exit 1
+-fi
+-
+-if grep -q hypervisor /proc/cpuinfo ; then
+-  echo >&2 "Warning: branch profiling may not be functional in VMs"
+-fi
+-
+-case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
+-  egrep "^model\s*:" /proc/cpuinfo | head -n1` in
+-model*:\ 55|\
+-model*:\ 77|\
+-model*:\ 76) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
+-model*:\ 42|\
+-model*:\ 45|\
+-model*:\ 58|\
+-model*:\ 62|\
+-model*:\ 60|\
+-model*:\ 69|\
+-model*:\ 70|\
+-model*:\ 63|\
+-model*:\ 61|\
+-model*:\ 71|\
+-model*:\ 86|\
+-model*:\ 78|\
+-model*:\ 94) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
+-model*:\ 46|\
+-model*:\ 30|\
+-model*:\ 31|\
+-model*:\ 26|\
+-model*:\ 47|\
+-model*:\ 37|\
+-model*:\ 44) E="cpu/event=0x88,umask=0x40/p$FLAGS" ;;
+-model*:\ 28|\
+-model*:\ 38|\
+-model*:\ 39|\
+-model*:\ 54|\
+-model*:\ 53) E="cpu/event=0x88,umask=0x41/p$FLAGS" ;;
+-*)
+-echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
+-	exit 1 ;;
+-esac
+-exec perf record -e $E -b "$@"
