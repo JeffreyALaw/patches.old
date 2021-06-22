@@ -193,7 +193,7 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc newlib-cygwin
 
 # Step 1, build binutils
 cd ${TARGET}-obj/binutils
-../../binutils-gdb/configure --prefix=`pwd`/../../${TARGET}-installed --target=${TARGET}
+../../binutils-gdb/configure --enable-lto --prefix=`pwd`/../../${TARGET}-installed --target=${TARGET}
 make -j $NPROC -l $NPROC all-gas all-binutils all-ld $SIMTARG
 make install-gas install-binutils install-ld $SIMINSTALLTARG
 cd ../..
