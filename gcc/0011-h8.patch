@@ -1,337 +1,59 @@
-diff --git a/gcc/config/h8300/h8300-protos.h b/gcc/config/h8300/h8300-protos.h
-index af653292a9d..9d06feb1367 100644
---- a/gcc/config/h8300/h8300-protos.h
-+++ b/gcc/config/h8300/h8300-protos.h
-@@ -36,8 +36,10 @@ extern const char *output_simode_bld (int, rtx[]);
- extern void final_prescan_insn (rtx_insn *, rtx *, int);
- extern int h8300_expand_movsi (rtx[]);
- extern machine_mode  h8300_select_cc_mode (RTX_CODE, rtx, rtx);
--extern const char *output_logical_op (machine_mode, rtx_code code, rtx *);
--extern unsigned int compute_logical_op_length (machine_mode, rtx_code, rtx *);
-+extern const char *output_logical_op (machine_mode, rtx_code code,
-+				      rtx *, rtx_insn *);
-+extern unsigned int compute_logical_op_length (machine_mode, rtx_code,
-+					      rtx *, rtx_insn *);
- 
- extern int compute_logical_op_cc (machine_mode, rtx *);
- extern int compute_a_shift_cc (rtx, rtx *);
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 2b88325d2f7..1ad1b6b3273 100644
+index 511c2b28e40..d8b4bfcbdbe 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
-@@ -1100,7 +1100,7 @@ h8300_and_costs (rtx x)
-   operands[1] = XEXP (x, 0);
-   operands[2] = XEXP (x, 1);
-   operands[3] = x;
--  return compute_logical_op_length (GET_MODE (x), AND, operands) / 2;
-+  return compute_logical_op_length (GET_MODE (x), AND, operands, NULL) / 2;
- }
+@@ -1947,9 +1947,10 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
+   if (op1 == const0_rtx
+       && (cond == EQ || cond == NE || cond == LT || cond == GE)
+       && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+-          || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
+-          || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+-          || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
++	  || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
++	  || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
++	  || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
++	  || GET_CODE (op0) == ASHIFTRT || GET_CODE (op0) == LSHIFTRT
+ 	  || GET_CODE (op0) == MULT || GET_CODE (op0) == SYMBOL_REF
+ 	  || GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND
+ 	  || REG_P (op0) || MEM_P (op0)))
+diff --git a/gcc/config/h8300/shiftrotate.md b/gcc/config/h8300/shiftrotate.md
+index 23140d9ade8..ac0050b3683 100644
+--- a/gcc/config/h8300/shiftrotate.md
++++ b/gcc/config/h8300/shiftrotate.md
+@@ -18,33 +18,13 @@
+ ;; easier "do it at insn emit time" route.
  
- /* Compute the cost of a shift insn.  */
-@@ -2881,7 +2881,7 @@ compute_plussi_cc (rtx *operands)
- /* Output a logical insn.  */
  
- const char *
--output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
-+output_logical_op (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *insn)
- {
-   /* Pretend that every byte is affected if both operands are registers.  */
-   const unsigned HOST_WIDE_INT intval =
-@@ -2906,6 +2906,19 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
-   const char *opname;
-   char insn_buf[100];
+-(define_expand "ashl<mode>3"
++(define_expand "<code><mode>3"
+   [(set (match_operand:QHSI 0 "register_operand" "")
+-	(ashift:QHSI (match_operand:QHSI 1 "register_operand" "")
++	(shifts:QHSI (match_operand:QHSI 1 "register_operand" "")
+ 		     (match_operand:QI 2 "nonmemory_operand" "")))]
+   ""
+   {
+-    if (expand_a_shift (<MODE>mode, ASHIFT, operands))
+-    DONE;
+-  })
+-
+-(define_expand "ashr<mode>3"
+-  [(set (match_operand:QHSI 0 "register_operand" "")
+-	(ashiftrt:QHSI (match_operand:QHSI 1 "register_operand" "")
+-		       (match_operand:QI 2 "nonmemory_operand" "")))]
+-  ""
+-  {
+-    if (expand_a_shift (<MODE>mode, ASHIFTRT, operands))
+-    DONE;
+-  })
+-
+-(define_expand "lshr<mode>3"
+-  [(set (match_operand:QHSI 0 "register_operand" "")
+-	(lshiftrt:QHSI (match_operand:QHSI 1 "register_operand" "")
+-		       (match_operand:QI 2 "nonmemory_operand" "")))]
+-  ""
+-  {
+-    if (expand_a_shift (<MODE>mode, LSHIFTRT, operands))
++    if (expand_a_shift (<MODE>mode, <CODE>, operands))
+     DONE;
+   })
  
-+  /* INSN is the current insn, we examine its overall form to see if we're
-+     supposed to set or clobber the condition codes.
-+
-+     This is important to know.  If we are setting condition codes, then we
-+     must do the operation in MODE and not in some smaller size.
-+
-+     The key is to look at the second object in the PARALLEL. If it is not
-+     a CLOBBER, then we care about the condition codes.  */
-+  rtx pattern = PATTERN (insn);
-+  gcc_assert (GET_CODE (pattern) == PARALLEL);
-+  rtx second_op = XVECEXP (pattern, 0, 1);
-+  bool cc_meaningful = (GET_CODE (second_op) != CLOBBER);
-+
-   switch (code)
-     {
-     case AND:
-@@ -2928,8 +2941,9 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
-       output_asm_insn (insn_buf, operands);
-       break;
-     case E_HImode:
--      /* First, see if we can finish with one insn.  */
--      if (b0 != 0 && b1 != 0)
-+      /* First, see if we can (or must) finish with one insn.  */
-+      if (cc_meaningful
-+	  || (b0 != 0 && b1 != 0))
- 	{
- 	  sprintf (insn_buf, "%s.w\t%%T2,%%T0", opname);
- 	  output_asm_insn (insn_buf, operands);
-@@ -2964,10 +2978,11 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
- 
-       /* Check if doing everything with one insn is no worse than
- 	 using multiple insns.  */
--      if (w0 != 0 && w1 != 0
--	  && !(lower_half_easy_p && upper_half_easy_p)
--	  && !(code == IOR && w1 == 0xffff
--	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
-+      if (cc_meaningful
-+	  || (w0 != 0 && w1 != 0
-+	      && !(lower_half_easy_p && upper_half_easy_p)
-+	      && !(code == IOR && w1 == 0xffff
-+		   && (w0 & 0x8000) != 0 && lower_half_easy_p)))
- 	{
- 	  sprintf (insn_buf, "%s.l\t%%S2,%%S0", opname);
- 	  output_asm_insn (insn_buf, operands);
-@@ -3037,7 +3052,7 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
- /* Compute the length of a logical insn.  */
- 
- unsigned int
--compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
-+compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *insn)
- {
-   /* Pretend that every byte is affected if both operands are registers.  */
-   const unsigned HOST_WIDE_INT intval =
-@@ -3061,6 +3076,23 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
-   /* Insn length.  */
-   unsigned int length = 0;
- 
-+  /* INSN is the current insn, we examine its overall form to see if we're
-+     supposed to set or clobber the condition codes.
-+
-+     This is important to know.  If we are setting condition codes, then we
-+     must do the operation in MODE and not in some smaller size.
-+
-+     The key is to look at the second object in the PARALLEL. If it is not
-+     a CLOBBER, then we care about the condition codes.  */
-+  bool cc_meaningful = false;
-+  if (insn)
-+    {
-+      rtx pattern = PATTERN (insn);
-+      gcc_assert (GET_CODE (pattern) == PARALLEL);
-+      rtx second_op = XVECEXP (pattern, 0, 1);
-+      cc_meaningful = (GET_CODE (second_op) != CLOBBER);
-+    }
-+
-   switch (mode)
-     {
-     case E_QImode:
-@@ -3068,7 +3100,8 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
- 
-     case E_HImode:
-       /* First, see if we can finish with one insn.  */
--      if (b0 != 0 && b1 != 0)
-+      if (cc_meaningful
-+	  || (b0 != 0 && b1 != 0))
- 	{
- 	  length = h8300_length_from_table (operands[1], operands[2],
- 					    &logicw_length_table);
-@@ -3098,10 +3131,11 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
- 
-       /* Check if doing everything with one insn is no worse than
- 	 using multiple insns.  */
--      if (w0 != 0 && w1 != 0
--	  && !(lower_half_easy_p && upper_half_easy_p)
--	  && !(code == IOR && w1 == 0xffff
--	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
-+      if (cc_meaningful
-+	  || (w0 != 0 && w1 != 0
-+	      && !(lower_half_easy_p && upper_half_easy_p)
-+	      && !(code == IOR && w1 == 0xffff
-+		   && (w0 & 0x8000) != 0 && lower_half_easy_p)))
- 	{
- 	  length = h8300_length_from_table (operands[1], operands[2],
- 					    &logicl_length_table);
-@@ -3158,80 +3193,6 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
-   return length;
- }
- 
--/* Compute which flag bits are valid after a logical insn.  */
--
--int
--compute_logical_op_cc (machine_mode mode, rtx *operands)
--{
--  /* Figure out the logical op that we need to perform.  */
--  enum rtx_code code = GET_CODE (operands[3]);
--  /* Pretend that every byte is affected if both operands are registers.  */
--  const unsigned HOST_WIDE_INT intval =
--    (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
--			      /* Always use the full instruction if the
--				 first operand is in memory.  It is better
--				 to use define_splits to generate the shorter
--				 sequence where valid.  */
--			      && register_operand (operands[1], VOIDmode)
--			      ? INTVAL (operands[2]) : 0x55555555);
--  /* The determinant of the algorithm.  If we perform an AND, 0
--     affects a bit.  Otherwise, 1 affects a bit.  */
--  const unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
--  /* Break up DET into pieces.  */
--  const unsigned HOST_WIDE_INT b0 = (det >>  0) & 0xff;
--  const unsigned HOST_WIDE_INT b1 = (det >>  8) & 0xff;
--  const unsigned HOST_WIDE_INT w0 = (det >>  0) & 0xffff;
--  const unsigned HOST_WIDE_INT w1 = (det >> 16) & 0xffff;
--  int lower_half_easy_p = 0;
--  int upper_half_easy_p = 0;
--  /* Condition code.  */
--  enum attr_old_cc cc = OLD_CC_CLOBBER;
--
--  switch (mode)
--    {
--    case E_HImode:
--      /* First, see if we can finish with one insn.  */
--      if (b0 != 0 && b1 != 0)
--	{
--	  cc = OLD_CC_SET_ZNV;
--	}
--      break;
--    case E_SImode:
--      /* Determine if the lower half can be taken care of in no more
--	 than two bytes.  */
--      lower_half_easy_p = (b0 == 0
--			   || b1 == 0
--			   || (code != IOR && w0 == 0xffff));
--
--      /* Determine if the upper half can be taken care of in no more
--         than two bytes.  */
--      upper_half_easy_p = ((code != IOR && w1 == 0xffff)
--			   || (code == AND && w1 == 0xff00));
--
--      /* Check if doing everything with one insn is no worse than
--	 using multiple insns.  */
--      if (w0 != 0 && w1 != 0
--	  && !(lower_half_easy_p && upper_half_easy_p)
--	  && !(code == IOR && w1 == 0xffff
--	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
--	{
--	  cc = OLD_CC_SET_ZNV;
--	}
--      else
--	{
--	  if (code == IOR
--	      && w1 == 0xffff
--	      && (w0 & 0x8000) != 0)
--	    {
--	      cc = OLD_CC_SET_ZNV;
--	    }
--	}
--      break;
--    default:
--      gcc_unreachable ();
--    }
--  return cc;
--}
- 
- #if 0
- /* Expand a conditional branch.  */
-diff --git a/gcc/config/h8300/logical.md b/gcc/config/h8300/logical.md
-index 07d36cf0ef4..272575bd573 100644
---- a/gcc/config/h8300/logical.md
-+++ b/gcc/config/h8300/logical.md
-@@ -208,7 +208,7 @@
-   [(set_attr "length" "*")
-    (set_attr "length_table" "logicb")])
- 
--(define_insn "*<code>qi3_1<cczn>"
-+(define_insn "*andqi3_1<cczn>"
-   [(set (match_operand:QI 0 "register_operand" "=r")
- 	(ors:QI (match_operand:QI 1 "register_operand" "%0")
- 		(match_operand:QI 2 "h8300_src_operand" "ri")))
-@@ -251,17 +251,16 @@
- 		   (logicals:QHSI (match_dup 1) (match_dup 2)))
- 	      (clobber (reg:CC CC_REG))])])
- 
--(define_insn "*<code><mode>3_clobber_flags"
-+(define_insn "*<code><mode>3<cczn>"
-   [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
- 	(logicals:QHSI
- 	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
- 	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
-    (clobber (reg:CC CC_REG))]
-   "h8300_operands_match_p (operands)"
--  { return output_logical_op (<MODE>mode, <CODE>, operands); }
-+  { return output_logical_op (<MODE>mode, <CODE>, operands, insn); }
-   [(set (attr "length")
--	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands)"))])
--
-+	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands, insn)"))])
- 
- ;; ----------------------------------------------------------------------
- ;; NOT INSTRUCTIONS
-diff --git a/gcc/config/i386/gcc-auto-profile b/gcc/config/i386/gcc-auto-profile
-deleted file mode 100755
-index 5da5c63cd84..00000000000
---- a/gcc/config/i386/gcc-auto-profile
-+++ /dev/null
-@@ -1,70 +0,0 @@
--#!/bin/sh
--# profile workload for gcc profile feedback (autofdo) using Linux perf
--# auto generated. to regenerate for new CPUs run
--# contrib/gen_autofdo_event.py --shell --all in gcc source
--
--# usages:
--# gcc-auto-profile program             (profile program and children)
--# gcc-auto-profile -a sleep X          (profile all for X secs, may need root)
--# gcc-auto-profile -p PID sleep X      (profile PID)
--# gcc-auto-profile --kernel -a sleep X (profile kernel)
--# gcc-auto-profile --all -a sleep X    (profile kernel and user space)
--
--# identify branches taken event for CPU
--#
--
--FLAGS=u
--
--if [ "$1" = "--kernel" ] ; then
--  FLAGS=k
--  shift
--fi
--if [ "$1" = "--all" ] ; then
--  FLAGS=uk
--  shift
--fi
--
--if ! grep -q Intel /proc/cpuinfo ; then
--  echo >&2 "Only Intel CPUs supported"
--  exit 1
--fi
--
--if grep -q hypervisor /proc/cpuinfo ; then
--  echo >&2 "Warning: branch profiling may not be functional in VMs"
--fi
--
--case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
--  egrep "^model\s*:" /proc/cpuinfo | head -n1` in
--model*:\ 55|\
--model*:\ 77|\
--model*:\ 76) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
--model*:\ 42|\
--model*:\ 45|\
--model*:\ 58|\
--model*:\ 62|\
--model*:\ 60|\
--model*:\ 69|\
--model*:\ 70|\
--model*:\ 63|\
--model*:\ 61|\
--model*:\ 71|\
--model*:\ 86|\
--model*:\ 78|\
--model*:\ 94) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
--model*:\ 46|\
--model*:\ 30|\
--model*:\ 31|\
--model*:\ 26|\
--model*:\ 47|\
--model*:\ 37|\
--model*:\ 44) E="cpu/event=0x88,umask=0x40/p$FLAGS" ;;
--model*:\ 28|\
--model*:\ 38|\
--model*:\ 39|\
--model*:\ 54|\
--model*:\ 53) E="cpu/event=0x88,umask=0x41/p$FLAGS" ;;
--*)
--echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
--	exit 1 ;;
--esac
--exec perf record -e $E -b "$@"
