@@ -6,7 +6,7 @@ NPROC=`nproc --all`
 export GENERATION=2
 echo $GENERATION
 
-SRCDIR=`pwd`
+SRCDIR=../../
 
 rm -rf ${TARGET}-obj
 rm -rf ${TARGET}-installed
