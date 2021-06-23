@@ -1,4 +1,9 @@
 #!/bin/sh -x
+
+# If any command fails, exit immediately
+set -e
+set -o pipefail
+
 TARGET=$1
 
 NPROC=`nproc --all`

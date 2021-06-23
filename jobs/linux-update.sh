@@ -1,4 +1,8 @@
 #!/bin/sh -x
+
+set -e
+set -o pipefail
+
 TARGET=$1
 
 
