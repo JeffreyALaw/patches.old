@@ -6,6 +6,8 @@ NPROC=`nproc --all`
 export GENERATION=2
 echo $GENERATION
 
+SRCDIR=`pwd`
+
 rm -rf ${TARGET}-obj
 rm -rf ${TARGET}-installed
 mkdir -p ${TARGET}-installed
@@ -193,7 +195,7 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc newlib-cygwin
 
 # Step 1, build binutils
 cd ${TARGET}-obj/binutils
-../../binutils-gdb/configure --enable-lto --prefix=`pwd`/../../${TARGET}-installed --target=${TARGET}
+${SRCDIR}/binutils-gdb/configure --enable-lto --prefix=${SRCDIR}/${TARGET}-installed --target=${TARGET}
 make -j $NPROC -l $NPROC all-gas all-binutils all-ld $SIMTARG
 make install-gas install-binutils install-ld $SIMINSTALLTARG
 cd ../..
@@ -204,7 +206,7 @@ cd ../..
 # Step 2, build gcc
 PATH=`pwd`/${TARGET}-installed/bin:$PATH
 cd ${TARGET}-obj/gcc
-../../gcc/configure --disable-analyzer --with-system-libunwind --with-newlib --without-headers --disable-threads --disable-shared --enable-languages=c,c++ --prefix=`pwd`/../../${TARGET}-installed --target=${TARGET}
+${SRCDIR}/gcc/configure --disable-analyzer --with-system-libunwind --with-newlib --without-headers --disable-threads --disable-shared --enable-languages=c,c++ --prefix=${SRCDIR}/${TARGET}-installed --target=${TARGET}
 make -j $NPROC -l $NPROC all-gcc
 make install-gcc
 
@@ -220,7 +222,7 @@ cd ../../
 
 # Step 3, build newlib
 cd ${TARGET}-obj/newlib
-../../newlib-cygwin/configure --prefix=`pwd`/../../${TARGET}-installed --target=${TARGET}
+${SRCDIR}/newlib-cygwin/configure --prefix=${SRCDIR}/${TARGET}-installed --target=${TARGET}
 make -j $NPROC -l $NPROC
 make install
 cd ../..
