@@ -1,6 +1,6 @@
 #!/bin/sh -x
 set -e
-set -o pipefile
+set -o pipefail
 
 TARGET=$1
 shift
