@@ -74,3 +74,5 @@ gcc/testsuite/gcc.dg/pch/valid-1.c
 gcc/testsuite/c-c++-common/goacc/privatization-1-compute.c
 gcc/testsuite/gfortran.dg/goacc/privatization-1-compute.f90
 gcc/testsuite/gfortran.dg/goacc/routine-external-level-of-parallelism-2.f
+gcc/testsuite/c-c++-common/wattributes.c
+gcc/testsuite/gcc.dg/Wattributes-6.c
