@@ -13,10 +13,6 @@ gcc/testsuite/gcc.c-torture/execute/pr80692.c
 gcc/testsuite/gcc.dg/dfp/builtin-tgmath-dfp.c
 gcc/testsuite/gcc.dg/pr90037.c
 gcc/testsuite/gcc.c-torture/compile/pr37669-2.c
-gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-1.c
-gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-2.c
-gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-3.c
-gcc/testsuite/gcc.dg/tree-ssa/phi_on_compare-4.c
 gcc/testsuite/gcc.dg/format/gcc_diag-12.c
 gcc/testsuite/gcc.c-torture/execute/pr90949.c
 gcc/testsuite/gcc.c-torture/execute/simd-1.c
@@ -47,8 +43,6 @@ gcc/testsuite/gcc.dg/pr84877.c
 gcc/testsuite/gcc.dg/torture/stackalign/setjmp-1.c
 gcc/testsuite/gcc.c-torture/execute/built-in-setjmp.c
 gcc/testsuite/gcc.dg/pr49496.c
-gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-1.c
-gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-11.c
 gcc/testsuite/gcc.c-torture/compile/20001226-1.c
 gcc/testsuite/gcc.dg/pr97459-6.c
 gcc/testsuite/c-c++-common/ubsan/null-1.c
