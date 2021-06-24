@@ -1,4 +1,6 @@
 #!/bin/sh -x
+set -e
+set -o pipefile
 
 TARGET=$1
 shift
