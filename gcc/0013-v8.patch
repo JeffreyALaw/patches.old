@@ -1,0 +1,166 @@
+
+On 5/27/21 6:30 PM, Jeff Law wrote:
+>
+>
+> On 5/27/2021 7:49 AM, Martin Liška wrote:
+>> On 5/25/21 6:21 PM, Jeff Law wrote:
+>>> Is triggering a regression on the v850-elf platform for a variety of tests.  Here's one example from c-torture/execute.  At -O0 this used to compile fine, but now gives an error:
+>>
+>> Hello.
+>>
+>> Sorry for the breakage, it's very likely similar to:
+>> https://gcc.gnu.org/pipermail/gcc-patches/2021-May/571336.html
+>>
+>> I'm working on it.
+> No worries.
+> jeff
+
+Hello.
+
+I have a tentative patch. Can you please test it for me?
+And I've got a patch that silents a warning, what do you think?
+
+Cheers,
+Martin
+
+0001-v850-add-v850_can_inline_p-target-hook.patch
+
+From 0ee7a43faca4523da73967a0ff8625d280982746 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 23 Jun 2021 15:46:22 +0200
+Subject: [PATCH] v850: add v850_can_inline_p target hook
+
+gcc/ChangeLog:
+
+	* config/v850/v850.c (v850_option_override): Build default
+	target node.
+	(v850_can_inline_p): New.  Allow MASK_PROLOG_FUNCTION to be
+	ignored for inlining.
+	(TARGET_CAN_INLINE_P): New.
+---
+ gcc/config/v850/v850.c | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+diff --git a/gcc/config/v850/v850.c b/gcc/config/v850/v850.c
+index e0e5005d865..371e6026e9a 100644
+--- a/gcc/config/v850/v850.c
++++ b/gcc/config/v850/v850.c
+@@ -3140,6 +3140,11 @@ v850_option_override (void)
+   /* The RH850 ABI does not (currently) support the use of the CALLT instruction.  */
+   if (! TARGET_GCC_ABI)
+     target_flags |= MASK_DISABLE_CALLT;
++
++  /* Save the initial options in case the user does function specific
++     options.  */
++  target_option_default_node = target_option_current_node
++    = build_target_option_node (&global_options, &global_options_set);
+ }
+ 
+ const char *
+@@ -3192,6 +3197,29 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+   return (mode1 == mode2
+ 	  || (GET_MODE_SIZE (mode1) <= 4 && GET_MODE_SIZE (mode2) <= 4));
+ }
++
++static bool
++v850_can_inline_p (tree caller, tree callee)
++{
++  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
++  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
++
++  const unsigned HOST_WIDE_INT safe_flags = MASK_PROLOG_FUNCTION;
++
++  if (!callee_tree)
++    callee_tree = target_option_default_node;
++  if (!caller_tree)
++    caller_tree = target_option_default_node;
++  if (callee_tree == caller_tree)
++    return true;
++
++  cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
++  cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
++
++  return ((caller_opts->x_target_flags & ~safe_flags)
++	  == (callee_opts->x_target_flags & ~safe_flags));
++}
++
+ 
+ /* Initialize the GCC target structure.  */
+ 
+@@ -3306,6 +3334,10 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+ #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+ #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+ 
++#undef TARGET_CAN_INLINE_P
++#define TARGET_CAN_INLINE_P v850_can_inline_p
++
++
+ struct gcc_target targetm = TARGET_INITIALIZER;
+ 
+ #include "gt-v850.h"
+-- 
+2.32.0
+
+
+0001-v850-silent-2-warnings.patch
+
+From 7836ce1fbae1a1c21806a2dfc324095e29d914a3 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 23 Jun 2021 15:48:28 +0200
+Subject: [PATCH] v850: silent 2 warnings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Silents:
+
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c: In function ‘char* construct_dispose_instruction(rtx)’:
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c:2690:22: warning: ‘%s’ directive writing up to 99 bytes into a region of size between 79 and 89 [-Wformat-overflow=]
+ 2690 |       sprintf (buff, "dispose %d {%s}, r31", stack_bytes / 4, regs);
+      |                      ^~~~~~~~~~~~~~~~~~~~~~                   ~~~~
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c:2690:15: note: ‘sprintf’ output between 18 and 127 bytes into a destination of size 100
+ 2690 |       sprintf (buff, "dispose %d {%s}, r31", stack_bytes / 4, regs);
+      |       ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c: In function ‘char* construct_prepare_instruction(rtx)’:
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c:2814:22: warning: ‘%s’ directive writing up to 99 bytes into a region of size 91 [-Wformat-overflow=]
+ 2814 |       sprintf (buff, "prepare {%s}, %d", regs, (- stack_bytes) / 4);
+      |                      ^~~~~~~~~~~~~~~~~~  ~~~~
+/home/marxin/Programming/gcc/gcc/config/v850/v850.c:2814:15: note: ‘sprintf’ output between 14 and 123 bytes into a destination of size 100
+ 2814 |       sprintf (buff, "prepare {%s}, %d", regs, (- stack_bytes) / 4);
+      |       ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+gcc/ChangeLog:
+
+	* config/v850/v850.c (construct_dispose_instruction): Allocate
+	a bigger buffer.
+	(construct_prepare_instruction): Likewise.
+---
+ gcc/config/v850/v850.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/v850/v850.c b/gcc/config/v850/v850.c
+index 371e6026e9a..4978faf9318 100644
+--- a/gcc/config/v850/v850.c
++++ b/gcc/config/v850/v850.c
+@@ -2583,7 +2583,7 @@ construct_dispose_instruction (rtx op)
+   int                stack_bytes;
+   unsigned long int  mask;
+   int		     i;
+-  static char        buff[ 100 ]; /* XXX */
++  static char        buff[ 120 ]; /* XXX */
+   int                use_callt = 0;
+   
+   if (count <= 2)
+@@ -2704,7 +2704,7 @@ construct_prepare_instruction (rtx op)
+   int                stack_bytes;
+   unsigned long int  mask;
+   int		     i;
+-  static char        buff[ 100 ]; /* XXX */
++  static char        buff[ 120 ]; /* XXX */
+   int		     use_callt = 0;
+   
+   if (XVECLEN (op, 0) <= 1)
+-- 
+2.32.0
+
+
