@@ -146,7 +146,9 @@ case "${TARGET}" in
     RUNGCCTESTS=yes
     SIMTARG=all-sim
     SIMINSTALLTARG=install-sim
+    # Turn off multilib testing for now
     TESTARGS="--target_board=msp430-sim\{,-mcpu=msp430,-mlarge/-mcode-region=either,-mlarge/-mdata-region=either/-mcode-region=either}"
+    TESTARGS="--target_board=msp430-sim"
     ;;
   nds32*-*)
     RUNGCCTESTS=yes
