@@ -1,0 +1,24 @@
+diff --git a/libgloss/iq2000/configure.in b/libgloss/iq2000/configure.in
+index 9cbd7e2ea..754ee3cab 100644
+--- a/libgloss/iq2000/configure.in
++++ b/libgloss/iq2000/configure.in
+@@ -46,6 +46,7 @@ AC_PROG_RANLIB
+ LIB_AM_PROG_AS
+ 
+ host_makefile_frag=${srcdir}/../config/default.mh
++target_makefile_frag=${srcdir}/../config/default.mt
+ 
+ if test "${with_multisubdir}" = "m32"; then
+   LD_TYPE="m32"
+diff --git a/libgloss/visium/configure.in b/libgloss/visium/configure.in
+index 33c1872c7..5274ba668 100644
+--- a/libgloss/visium/configure.in
++++ b/libgloss/visium/configure.in
+@@ -33,6 +33,7 @@ AC_PROG_RANLIB
+ LIB_AM_PROG_AS
+ 
+ host_makefile_frag=${srcdir}/../config/default.mh
++target_makefile_frag=${srcdir}/../config/default.mt
+ 
+ dnl We have to assign the same value to other variables because autoconf
+ dnl doesn't provide a mechanism to substitute a replacement keyword with
