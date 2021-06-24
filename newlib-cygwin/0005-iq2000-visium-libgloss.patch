@@ -22,3 +22,27 @@ index 33c1872c7..5274ba668 100644
  
  dnl We have to assign the same value to other variables because autoconf
  dnl doesn't provide a mechanism to substitute a replacement keyword with
+diff --git a/libgloss/iq2000/configure b/libgloss/iq2000/configure
+index 66a533bc8..4411837d4 100755
+--- a/libgloss/iq2000/configure
++++ b/libgloss/iq2000/configure
+@@ -2520,6 +2520,7 @@ test "${CCASFLAGS+set}" = set || CCASFLAGS=$CFLAGS
+ 
+ 
+ host_makefile_frag=${srcdir}/../config/default.mh
++target_makefile_frag=${srcdir}/../config/default.mt
+ 
+ if test "${with_multisubdir}" = "m32"; then
+   LD_TYPE="m32"
+diff --git a/libgloss/visium/configure b/libgloss/visium/configure
+index f1bb39a11..abd6f5b92 100755
+--- a/libgloss/visium/configure
++++ b/libgloss/visium/configure
+@@ -1946,6 +1946,7 @@ test "${CCASFLAGS+set}" = set || CCASFLAGS=$CFLAGS
+ 
+ 
+ host_makefile_frag=${srcdir}/../config/default.mh
++target_makefile_frag=${srcdir}/../config/default.mt
+ 
+ host_makefile_frag_path=$host_makefile_frag
+ 
