@@ -9,14 +9,10 @@ gcc/testsuite/gcc.dg/c11-atomic-2.c
 gcc/testsuite/c-c++-common/dfp/pr36800.c
 gcc/testsuite/c-c++-common/dfp/pr39034.c
 gcc/testsuite/c-c++-common/dfp/pr39035.c
-gcc/testsuite/gcc.c-torture/execute/pr80692.c
 gcc/testsuite/gcc.dg/dfp/builtin-tgmath-dfp.c
 gcc/testsuite/gcc.dg/pr90037.c
 gcc/testsuite/gcc.c-torture/compile/pr37669-2.c
 gcc/testsuite/gcc.dg/format/gcc_diag-12.c
-gcc/testsuite/gcc.c-torture/execute/pr90949.c
-gcc/testsuite/gcc.c-torture/execute/simd-1.c
-gcc/testsuite/gcc.c-torture/execute/pr92904.c
 gcc/testsuite/gcc.dg/pr43058.c
 gcc/testsuite/gcc.dg/plugin/poly-int-02_plugin.c
 gcc/testsuite/gcc.dg/plugin/poly-int-03_plugin.c
@@ -41,9 +37,7 @@ gcc/testsuite/gcc.dg/pr94600-5.c
 gcc/testsuite/gcc.dg/pr94600-7.c
 gcc/testsuite/gcc.dg/pr84877.c
 gcc/testsuite/gcc.dg/torture/stackalign/setjmp-1.c
-gcc/testsuite/gcc.c-torture/execute/built-in-setjmp.c
 gcc/testsuite/gcc.dg/pr49496.c
-gcc/testsuite/gcc.c-torture/compile/20001226-1.c
 gcc/testsuite/gcc.dg/pr97459-6.c
 gcc/testsuite/c-c++-common/ubsan/null-1.c
 gcc/testsuite/c-c++-common/ubsan/null-2.c
@@ -68,6 +62,7 @@ gcc/testsuite/gcc.dg/pch/valid-1.c
 gcc/testsuite/c-c++-common/goacc/privatization-1-compute.c
 gcc/testsuite/gfortran.dg/goacc/privatization-1-compute.f90
 gcc/testsuite/gfortran.dg/goacc/routine-external-level-of-parallelism-2.f
+# These seem to have duplicated testnames, some passing, some failing
 gcc/testsuite/c-c++-common/Wattributes.c
 gcc/testsuite/gcc.dg/Wattributes-6.c
 # These tests take a crazy long time on the H8
@@ -86,4 +81,5 @@ gcc/testsuite/gcc.dg/pr97459-5.c
 gcc/testsuite/gcc.dg/tree-ssa/ldist-27.c
 gcc/testsuite/gcc.dg/tree-ssa/loop-interchange-2.c
 gcc/testsuite/gcc.dg/memcmp-1.c
-
+# This takes a long time to compile, sometimes triggering timeouts
+gcc/testsuite/gcc.c-torture/compile/20001226-1.c
