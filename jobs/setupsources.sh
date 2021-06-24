@@ -62,7 +62,7 @@ for tool in $*; do
 
   cd $tool
   if [ -f ../patches/$tool/TOREMOVE ]; then
-    rm -f `cat ../patches/$tool/TOREMOVE`
+    rm -f `cat ../patches/$tool/TOREMOVE | grep -v "^#"`
   fi
   for patch in ../patches/$tool/*.patch; do
     patch -p1 < $patch
