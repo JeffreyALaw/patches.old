@@ -54,6 +54,12 @@ for repo in $*; do
 done
   
 for tool in $*; do
+
+  # Don't try to "patch" the chroots
+  if [ "$tool" == "chroots" ]; then
+    continue
+  fi
+
   cd $tool
   if [ -f ../patches/$tool/TOREMOVE ]; then
     rm -f `cat ../patches/$tool/TOREMOVE`
