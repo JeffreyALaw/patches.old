@@ -6,13 +6,7 @@ gcc/testsuite/gcc.dg/pie-static-2.c
 gcc/testsuite/gcc.dg/special/gcsec-1.c
 gcc/testsuite/c-c++-common/pr60101.c
 gcc/testsuite/gcc.dg/c11-atomic-2.c
-gcc/testsuite/c-c++-common/dfp/pr36800.c
-gcc/testsuite/c-c++-common/dfp/pr39034.c
-gcc/testsuite/c-c++-common/dfp/pr39035.c
-gcc/testsuite/gcc.dg/dfp/builtin-tgmath-dfp.c
 gcc/testsuite/gcc.dg/pr90037.c
-gcc/testsuite/gcc.c-torture/compile/pr37669-2.c
-gcc/testsuite/gcc.dg/format/gcc_diag-12.c
 gcc/testsuite/gcc.dg/pr43058.c
 gcc/testsuite/gcc.dg/plugin/poly-int-02_plugin.c
 gcc/testsuite/gcc.dg/plugin/poly-int-03_plugin.c
@@ -51,7 +45,6 @@ gcc/testsuite/c-c++-common/ubsan/null-9.c
 gcc/testsuite/c-c++-common/ubsan/null-10.c
 gcc/testsuite/c-c++-common/ubsan/null-11.c
 gcc/testsuite/c-c++-common/ubsan/pr59667.c
-gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
 gcc/testsuite/c-c++-common/missing-header-1.c
 gcc/testsuite/c-c++-common/missing-header-2.c
 gcc/testsuite/c-c++-common/missing-header-3.c
@@ -81,5 +74,6 @@ gcc/testsuite/gcc.dg/pr97459-5.c
 gcc/testsuite/gcc.dg/tree-ssa/ldist-27.c
 gcc/testsuite/gcc.dg/tree-ssa/loop-interchange-2.c
 gcc/testsuite/gcc.dg/memcmp-1.c
-# This takes a long time to compile, sometimes triggering timeouts
+# These take a long time to compile, sometimes triggering timeouts
 gcc/testsuite/gcc.c-torture/compile/20001226-1.c
+gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
