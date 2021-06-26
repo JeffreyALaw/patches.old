@@ -1,9 +1,3 @@
-gcc/testsuite/c-c++-common/builtins.c
-gcc/testsuite/gcc.target/mips/interrupt_handler-4.c
-gcc/testsuite/gcc.dg/diag-sanity.c
-gcc/testsuite/gcc.dg/pie-static-1.c
-gcc/testsuite/gcc.dg/pie-static-2.c
-gcc/testsuite/gcc.dg/special/gcsec-1.c
 gcc/testsuite/c-c++-common/pr60101.c
 gcc/testsuite/gcc.dg/c11-atomic-2.c
 gcc/testsuite/gcc.dg/pr90037.c
