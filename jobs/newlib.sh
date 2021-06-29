@@ -269,7 +269,7 @@ rm -rf testresults
 mkdir -p testresults
 cp `find ${TARGET}-obj -name \*.sum -print` testresults
 
-newbase=`grep ${TARGET} patches/gcc/NEWBASELINES`
+newbase=`grep ${TARGET} patches/gcc/NEWBASELINES || true`
 if [ -f old-testresults/gas.sum.gz ]; then
   rm -f old-testresults/*.sum
   gunzip old-testresults/*.sum.gz
