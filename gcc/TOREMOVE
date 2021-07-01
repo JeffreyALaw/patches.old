@@ -44,3 +44,6 @@ gcc/testsuite/gcc.c-torture/compile/20001226-1.c
 gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
 # Fails intermittantly on nds32*-elf
 gcc/testsuite/gcc.c-torture/execute/simd-1.c
+# Times out on msp430
+gcc/testsuite/gcc.c-torture/execute/arith-rand-ll.c
+
