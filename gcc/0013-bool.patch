@@ -1,0 +1,13 @@
+diff --git a/gcc/config/m32r/m32r-protos.h b/gcc/config/m32r/m32r-protos.h
+index 23313fb9b28..8d071589e30 100644
+--- a/gcc/config/m32r/m32r-protos.h
++++ b/gcc/config/m32r/m32r-protos.h
+@@ -55,7 +55,7 @@ extern int    addr24_operand (rtx, machine_mode);
+ extern int    addr32_operand (rtx, machine_mode);
+ extern int    call26_operand (rtx, machine_mode);
+ extern int    memreg_operand (rtx, machine_mode);
+-extern int    small_insn_p (rtx, machine_mode);
++extern bool    small_insn_p (rtx, machine_mode);
+ 
+ #endif /* HAVE_MACHINE_MODES */
+ 
