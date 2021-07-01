@@ -171,3 +171,25 @@ index 8d79d73f6e0..ae88d7e2035 100644
  extern rtx frv_matching_accg_for_acc	(rtx);
  extern void frv_expand_fdpic_call	(rtx *, bool, bool);
  extern rtx frv_gen_GPsym2reg		(rtx, rtx);
+diff --git a/gcc/config/stormy16/stormy16.c b/gcc/config/stormy16/stormy16.c
+index fb7670ff46d..92011fdb518 100644
+--- a/gcc/config/stormy16/stormy16.c
++++ b/gcc/config/stormy16/stormy16.c
+@@ -516,7 +516,7 @@ xstormy16_preferred_reload_class (rtx x, reg_class_t rclass)
+ /* Predicate for symbols and addresses that reflect special 8-bit
+    addressing.  */
+ 
+-int
++bool
+ xstormy16_below100_symbol (rtx x,
+ 			   machine_mode mode ATTRIBUTE_UNUSED)
+ {
+@@ -542,7 +542,7 @@ xstormy16_below100_symbol (rtx x,
+ /* Likewise, but only for non-volatile MEMs, for patterns where the
+    MEM will get split into smaller sized accesses.  */
+ 
+-int
++bool
+ xstormy16_splittable_below100_operand (rtx x, machine_mode mode)
+ {
+   if (MEM_P (x) && MEM_VOLATILE_P (x))
