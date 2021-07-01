@@ -42,3 +42,5 @@ gcc/testsuite/gcc.dg/memcmp-1.c
 # These take a long time to compile, sometimes triggering timeouts
 gcc/testsuite/gcc.c-torture/compile/20001226-1.c
 gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
+# Fails intermittantly on nds32*-elf
+gcc/testsuite/gcc.c-torture/execute/simd-1.c
