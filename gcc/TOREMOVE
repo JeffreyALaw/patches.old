@@ -1,9 +1,5 @@
 gcc/testsuite/c-c++-common/pr60101.c
 gcc/testsuite/gcc.dg/c11-atomic-2.c
-gcc/testsuite/gcc.dg/plugin/poly-int-02_plugin.c
-gcc/testsuite/gcc.dg/plugin/poly-int-03_plugin.c
-gcc/testsuite/gcc.dg/plugin/poly-int-04_plugin.c
-gcc/testsuite/gcc.dg/plugin/poly-int-07_plugin.c
 gcc/testsuite/gcc.target/aarch64/sve/acle/general/attributes_7.c
 gcc/testsuite/gcc.dg/atomic/atomic.exp
 gcc/testsuite/gcc.dg/struct-by-value-1.c
