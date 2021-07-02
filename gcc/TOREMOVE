@@ -25,6 +25,7 @@ gcc/testsuite/gcc.dg/torture/vec-cvt-1.c
 gcc/testsuite/c-c++-common/torture/builtin-arith-overflow-9.c
 gcc/testsuite/c-c++-common/torture/builtin-arith-overflow-10.c
 gcc/testsuite/c-c++-common/torture/builtin-arith-overflow-p-10.c
+gcc/testsuite/c-c++-common/torture/builtin-arith-overflow-p-9.c
 gcc/testsuite/gcc.c-torture/execute/fprintf-2.c
 gcc/testsuite/gcc.c-torture/execute/pr43220.c
 gcc/testsuite/gcc.c-torture/execute/20040811-1.c
