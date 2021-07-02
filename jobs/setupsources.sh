@@ -69,3 +69,11 @@ for tool in $*; do
   done
   cd ..
 done
+
+# Now that we've checked out and patched the tree, also run a script
+# that touches various files in the gcc subdir.  This avoids problems
+# with timestamps, particularly the Pragma3 test.
+pushd gcc
+contrib/gcc_update --touch
+popd
+

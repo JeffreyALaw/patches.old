@@ -15,7 +15,6 @@ gcc/testsuite/c-c++-common/missing-header-2.c
 gcc/testsuite/c-c++-common/missing-header-3.c
 gcc/testsuite/c-c++-common/missing-header-4.c
 gcc/testsuite/c-c++-common/p98943.c
-gcc/testsuite/gcc.dg/cpp/_Pragma3.c
 gcc/testsuite/gcc.dg/pch/valid-1.c
 # These seem to have duplicated testnames, some passing, some failing
 gcc/testsuite/c-c++-common/Wattributes.c
