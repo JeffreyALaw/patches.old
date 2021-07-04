@@ -48,11 +48,17 @@ rm -rf testresults
 mkdir -p testresults
 cp `find ${TARGET}-obj -name \*.sum -print` testresults
 
+newbase=`grep ${TARGET} patches/gcc/NEWBASELINES || true`
 if [ -f old-testresults/gas.sum.gz ]; then
   rm -f old-testresults/*.sum
   gunzip old-testresults/*.sum.gz
-  gcc/contrib/compare_tests old-testresults testresults || exit 255
+  if [ "x$newbase" == "x" ]; then
+    gcc/contrib/compare_tests old-testresults testresults
+  else
+    gcc/contrib/compare_tests old-testresults testresults || true
+  fi
 fi
+
 
 # No need to clean up, everything's run in an ephemeral container
 

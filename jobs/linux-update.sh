@@ -170,8 +170,15 @@ rm -rf testresults
 mkdir -p testresults
 cp `find ${TARGET}-obj -name \*.sum -print` testresults
 
-if [ -f old-testresults/gas.sum ]; then
-  gcc/contrib/compare_tests old-testresults testresults
-fi
 
+newbase=`grep ${TARGET} patches/gcc/NEWBASELINES || true`
+if [ -f old-testresults/gas.sum.gz ]; then
+  rm -f old-testresults/*.sum
+  gunzip old-testresults/*.sum.gz
+  if [ "x$newbase" == "x" ]; then
+    gcc/contrib/compare_tests old-testresults testresults
+  else
+    gcc/contrib/compare_tests old-testresults testresults || true
+  fi
+fi
 

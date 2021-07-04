@@ -121,12 +121,16 @@ rm -rf testresults
 mkdir -p testresults
 cp `find rootfs/tmp/obj -name \*.sum -print` testresults
 
+newbase=`grep ${TARGET} patches/gcc/NEWBASELINES || true`
 if [ -f old-testresults/gas.sum.gz ]; then
   rm -f old-testresults/*.sum
   gunzip old-testresults/*.sum.gz
-  gcc/contrib/compare_tests old-testresults testresults
+  if [ "x$newbase" == "x" ]; then
+    gcc/contrib/compare_tests old-testresults testresults
+  else
+    gcc/contrib/compare_tests old-testresults testresults || true
+  fi
 fi
-
 
 sudo rm -rf rootfs/tmp/obj/*
 sudo rm -rf old-testresults
