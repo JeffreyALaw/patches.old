@@ -1,3 +1,52 @@
+diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
+index 7b6a66a96ef..ed60b98f9a0 100644
+--- a/gcc/config/h8300/jumpcall.md
++++ b/gcc/config/h8300/jumpcall.md
+@@ -23,13 +23,28 @@
+   ""
+   "#"
+   "&& reload_completed"
+-  [(set (reg:H8cc CC_REG)
+-	(compare:H8cc (match_dup 1) (match_dup 2)))
++  [(set (match_dup 4)
++	(match_dup 5))
+    (set (pc)
+ 	(if_then_else (match_op_dup 0
+-		       [(reg:H8cc CC_REG) (const_int 0)])
++		       [(match_dup 4) (const_int 0)])
+ 		      (label_ref (match_dup 3)) (pc)))]
+-  "")
++  "
++{
++  machine_mode mode;
++
++  if (REG_P (operands[1])
++      && operands[2] == const0_rtx
++      && (GET_CODE (operands[0]) == EQ
++	  || GET_CODE (operands[0]) == NE
++	  || GET_CODE (operands[0]) == LT
++	  || GET_CODE (operands[0]) == GE)
++    mode = E_CCZNmode;
++  else
++    mode = E_CCmode;
++  operands[4] = gen_rtx_REG (mode, CC_REG);
++  operands[5] = gen_rtx_COMPARE (mode, operands[1], operands[2]);
++}")
+ 
+ (define_insn "*branch_1"
+   [(set (pc)
+diff --git a/gcc/config/h8300/predicates.md b/gcc/config/h8300/predicates.md
+index f4e3ed4f562..76568e3c6e8 100644
+--- a/gcc/config/h8300/predicates.md
++++ b/gcc/config/h8300/predicates.md
+@@ -506,6 +506,7 @@
+ {
+   if (GET_MODE (op) == mode
+       && (GET_CODE (XEXP (op, 0)) != PRE_DEC
++	  && GET_CODE (XEXP (op, 0)) != PRE_INC
+ 	  && GET_CODE (XEXP (op, 0)) != POST_INC))
+     return 1;
+   return 0;
 diff --git a/gcc/config/h8300/shiftrotate.md b/gcc/config/h8300/shiftrotate.md
 index 0476324bf22..485303cb906 100644
 --- a/gcc/config/h8300/shiftrotate.md
