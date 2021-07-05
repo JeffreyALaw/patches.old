@@ -1,8 +1,8 @@
 diff --git a/gcc/config/h8300/jumpcall.md b/gcc/config/h8300/jumpcall.md
-index 7b6a66a96ef..ed60b98f9a0 100644
+index 7b6a66a96ef..2986d0b8f02 100644
 --- a/gcc/config/h8300/jumpcall.md
 +++ b/gcc/config/h8300/jumpcall.md
-@@ -23,13 +23,29 @@
+@@ -23,13 +23,28 @@
    ""
    "#"
    "&& reload_completed"
@@ -25,8 +25,7 @@ index 7b6a66a96ef..ed60b98f9a0 100644
 +      && (GET_CODE (operands[0]) == EQ
 +	  || GET_CODE (operands[0]) == NE
 +	  || GET_CODE (operands[0]) == LT
-+	  || GET_CODE (operands[0]) == GE)
-+      && !side_effects_p (operands[1]))
++	  || GET_CODE (operands[0]) == GE))
 +    mode = E_CCZNmode;
 +  else
 +    mode = E_CCmode;
@@ -37,56 +36,15 @@ index 7b6a66a96ef..ed60b98f9a0 100644
  (define_insn "*branch_1"
    [(set (pc)
 diff --git a/gcc/config/h8300/predicates.md b/gcc/config/h8300/predicates.md
-index f4e3ed4f562..76568e3c6e8 100644
+index f4e3ed4f562..bed23e9a3e0 100644
 --- a/gcc/config/h8300/predicates.md
 +++ b/gcc/config/h8300/predicates.md
-@@ -506,6 +506,7 @@
+@@ -506,6 +506,8 @@
  {
    if (GET_MODE (op) == mode
        && (GET_CODE (XEXP (op, 0)) != PRE_DEC
 +	  && GET_CODE (XEXP (op, 0)) != PRE_INC
++	  && GET_CODE (XEXP (op, 0)) != POST_DEC
  	  && GET_CODE (XEXP (op, 0)) != POST_INC))
      return 1;
    return 0;
-diff --git a/gcc/config/h8300/shiftrotate.md b/gcc/config/h8300/shiftrotate.md
-index 0476324bf22..485303cb906 100644
---- a/gcc/config/h8300/shiftrotate.md
-+++ b/gcc/config/h8300/shiftrotate.md
-@@ -385,10 +385,15 @@
-    (parallel
-      [(set (match_dup 0)
- 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
--      (clobber (scratch:QI))])
--   (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))
-+      (clobber (reg:CC CC_REG))])
-+   (parallel
-+     [(set (reg:CCZN CC_REG)
-+	   (compare:CCZN
-+	     (plus:QI (match_dup 1) (const_int -1))
-+	     (const_int 0)))
-+      (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))])
-    (set (pc)
--        (if_then_else (ne (match_dup 1) (const_int 0))
-+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
- 		      (label_ref (match_dup 4))
- 		      (pc)))
-    (match_dup 5)]
-@@ -416,10 +421,15 @@
-    (parallel
-      [(set (match_dup 0)
- 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
--      (clobber (scratch:QI))])
--   (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))
-+      (clobber (reg:CC CC_REG))])
-+   (parallel
-+     [(set (reg:CCZN CC_REG)
-+	   (compare:CCZN
-+	     (plus:QI (match_dup 3) (const_int -1))
-+	     (const_int 0)))
-+      (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))])
-    (set (pc)
--        (if_then_else (ne (match_dup 3) (const_int 0))
-+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
- 		      (label_ref (match_dup 4))
- 		      (pc)))
-    (match_dup 5)]
