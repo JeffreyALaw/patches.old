@@ -25,7 +25,7 @@ index 7b6a66a96ef..ed60b98f9a0 100644
 +      && (GET_CODE (operands[0]) == EQ
 +	  || GET_CODE (operands[0]) == NE
 +	  || GET_CODE (operands[0]) == LT
-+	  || GET_CODE (operands[0]) == GE)
++	  || GET_CODE (operands[0]) == GE))
 +    mode = E_CCZNmode;
 +  else
 +    mode = E_CCmode;
