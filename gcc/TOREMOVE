@@ -28,4 +28,5 @@ gcc/testsuite/gcc.c-torture/compile/limits-exprparen.c
 gcc/testsuite/gcc.c-torture/execute/simd-1.c
 # Times out on msp430
 gcc/testsuite/gcc.c-torture/execute/arith-rand-ll.c
-
+# These tests are a bit odd, but ultimately report non-unique names
+gcc/testsuite/c-c++-common/goacc/privatization-1-compute.c
