@@ -24,10 +24,15 @@ cat << EOF > rootfs/tmp/mounts
 #!/bin/sh -x
 export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
 whoami
-/bin/mount -t devtmpfs devtmpfs /dev
-/bin/mount -t devpts devpts /dev/pts
-/bin/mount -t proc proc /proc
+#/bin/mount -t devtmpfs devtmpfs /dev
+#/bin/mount -t devpts devpts /dev/pts
+#/bin/mount -t proc proc /proc
 EOF
+
+sudo mount --bind /proc rootfs/proc
+sudo mount --bind /dev rootfs/dev
+sudo mount --bind /dev/pts rootfs/dev/pts
+exit 0
 
 sudo /sbin/chroot rootfs /bin/sh /tmp/mounts
 sudo mount --bind binutils-gdb rootfs/src/binutils
