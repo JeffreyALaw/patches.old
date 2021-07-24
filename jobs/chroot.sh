@@ -31,9 +31,9 @@ EOF
 
 ls -slag rootfs/
 
-sudo mount --bind /proc rootfs/proc
-sudo mount --bind /dev rootfs/dev
-sudo mount --bind /dev/pts rootfs/dev/pts
+mount --bind /proc rootfs/proc
+mount --bind /dev rootfs/dev
+mount --bind /dev/pts rootfs/dev/pts
 exit 0
 
 sudo /sbin/chroot rootfs /bin/sh /tmp/mounts
