@@ -29,6 +29,8 @@ whoami
 #/bin/mount -t proc proc /proc
 EOF
 
+ls -slag rootfs/
+
 sudo mount --bind /proc rootfs/proc
 sudo mount --bind /dev rootfs/dev
 sudo mount --bind /dev/pts rootfs/dev/pts
