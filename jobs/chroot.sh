@@ -30,6 +30,7 @@ whoami
 EOF
 
 ls -slag rootfs/
+sleep 600
 
 mount --bind /proc rootfs/proc
 mount --bind /dev rootfs/dev
