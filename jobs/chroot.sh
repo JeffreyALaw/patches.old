@@ -11,6 +11,10 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 NPROC=`nproc --all`
 export QEMU_UNAME=4.15
 
+# Now use our docker to instantiate the chroot, giving the nested container
+# enough privileges to mount stuff
+
+
 # Step 1 set up chroot
 # Verify nothing is mounted in the chroot
 sudo umount `grep ${TARGET} /proc/mounts| awk '{print $2}' | sort -r` || /bin/true
@@ -30,7 +34,7 @@ whoami
 EOF
 
 ls -slag rootfs/
-sleep 600
+sleep 6000
 
 mount --bind /proc rootfs/proc
 mount --bind /dev rootfs/dev
