@@ -6,6 +6,7 @@ TARGET=$1
 # We need the binutils-gdb, gcc, glibc, linux & chroot trees
 # This should be done before we start the nested container
 # so that these can be mounted inside the nested container
+ls /mnt
 patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 
 
