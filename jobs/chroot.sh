@@ -13,7 +13,7 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 # to expose the sources and critically the next job stage script
 # Run the nested container with enough privs to mount filesystems
 # docker run -it 172.31.0.149:5000/gcc-chroot-riscv64-linux-gnu /bin/bash
-ls -l "$(pwd)"/patches
+ls /mnt
 docker run -v "$(pwd)"/patches:/home/jlaw/jenkins/workspace/$TARGET/patches --privileged 172.31.0.149:5000/gcc-chroot-$TARGET sleep 6000
 exit 0
 
