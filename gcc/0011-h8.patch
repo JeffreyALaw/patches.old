@@ -148,9 +148,9 @@ index e9f6ddcf075..29190532e49 100644
 -;;  [(set_attr "length" "2,8,10")])
 +(define_insn ""
 +  [(set (reg:CCZ CC_REG)
-+	(eq (zero_extract:HSI (match_operand:HSI 0 "register_operand" "r")
-+			      (const_int 1)
-+			      (match_operand 1 "const_int_operand" "n"))
++	(eq (zero_extract:QHSI (match_operand:QHSI 0 "register_operand" "r")
++			       (const_int 1)
++			       (match_operand 1 "const_int_operand" "n"))
 +	    (const_int 0)))]
 +  "INTVAL (operands[1]) < 16"
 +  "btst	%Z1,%Y0"
@@ -158,3 +158,29 @@ index e9f6ddcf075..29190532e49 100644
  
  (define_insn "*tst<mode>"
    [(set (reg:CCZN CC_REG)
+diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
+index e596987a6a6..8516aa1b83c 100644
+--- a/gcc/config/h8300/h8300.md
++++ b/gcc/config/h8300/h8300.md
+@@ -140,11 +140,11 @@
+ 
+ ;; The modes we're supporting.  This is used when we want to generate
+ ;; multiple patterns where only the mode differs from a single template
+-(define_mode_iterator H8cc [CC CCZN])
++(define_mode_iterator H8cc [CC CCZN CCZ])
+ 
+ ;; This is used to generate multiple define_substs from a single
+ ;; template for the different variants we might have.
+-(define_mode_attr cc [(CC "cc") (CCZN "cczn")])
++(define_mode_attr cc [(CC "cc") (CCZN "cczn") (CCZ "ccz")])
+ 
+ ;; The primary substitution pattern.  <cc> is used to create multiple
+ ;; substitutions based on the CC bits that are set.
+@@ -165,6 +165,7 @@
+ ;; apply the subst_cczn or subset_cc define_subst to generate a
+ ;; new pattern that compare-elim can use
+ (define_subst_attr "cczn" "subst_cczn" "" "_cczn")
++(define_subst_attr "ccz" "subst_ccz" "" "_ccz")
+ (define_subst_attr "cc" "subst_cc" "" "_cc")
+ 
+ ;; Type of delay slot.  NONE means the instruction has no delay slot.
