@@ -1,38 +1,32 @@
 #!/bin/sh -x
+
 set -e
 set -o pipefail
+
 TARGET=$1
 
-# We need the binutils-gdb, gcc, glibc, linux & chroot trees
-# This should be done before we start the nested container
-# so that these can be mounted inside the nested container
+# We only need the binutils-gdb and gcc trees
 patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
-
 
 NPROC=`nproc --all`
 export QEMU_UNAME=4.15
 
+# Step 1 set up chroot
+# Verify nothing is mounted in the chroot
+sudo umount `grep %{TARGET} /proc/mounts| awk '{print $2}' | sort -r` || /bin/true
+grep ${TARGET}/rootfs /proc/mounts && exit 1
 
 sudo rm -rf rootfs
 mkdir -p rootfs
 tar xf chroots/${TARGET}.tar.xz
 
 cat << EOF > rootfs/tmp/mounts
-#!/bin/sh -x
+#!/bin/sh
 export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-whoami
 /bin/mount -t devtmpfs devtmpfs /dev
 /bin/mount -t devpts devpts /dev/pts
 /bin/mount -t proc proc /proc
 EOF
-
-ls -slag rootfs/
-sleep 6000
-
-mount --bind /proc rootfs/proc
-mount --bind /dev rootfs/dev
-mount --bind /dev/pts rootfs/dev/pts
-exit 0
 
 sudo /sbin/chroot rootfs /bin/sh /tmp/mounts
 sudo mount --bind binutils-gdb rootfs/src/binutils
