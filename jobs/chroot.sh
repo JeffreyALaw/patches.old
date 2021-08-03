@@ -9,23 +9,8 @@ TARGET=$1
 patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 
 
-# Now start up the nested container, with appropriate bind mounts
-# to expose the sources and critically the next job stage script
-# Run the nested container with enough privs to mount filesystems
-# docker run -it 172.31.0.149:5000/gcc-chroot-riscv64-linux-gnu /bin/bash
-ls /home/jlaw/jenkins/workspace/$TARGET/patches
-ls /mnt
-docker run --mount type=bind,source=/home/jlaw,target=/mnt --privileged 172.31.0.149:5000/gcc-chroot ls /mnt
-exit 0
-
-
 NPROC=`nproc --all`
 export QEMU_UNAME=4.15
-
-
-
-# Now use our docker to instantiate the chroot, giving the nested container
-# enough privileges to mount stuff
 
 
 sudo rm -rf rootfs
@@ -36,9 +21,9 @@ cat << EOF > rootfs/tmp/mounts
 #!/bin/sh -x
 export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
 whoami
-#/bin/mount -t devtmpfs devtmpfs /dev
-#/bin/mount -t devpts devpts /dev/pts
-#/bin/mount -t proc proc /proc
+/bin/mount -t devtmpfs devtmpfs /dev
+/bin/mount -t devpts devpts /dev/pts
+/bin/mount -t proc proc /proc
 EOF
 
 ls -slag rootfs/
