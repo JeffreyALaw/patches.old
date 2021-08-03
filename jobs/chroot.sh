@@ -15,7 +15,7 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 # docker run -it 172.31.0.149:5000/gcc-chroot-riscv64-linux-gnu /bin/bash
 ls /home/jlaw/jenkins/workspace/$TARGET/patches
 ls /mnt
-docker run --mount type=bind,source=/home/jlaw/jenkins/workspace/$TARGET/patches,target=/mnt --privileged 172.31.0.149:5000/gcc-chroot ls /mnt
+docker run --mount type=bind,source=/home/jlaw,target=/mnt --privileged 172.31.0.149:5000/gcc-chroot ls /mnt
 exit 0
 
 
