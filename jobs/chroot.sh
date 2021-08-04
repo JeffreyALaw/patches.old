@@ -71,7 +71,7 @@ make -j $NPROC -l $NPROC
 
 rm -rf testresults
 mkdir -p testresults
-cp `find rootfs/tmp/obj -name \*.sum -print` testresults
+cp `find obj -name \*.sum -print` testresults
 
 newbase=`grep ${TARGET} patches/gcc/NEWBASELINES || true`
 if [ -f old-testresults/gas.sum.gz ]; then
