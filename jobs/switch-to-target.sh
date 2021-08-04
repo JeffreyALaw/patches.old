@@ -20,7 +20,7 @@ rm -rf `ls | grep -v ld- | grep -v x86_64`
 # Now extract the chroot on top of ourselves, this may well fail due
 # to some bits in /usr/lib64.  That's OK, we'll fix it up in a moment
 cd /
-tar xf /home/jlaw/jenkins/workspace/chroots/$TARGET.tar.xz --strip-components=2 || true
+tar xf /home/jlaw/jenkins/workspace/$TARGET/chroots/$TARGET.tar.xz --strip-components=2 || true
 
 # Now we're mostly in the target environment.  Clean up /usr/lib64 a bit.
 # The trickiest bit here is the dynamic linker which we do not want to overwrite
