@@ -19,7 +19,7 @@ if [ -L "/usr/bin/awk" ]; then
 fi
 
 rm -rf obj
-mkdir -p obj/{binutils,gcc,glibc,linux}
+mkdir -p obj/{binutils-gdb,gcc,glibc,linux}
 
 export KERNEL_TARGETS="all modules"
 export KERNEL_CONFIG=defconfig
@@ -43,8 +43,8 @@ case ${TARGET} in
     ;;
 esac
 
-pushd obj/binutils
-../../binutils/configure --prefix=/usr ${TARGET}
+pushd obj/binutils-gdb
+../../binutils-gdb/configure --prefix=/usr ${TARGET}
 make -j $NPROC -l $NPROC all-gas all-binutils all-ld
 make -k -j $NPROC -l $NPROC check-gas check-binutils check-ld || true
 make install-gas install-binutils install-ld
