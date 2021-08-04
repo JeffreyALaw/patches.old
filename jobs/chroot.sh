@@ -1,4 +1,5 @@
 #!/bin/sh -x
+export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
 
 set -e
 set -o pipefail
@@ -13,21 +14,11 @@ export QEMU_UNAME=4.15
 
 # Step 1 set up chroot
 # Verify nothing is mounted in the chroot
-sudo umount `grep %{TARGET} /proc/mounts| awk '{print $2}' | sort -r` || /bin/true
+umount `grep %{TARGET} /proc/mounts| awk '{print $2}' | sort -r` || /bin/true
 grep ${TARGET}/rootfs /proc/mounts && exit 1
 
-sudo rm -rf rootfs
-mkdir -p rootfs
-tar xf chroots/${TARGET}.tar.xz
-
-cat << EOF > rootfs/tmp/mounts
-#!/bin/sh
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-/bin/mount -t devtmpfs devtmpfs /dev
-/bin/mount -t devpts devpts /dev/pts
-/bin/mount -t proc proc /proc
-EOF
-
+ls //home/jlaw/jenkins/docker-volume
+exit 0
 sudo /sbin/chroot rootfs /bin/sh /tmp/mounts
 sudo mount --bind binutils-gdb rootfs/src/binutils
 sudo mount --bind gcc rootfs/src/gcc
