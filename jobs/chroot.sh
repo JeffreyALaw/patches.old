@@ -12,21 +12,14 @@ patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 NPROC=`nproc --all`
 export QEMU_UNAME=4.15
 
-# Step 1 set up chroot
-# Verify nothing is mounted in the chroot
-umount `grep %{TARGET} /proc/mounts| awk '{print $2}' | sort -r` || /bin/true
-grep ${TARGET}/rootfs /proc/mounts && exit 1
+# Light setup, this should move into the chroot at some point
+if [ -L "/usr/bin/awk" ]; then
+  rm /usr/bin/awk
+  ln -s /usr/bin/gawk /usr/bin/awk
+fi
 
-ls //home/jlaw/jenkins/docker-volume
-exit 0
-sudo /sbin/chroot rootfs /bin/sh /tmp/mounts
-sudo mount --bind binutils-gdb rootfs/src/binutils
-sudo mount --bind gcc rootfs/src/gcc
-sudo mount --bind glibc rootfs/src/glibc
-sudo mount --bind linux rootfs/src/linux
-
-rm -rf rootfs/tmp/obj
-mkdir -p rootfs/tmp/obj/{binutils,gcc,glibc,linux}
+rm -rf obj
+mkdir -p obj/{binutils,gcc,glibc,linux}
 
 export KERNEL_TARGETS="all modules"
 export KERNEL_CONFIG=defconfig
@@ -50,63 +43,31 @@ case ${TARGET} in
     ;;
 esac
 
-# Step 2, set up build scripts.
-cat << EOF > rootfs/tmp/binutils.build
-#!/bin/sh
-export QEMU_UNAME=4.15
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-if [ -L "/usr/bin/awk" ]; then
-  rm /usr/bin/awk
-  ln -s /usr/bin/gawk /usr/bin/awk
-fi
-cd /tmp/obj/binutils
-/src/binutils/configure --prefix=/usr ${TARGET}
+pushd obj/binutils
+../../binutils/configure --prefix=/usr ${TARGET}
 make -j $NPROC -l $NPROC all-gas all-binutils all-ld
 make -k -j $NPROC -l $NPROC check-gas check-binutils check-ld || true
 make install-gas install-binutils install-ld
-EOF
+popd
 
-cat << EOF > rootfs/tmp/gcc.build
-#!/bin/sh
-export QEMU_UNAME=4.15
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-cd /tmp/obj/gcc
-/src/gcc/configure --prefix=/usr --disable-analyzer --enable-languages=c,c++ --disable-multilib ${TARGET} $GCC_CONFIG
+pushd obj/gcc
+../../gcc/configure --prefix=/usr --disable-analyzer --enable-languages=c,c++ --disable-multilib ${TARGET} $GCC_CONFIG
 make -j $NPROC -l $NPROC
 (cd gcc; make -j $NPROC -l $NPROC -k check-gcc || true)
 make -k install || true
-EOF
+popd
 
 
-cat << EOF > rootfs/tmp/linux.build
-#!/bin/sh
-export QEMU_UNAME=4.15
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-cd /tmp/obj/linux
-make -C /src/linux O=/tmp/obj/linux mrproper
-make -C /src/linux O=/tmp/obj/linux -j $NPROC -l $NPROC $KERNEL_CONFIG
-make -C /src/linux O=/tmp/obj/linux -j $NPROC -l $NPROC $KERNEL_TARGETS
-EOF
+pushd obj/linux
+make -C ../../linux O=`pwd` mrproper
+make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_CONFIG
+make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_TARGETS
+popd
 
-cat << EOF > rootfs/tmp/glibc.build
-#!/bin/sh
-export QEMU_UNAME=4.15
-export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
-cd /tmp/obj/glibc
-/src/glibc/configure --prefix=/ --enable-add-ons
+pushd obj/glibc
+../../glibc/configure --prefix=/ --enable-add-ons
 make -j $NPROC -l $NPROC 
 #make install
-EOF
-
-# Step #3, run the scripts
-
-sudo /sbin/chroot rootfs /bin/sh /tmp/binutils.build
-
-sudo /sbin/chroot rootfs /bin/sh /tmp/gcc.build
-
-sudo /sbin/chroot rootfs /bin/sh /tmp/glibc.build
-
-sudo /sbin/chroot rootfs /bin/sh /tmp/linux.build
 
 rm -rf testresults
 mkdir -p testresults
@@ -122,9 +83,6 @@ if [ -f old-testresults/gas.sum.gz ]; then
     gcc/contrib/compare_tests old-testresults testresults || true
   fi
 fi
-
-sudo rm -rf rootfs/tmp/obj/*
-sudo rm -rf old-testresults
 
 cd testresults
 gzip --best *.sum
