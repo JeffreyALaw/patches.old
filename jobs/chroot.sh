@@ -1,16 +1,17 @@
 #!/bin/sh -x
 export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
+TARGET=$1
+NPROC=`nproc --all`
+export QEMU_UNAME=4.15
 
 set -e
 set -o pipefail
 
-TARGET=$1
-
 # We only need the binutils-gdb and gcc trees
 patches/jobs/setupsources.sh $TARGET binutils-gdb gcc glibc linux chroots
 
-NPROC=`nproc --all`
-export QEMU_UNAME=4.15
+# We are currently running native.  Switch to the target environment
+patches/jobs/switch-to-target.sh $TARGET
 
 # Light setup, this should move into the chroot at some point
 if [ -L "/usr/bin/awk" ]; then
