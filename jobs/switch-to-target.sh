@@ -1,4 +1,5 @@
 #!/bin/bash
+TARGET=$1
 
 # This is much more complex than it should be because we can't mount
 # in a swarm container, nor can we twiddle the container name based
