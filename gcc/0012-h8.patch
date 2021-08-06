@@ -206,16 +206,6 @@ index 3585bffa9fc..996e1403d4b 100644
 +   gcc_unreachable ();
 +}
 +  [(set_attr "length" "2")])
-diff --git a/gcc/config/h8300/h8300-modes.def b/gcc/config/h8300/h8300-modes.def
-index 23b777b2966..236b8de9cb2 100644
---- a/gcc/config/h8300/h8300-modes.def
-+++ b/gcc/config/h8300/h8300-modes.def
-@@ -19,3 +19,5 @@
- 
- CC_MODE (CCZN);
- CC_MODE (CCZNV);
-+CC_MODE (CCV);
-+CC_MODE (CCC);
 diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
 index 9a42547a92c..e55aed8444e 100644
 --- a/gcc/config/h8300/h8300.md
