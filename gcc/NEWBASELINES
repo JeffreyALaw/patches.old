@@ -7,3 +7,4 @@ m32r-elf
 mcore-elf
 moxie-elf
 nds32be-elf
+rl78-elf
