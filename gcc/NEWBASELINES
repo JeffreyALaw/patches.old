@@ -8,3 +8,4 @@ mcore-elf
 moxie-elf
 nds32be-elf
 rl78-elf
+xstormy16-elf
