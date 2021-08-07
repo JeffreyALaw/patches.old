@@ -6,3 +6,4 @@ fr30-elf
 m32r-elf
 mcore-elf
 moxie-elf
+nds32be-elf
