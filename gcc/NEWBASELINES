@@ -1,11 +1,7 @@
 # This file contains the job names that need fresh baselines.  In general it
 # should be empty, but we can place a target in here if it needs a baseline
 # reset.  
-arc-elf
-fr30-elf
-m32r-elf
-mcore-elf
-moxie-elf
-nds32be-elf
-rl78-elf
-xstormy16-elf
+bfin-elf
+cris-elf
+rx-elf
+
