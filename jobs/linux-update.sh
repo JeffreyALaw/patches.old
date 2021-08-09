@@ -19,7 +19,7 @@ mkdir -p ${TARGET}-obj/gcc
 mkdir -p ${TARGET}-obj/linux
 mkdir -p ${TARGET}-obj/glibc
 
-export RUNGCCTESTS=no
+export RUNGCCTESTS=yes
 
 patches/jobs/setupsources.sh ${TARGET} binutils-gdb gcc glibc linux
 
