@@ -1,0 +1,39 @@
+diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
+index d2f6548a265..76baa01e621 100644
+--- a/gcc/config/h8300/h8300.c
++++ b/gcc/config/h8300/h8300.c
+@@ -228,15 +228,15 @@ static enum shift_alg shift_alg_si[2][3][32] = {
+     /*  8    9   10   11   12   13   14   15  */
+     /* 16   17   18   19   20   21   22   23  */
+     /* 24   25   26   27   28   29   30   31  */
+-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
++    { INL, INL, INL, INL, INL, INL, INL, LOP,
+       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
+       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+       SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
+-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
++    { INL, INL, INL, INL, INL, INL, INL, LOP,
+       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
+       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+       SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
+-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
++    { INL, INL, INL, INL, INL, INL, INL, LOP,
+       SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+@@ -343,6 +343,15 @@ h8300_option_override (void)
+       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
+       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
+ 
++      shift_alg_si[H8_300H][SHIFT_ASHIFT][5] = SHIFT_LOOP;
++      shift_alg_si[H8_300H][SHIFT_ASHIFT][6] = SHIFT_LOOP;
++
++      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][5] = SHIFT_LOOP;
++      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][6] = SHIFT_LOOP;
++
++      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][5] = SHIFT_LOOP;
++      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP;
++
+       /* H8S */
+       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
+     }
