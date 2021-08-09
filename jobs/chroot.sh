@@ -69,6 +69,7 @@ pushd obj/glibc
 ../../glibc/configure --prefix=/ --enable-add-ons
 make -j $NPROC -l $NPROC 
 #make install
+popd
 
 rm -rf testresults
 mkdir -p testresults
