@@ -1,5 +1,4 @@
 # This file contains the job names that need fresh baselines.  In general it
 # should be empty, but we can place a target in here if it needs a baseline
 # reset.  
-mn10300-elf
-h8300-elf
+v850e-elf
