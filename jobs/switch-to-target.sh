@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/bash -x
 TARGET=$1
+PATH=/bin:$PATH
 
 # This is much more complex than it should be because we can't mount
 # in a swarm container, nor can we twiddle the container name based
