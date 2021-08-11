@@ -3,6 +3,7 @@ export LD_LIBRARY_PATH=/lib64:/usr/lib64:/lib:/usr/lib
 TARGET=$1
 NPROC=`nproc --all`
 export QEMU_UNAME=4.15
+PATH=/bin:$PATH
 
 set -e
 set -o pipefail
