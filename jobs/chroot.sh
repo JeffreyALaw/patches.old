@@ -40,7 +40,7 @@ case ${TARGET} in
   	KERNEL_TARGETS="vmlinux modules"
     ;;
   *)
-    /bin/true
+    true
     ;;
 esac
 
