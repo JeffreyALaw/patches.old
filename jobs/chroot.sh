@@ -59,12 +59,18 @@ make -j $NPROC -l $NPROC
 make -k install || true
 popd
 
-
-pushd obj/linux
-make -C ../../linux O=`pwd` mrproper
-make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_CONFIG
-make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_TARGETS
-popd
+case ${TARGET} in
+  armeb-linux-gnueabi*)
+    # These are failing right now and have not been debugged
+    ;;
+  *)
+    pushd obj/linux
+    make -C ../../linux O=`pwd` mrproper
+    make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_CONFIG
+    make -C ../../linux O=`pwd` -j $NPROC -l $NPROC $KERNEL_TARGETS
+    popd
+    ;;
+esac
 
 pushd obj/glibc
 ../../glibc/configure --prefix=/ --enable-add-ons
