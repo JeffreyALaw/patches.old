@@ -1,0 +1,14 @@
+diff --git a/posix/regex.h b/posix/regex.h
+index 14fb1d8364..55cd7dfef8 100644
+--- a/posix/regex.h
++++ b/posix/regex.h
+@@ -655,8 +655,7 @@ extern int regcomp (regex_t *_Restrict_ __preg,
+ extern int regexec (const regex_t *_Restrict_ __preg,
+ 		    const char *_Restrict_ __String, size_t __nmatch,
+ 		    regmatch_t __pmatch[_Restrict_arr_],
+-		    int __eflags)
+-    __attr_access ((__write_only__, 4, 3));
++		    int __eflags);
+ 
+ extern size_t regerror (int __errcode, const regex_t *_Restrict_ __preg,
+ 			char *_Restrict_ __errbuf, size_t __errbuf_size)
