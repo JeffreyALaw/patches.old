@@ -182,3 +182,8 @@ if [ -f old-testresults/gas.sum.gz ]; then
   fi
 fi
 
+
+cd testresults
+gzip --best *.sum
+
+
