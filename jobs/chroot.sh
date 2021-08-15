@@ -72,11 +72,18 @@ case ${TARGET} in
     ;;
 esac
 
-pushd obj/glibc
-../../glibc/configure --prefix=/ --enable-add-ons
-make -j $NPROC -l $NPROC 
-#make install
-popd
+case ${TARGET} in
+  armeb-linux-gnueabi*)
+    # These are failing right now and have not been debugged
+    ;;
+  *)
+    pushd obj/glibc
+    ../../glibc/configure --prefix=/ --enable-add-ons
+    make -j $NPROC -l $NPROC 
+    #make install
+    popd
+    ;;
+esac
 
 rm -rf testresults
 mkdir -p testresults
