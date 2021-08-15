@@ -1,5 +1,5 @@
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 7959ad1e276..82f38181372 100644
+index 7959ad1e276..761c39e0e21 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -248,17 +248,17 @@ static enum shift_alg shift_alg_si[2][3][32] = {
@@ -85,7 +85,7 @@ index 7959ad1e276..82f38181372 100644
  	{
  	  info->remainder = count - 24;
  
-@@ -3874,7 +3900,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3874,7 +3900,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
  	      goto end;
  	    case SHIFT_ASHIFTRT:
@@ -93,10 +93,11 @@ index 7959ad1e276..82f38181372 100644
 +	      info->remainder = count - 24;
 +	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
 +	      info->cc_special = OLD_CC_SET_ZNV;
++	      goto end;
  	    }
  	}
        else if (count == 29)
-@@ -3900,7 +3928,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3900,7 +3929,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		}
  	      goto end;
  	    case SHIFT_ASHIFTRT:
@@ -104,10 +105,11 @@ index 7959ad1e276..82f38181372 100644
 +	      info->remainder = count - 24;
 +	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
 +	      info->cc_special = OLD_CC_SET_ZNV;
++	      goto end;
  	    }
  	}
        else if (count == 30)
-@@ -3920,7 +3950,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3920,7 +3952,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
  	      goto end;
  	    case SHIFT_ASHIFTRT:
@@ -115,6 +117,7 @@ index 7959ad1e276..82f38181372 100644
 +	      info->remainder = count - 24;
 +	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
 +	      info->cc_special = OLD_CC_SET_ZNV;
++	      goto end;
  	    }
  	}
        else if (count == 31)
