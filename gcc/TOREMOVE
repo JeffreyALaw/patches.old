@@ -30,3 +30,7 @@ gcc/testsuite/gcc.c-torture/execute/simd-1.c
 gcc/testsuite/gcc.c-torture/execute/arith-rand-ll.c
 # These tests are a bit odd, but ultimately report non-unique names
 gcc/testsuite/c-c++-common/goacc/privatization-1-compute.c
+# These seem to ping-pong on the cross-glibc configurations
+gcc/testsuite/gcc.dg/pie-static-1.c
+gcc/testsuite/gcc.dg/pie-static-2.c
+gcc/testsuite/gcc.dg/special-gcsec-1.c
