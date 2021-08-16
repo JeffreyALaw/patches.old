@@ -1,5 +1,5 @@
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 7959ad1e276..761c39e0e21 100644
+index 7959ad1e276..0c4e5089791 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -248,17 +248,17 @@ static enum shift_alg shift_alg_si[2][3][32] = {
@@ -29,43 +29,44 @@ index 7959ad1e276..761c39e0e21 100644
    }
  };
  
-@@ -374,7 +374,35 @@ h8300_option_override (void)
-       shift_alg_si[H8_300H][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
+@@ -375,6 +375,36 @@ h8300_option_override (void)
  
        /* H8S */
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][11] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][12] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][13] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][14] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][22] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][23] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][26] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFT][27] = SHIFT_LOOP;
-+
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][11] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][12] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][13] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][14] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][22] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][23] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][26] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_LSHIFTRT][27] = SHIFT_LOOP;
-+
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][11] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][12] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
        shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][22] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][23] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][26] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][28] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][29] = SHIFT_LOOP;
-+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][30] = SHIFT_LOOP;
++
++      shift_alg_si[H8_S][SHIFT_ASHIFT][11] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][12] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][13] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][14] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][22] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][23] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][26] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFT][27] = SHIFT_LOOP;
++
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][11] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][12] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][13] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][14] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][22] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][23] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][26] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_LSHIFTRT][27] = SHIFT_LOOP;
++
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][11] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][12] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][22] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][23] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][26] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][28] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][29] = SHIFT_LOOP;
++      shift_alg_si[H8_S][SHIFT_ASHIFTRT][30] = SHIFT_LOOP;
      }
  
    /* Work out a value for MOVE_RATIO.  */
-@@ -3814,8 +3842,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3814,8 +3844,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  	      gcc_unreachable ();
  	    }
  	}
@@ -75,7 +76,7 @@ index 7959ad1e276..761c39e0e21 100644
  	{
  	  info->remainder = count - 16;
  
-@@ -3834,8 +3861,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3834,8 +3863,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  	      goto end;
  	    }
  	}
@@ -85,7 +86,7 @@ index 7959ad1e276..761c39e0e21 100644
  	{
  	  info->remainder = count - 24;
  
-@@ -3874,7 +3900,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3874,7 +3902,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
  	      goto end;
  	    case SHIFT_ASHIFTRT:
@@ -97,7 +98,7 @@ index 7959ad1e276..761c39e0e21 100644
  	    }
  	}
        else if (count == 29)
-@@ -3900,7 +3929,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3900,7 +3931,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		}
  	      goto end;
  	    case SHIFT_ASHIFTRT:
@@ -109,7 +110,7 @@ index 7959ad1e276..761c39e0e21 100644
  	    }
  	}
        else if (count == 30)
-@@ -3920,7 +3952,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
+@@ -3920,7 +3954,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
  		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
  	      goto end;
  	    case SHIFT_ASHIFTRT:
