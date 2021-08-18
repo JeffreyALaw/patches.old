@@ -254,11 +254,6 @@ cd ../..
 cd ${TARGET}-obj/gcc/gcc
 
 if [ $RUNGCCTESTS = "yes" ]; then
-  # It appears that something in newlib is leaving turds in /tmp.
-  # Given enough of them, we'll start to see failures in tests which
-  # use tmpnam.  This is a bit of a big hammer.  The real fix is to
-  # figure out what test is leaving these behind.
-  find /tmp -name t\* -delete || true
   make -k -j $NPROC -l $NPROC check-gcc $CHECK_CXX RUNTESTFLAGS="$TESTARGS"
 fi
 
