@@ -1,5 +1,5 @@
 diff --git a/gcc/config.gcc b/gcc/config.gcc
-index 08e6c6779a5..1b14705f6cd 100644
+index 08e6c6779a5..561f5a43b8d 100644
 --- a/gcc/config.gcc
 +++ b/gcc/config.gcc
 @@ -2718,11 +2718,7 @@ mmix-knuth-mmixware)
@@ -15,7 +15,23 @@ index 08e6c6779a5..1b14705f6cd 100644
  	use_collect2=no
  	use_gcc_stdint=wrap
  	;;
-@@ -3550,12 +3546,12 @@ xtensa*-*-uclinux*)
+@@ -3537,30 +3533,30 @@ xstormy16-*-elf)
+ 	tmake_file="stormy16/t-stormy16"
+ 	;;
+ xtensa*-*-elf*)
+-	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h xtensa/elf.h"
++	tm_file="${tm_file} elfos.h newlib-stdint.h xtensa/elf.h"
+ 	extra_options="${extra_options} xtensa/elf.opt"
+ 	;;
+ xtensa*-*-linux*)
+-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
++	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
+ 	tmake_file="${tmake_file} xtensa/t-xtensa"
+ 	;;
+ xtensa*-*-uclinux*)
+-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
++	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
+ 	tmake_file="${tmake_file} xtensa/t-xtensa"
  	extra_options="${extra_options} xtensa/uclinux.opt"
  	;;
  am33_2.0-*-linux*)
@@ -27,6 +43,12 @@ index 08e6c6779a5..1b14705f6cd 100644
  m32c-*-rtems*)
 -	tm_file="dbxelf.h elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
 +	tm_file="elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
+ 	c_target_objs="m32c-pragma.o"
+ 	cxx_target_objs="m32c-pragma.o"
+  	;;
+ m32c-*-elf*)
+-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
++	tm_file="elfos.h newlib-stdint.h ${tm_file}"
  	c_target_objs="m32c-pragma.o"
  	cxx_target_objs="m32c-pragma.o"
   	;;
