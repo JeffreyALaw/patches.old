@@ -1,0 +1,59 @@
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index 08e6c6779a5..1b14705f6cd 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -2718,11 +2718,7 @@ mmix-knuth-mmixware)
+ 	use_gcc_stdint=wrap
+ 	;;
+ mn10300-*-*)
+-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+-	if test x$stabs = xyes
+-	then
+-		tm_file="${tm_file} dbx.h"
+-	fi
++	tm_file="elfos.h newlib-stdint.h ${tm_file}"
+ 	use_collect2=no
+ 	use_gcc_stdint=wrap
+ 	;;
+@@ -3550,12 +3546,12 @@ xtensa*-*-uclinux*)
+ 	extra_options="${extra_options} xtensa/uclinux.opt"
+ 	;;
+ am33_2.0-*-linux*)
+-	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
++	tm_file="mn10300/mn10300.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
+ 	gas=yes gnu_ld=yes
+ 	use_collect2=no
+ 	;;
+ m32c-*-rtems*)
+-	tm_file="dbxelf.h elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
++	tm_file="elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
+ 	c_target_objs="m32c-pragma.o"
+ 	cxx_target_objs="m32c-pragma.o"
+  	;;
+diff --git a/gcc/config/mn10300/linux.h b/gcc/config/mn10300/linux.h
+index 657bfe46405..44825eb4ac1 100644
+--- a/gcc/config/mn10300/linux.h
++++ b/gcc/config/mn10300/linux.h
+@@ -44,8 +44,6 @@
+ #undef  PROCESSOR_DEFAULT
+ #define PROCESSOR_DEFAULT PROCESSOR_AM33_2
+ 
+-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+-
+ extern int mn10300_protect_label;
+ 
+ #undef  PRINT_OPERAND
+diff --git a/gcc/config/mn10300/mn10300.h b/gcc/config/mn10300/mn10300.h
+index d94d8e6ca53..cb0d072846d 100644
+--- a/gcc/config/mn10300/mn10300.h
++++ b/gcc/config/mn10300/mn10300.h
+@@ -649,9 +649,6 @@ do {									     \
+   if ((LOG) != 0)			\
+     fprintf (FILE, "\t.align %d\n", (LOG))
+ 
+-/* We don't have to worry about dbx compatibility for the mn10300.  */
+-#define DEFAULT_GDB_EXTENSIONS 1
+-
+ /* Use dwarf2 debugging info by default.  */
+ #undef  PREFERRED_DEBUGGING_TYPE
+ #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
