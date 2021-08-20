@@ -76,7 +76,7 @@ index 0c4e5089791..59186e34e29 100644
 +	  switch (shift_type)
 +	    {
 +	    case SHIFT_ASHIFT:
-+	      info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t#2,%S0\n\trotr.l\t#1,%S0\n\tsub.w\t%f0,%f0";
++	      info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t#2,%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
 +	      goto end;
 +	    case SHIFT_LSHIFTRT:
 +	      info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
