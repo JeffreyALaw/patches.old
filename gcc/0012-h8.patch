@@ -427,8 +427,8 @@ index 29190532e49..54d3bc50b38 100644
 +;;
 +(define_expand "cstore<mode>4"
 +  [(use (match_operator 1 "eqne_operator"
-+         [(match_operand:QHSI 2 "h8300_dst_operand" "")
-+          (match_operand:QHSI 3 "h8300_src_operand" "")]))
++         [(match_operand:QHSI 2 "register_operand" "")
++          (match_operand:QHSI 3 "register_operand" "")]))
 +   (clobber (match_operand:QHSI 0 "register_operand"))]
 +  ""
 +  {
