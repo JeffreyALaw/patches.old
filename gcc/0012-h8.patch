@@ -469,9 +469,9 @@ index 29190532e49..54d3bc50b38 100644
 +
 +;; Recognize this scc and generate code we can match
 +(define_insn_and_split "*cstore<mode>"
-+  [(set (match_operand:QHSI 0 "register_operand" "")
-+	(ltu:QHSI (match_operand:QHSI 1 "register_operand" "")
-+		  (match_operand:QHSI 2 "register_operand" "")))]
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(ltu:QHSI (match_operand:QHSI 1 "register_operand" "r")
++		  (match_operand:QHSI 2 "register_operand" "r")))]
 +  ""
 +  "#"
 +  "&& reload_completed"
@@ -481,9 +481,9 @@ index 29190532e49..54d3bc50b38 100644
 +	(ne:QHSI (reg:CCC CC_REG) (const_int 0)))])
 +
 +(define_insn_and_split "*cstore<mode>"
-+  [(set (match_operand:QHSI 0 "register_operand" "")
-+	(geu:QHSI (match_operand:QHSI 1 "register_operand" "")
-+		  (match_operand:QHSI 2 "register_operand" "")))]
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(geu:QHSI (match_operand:QHSI 1 "register_operand" "r")
++		  (match_operand:QHSI 2 "register_operand" "r")))]
 +  ""
 +  "#"
 +  "&& reload_completed"
