@@ -488,7 +488,7 @@ index 29190532e49..54d3bc50b38 100644
 +  "#"
 +  "&& reload_completed"
 +  [(set (reg:CCC CC_REG)
-+	(ltu:CCC (match_dup 1) (match_dup 0)))
++	(ltu:CCC (match_dup 1) (match_dup 2)))
 +   (set (match_dup 0)
 +	(eq:QHSI (reg:CCC CC_REG) (const_int 0)))])
 +
