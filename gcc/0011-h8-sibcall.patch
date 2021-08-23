@@ -12,7 +12,7 @@ index 744337d6667..4ca9a5a57c0 100644
  extern int h8300_current_function_monitor_function_p (void);
  extern int h8300_initial_elimination_offset (int, int);
 diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
-index 8ccacecba79..96a404e448a 100644
+index 8ccacecba79..db85f75c4ca 100644
 --- a/gcc/config/h8300/h8300.c
 +++ b/gcc/config/h8300/h8300.c
 @@ -874,7 +874,7 @@ h8300_can_use_return_insn_p (void)
@@ -24,7 +24,21 @@ index 8ccacecba79..96a404e448a 100644
  {
    int regno;
    int saved_regs;
-@@ -936,7 +936,7 @@ h8300_expand_epilogue (void)
+@@ -919,6 +919,7 @@ h8300_expand_epilogue (void)
+ 	  /* See if this pop would be the last insn before the return.
+ 	     If so, use rte/l or rts/l instead of pop or ldm.l.  */
+ 	  if (TARGET_H8300SX
++	      && !sibcall_p
+ 	      && !frame_pointer_needed
+ 	      && frame_size == 0
+ 	      && (saved_regs & ((1 << (regno - n_regs + 1)) - 1)) == 0)
+@@ -931,12 +932,12 @@ h8300_expand_epilogue (void)
+   /* Pop frame pointer if we had one.  */
+   if (frame_pointer_needed)
+     {
+-      if (TARGET_H8300SX)
++      if (TARGET_H8300SX && !sibcall_p)
+ 	returned_p = true;
        h8300_push_pop (HARD_FRAME_POINTER_REGNUM, 1, true, returned_p);
      }
  
@@ -33,7 +47,7 @@ index 8ccacecba79..96a404e448a 100644
      emit_jump_insn (ret_rtx);
  }
  
-@@ -5533,6 +5508,12 @@ h8300_push_rounding (poly_int64 bytes)
+@@ -5533,6 +5509,21 @@ h8300_push_rounding (poly_int64 bytes)
  {
    return ((bytes + PARM_BOUNDARY / 8 - 1) & (-PARM_BOUNDARY / 8));
  }
@@ -41,12 +55,21 @@ index 8ccacecba79..96a404e448a 100644
 +static bool
 +h8300_ok_for_sibcall_p (tree fndecl, tree exp)
 +{
++  /* If either the caller or target are special, then assume sibling
++     calls are not OK.  */
++  if (!fndecl
++      || h8300_os_task_function_p (fndecl)
++      || h8300_monitor_function_p (fndecl)
++      || h8300_os_task_function_p (current_function_decl)
++      || h8300_monitor_function_p (current_function_decl))
++    return false;
++
 +  return 1;
 +}
  
  /* Initialize the GCC target structure.  */
  #undef TARGET_ATTRIBUTE_TABLE
-@@ -5628,4 +5609,7 @@ h8300_push_rounding (poly_int64 bytes)
+@@ -5628,4 +5619,7 @@ h8300_push_rounding (poly_int64 bytes)
  #undef TARGET_FLAGS_REGNUM
  #define TARGET_FLAGS_REGNUM 12
  
@@ -151,7 +174,7 @@ index 3e59fee58bd..8e675bdeda6 100644
 +		      (const_int 4)))])
 +
 diff --git a/gcc/config/h8300/proepi.md b/gcc/config/h8300/proepi.md
-index 44d59682496..02f0417cb5a 100644
+index 44d59682496..ab58d02fc7f 100644
 --- a/gcc/config/h8300/proepi.md
 +++ b/gcc/config/h8300/proepi.md
 @@ -98,7 +98,7 @@
@@ -170,7 +193,7 @@ index 44d59682496..02f0417cb5a 100644
 +
 +(define_expand "sibcall_epilogue"
 +  [(const_int 0)]
-+  "!TARGET_H8300S"
++  ""
 +  {
 +    h8300_expand_epilogue (true);
 +    DONE;
