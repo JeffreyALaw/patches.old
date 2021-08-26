@@ -240,7 +240,7 @@ index 29190532e49..eb68bebada9 100644
 +(define_insn "*store_z_<mode>"
 +  [(set (match_operand:QHSI 0 "register_operand" "=r")
 +	(ne:QHSI (reg:CCZ CC_REG) (const_int 0)))]
-+  "TARGET_H8300S && reload_completed"
++  "0 && TARGET_H8300S && reload_completed"
 +  {
 +    if (<MODE>mode == QImode)
 +      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.b\t#1,%X0";
@@ -257,7 +257,7 @@ index 29190532e49..eb68bebada9 100644
 +  [(set (match_operand:QHSI2 0 "register_operand" "=r")
 +	(ne:QHSI2 (match_operand:QHSI 1 "register_operand" "r")
 +		  (match_operand:QHSI 2 "register_operand" "r")))]
-+  "TARGET_H8300S"
++  "0 && TARGET_H8300S"
 +  "#"
 +  "&& reload_completed"
 +  [(set (reg:CCZ CC_REG)
@@ -272,7 +272,7 @@ index 29190532e49..eb68bebada9 100644
 +	(ne:QHSI2 (and:HI (match_operand:HI 1 "register_operand" "r")
 +			  (const_int -256))
 +		  (const_int 0)))]
-+  "TARGET_H8300S"
++  "0 && TARGET_H8300S"
 +  "#"
 +  "&& reload_completed"
 +  [(set (reg:CCZ CC_REG)
@@ -286,7 +286,7 @@ index 29190532e49..eb68bebada9 100644
 +	(ne:QHSI2 (and:SI (match_operand:SI 1 "register_operand" "r")
 +			  (const_int -65536))
 +		  (const_int 0)))]
-+  "TARGET_H8300S"
++  "0 && TARGET_H8300S"
 +  "#"
 +  "&& reload_completed"
 +  [(set (reg:CCZ CC_REG)
