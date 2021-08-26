@@ -1,0 +1,75 @@
+
+
+>
+> commit f075b8c5adcf9cb6336563c472c8d624c54184db
+> Author: Jan Hubicka <hubicka@ucw.cz>
+> Date:   Thu Aug 26 15:33:56 2021 +0200
+>
+>     Fix off-by-one error in try_merge_with
+>
+>     gcc/ChangeLog:
+>
+>             * ipa-modref-tree.h (modref_ref_node::verify): New member
+>             functoin.
+>             (modref_ref_node::insert): Use it.
+>             (modref_ref_node::try_mere_with): Fix off by one error.
+>
+> caused libgo build failure on Linux/i686:
+Sorry for that.  Jeff sent me independent testcase and it seems to be
+same problem.  It turns out that after merging two access ranges one
+needs to restart the walk since after this earlier access ranges may
+merge or be contained in the bigger range produced. I missed this case
+and apologize for it.
+
+	* ipa-modref-tree.h (modref_access_node::try_merge_with): Restart
+	search after merging.
+diff --git a/gcc/ipa-modref-tree.h b/gcc/ipa-modref-tree.h
+index 97934a91ada..fc55583e571 100644
+--- a/gcc/ipa-modref-tree.h
++++ b/gcc/ipa-modref-tree.h
+@@ -405,20 +411,35 @@ private:
+   void
+   try_merge_with (size_t index)
+   {
+-    modref_access_node *a2;
+     size_t i;
+ 
+-    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+-      if (i != index
+-	  && ((*accesses)[index].contains (*a2)
+-	      || (*accesses)[index].merge (*a2, false)))
++    for (i = 0; i < accesses->length ();)
++      if (i != index)
+ 	{
+-	  accesses->unordered_remove (i);
+-	  if (index == accesses->length ())
+-	    index = i;
++	  bool found = false, restart = false;
++	  modref_access_node *a = &(*accesses)[i];
++	  modref_access_node *n = &(*accesses)[index];
++
++	  if (n->contains (*a))
++	    found = true;
++	  if (!found && n->merge (*a, false))
++	    found = restart = true;
++	  if (found)
++	    {
++	      accesses->unordered_remove (i);
++	      if (index == accesses->length ())
++		{
++		  index = i;
++		  i++;
++		}
++	      if (restart)
++		i = 0;
++	    }
+ 	  else
+-	    i--;
++	    i++;
+ 	}
++      else
++	i++;
+   }
+ };
+ 
+
