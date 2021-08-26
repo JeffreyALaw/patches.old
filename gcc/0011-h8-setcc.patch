@@ -1,0 +1,302 @@
+diff --git a/gcc/config/h8300/bitfield.md b/gcc/config/h8300/bitfield.md
+index 82cb161d126..0d28c750a6a 100644
+--- a/gcc/config/h8300/bitfield.md
++++ b/gcc/config/h8300/bitfield.md
+@@ -338,17 +338,6 @@
+ }
+   [(set_attr "length_table" "bitfield")])
+ 
+-;;(define_expand "cstore<mode>4"
+-;;  [(use (match_operator 1 "eqne_operator"
+-;;         [(match_operand:QHSI 2 "h8300_dst_operand" "")
+-;;          (match_operand:QHSI 3 "h8300_src_operand" "")]))
+-;;   (clobber (match_operand:QHSI 0 "register_operand"))]
+-;;  "TARGET_H8300SX"
+-;;  {
+-;;    h8300_expand_store (operands);
+-;;    DONE;
+-;;  })
+-
+ ;;(define_insn "*bstzhireg"
+ ;;  [(set (match_operand:HI 0 "register_operand" "=r")
+ ;;	(match_operator:HI 1 "eqne_operator" [(cc0) (const_int 0)]))]
+diff --git a/gcc/config/h8300/h8300-protos.h b/gcc/config/h8300/h8300-protos.h
+index 3d344018ff2..4a9624f91d6 100644
+--- a/gcc/config/h8300/h8300-protos.h
++++ b/gcc/config/h8300/h8300-protos.h
+@@ -45,7 +45,6 @@ extern int compute_a_shift_cc (rtx *, rtx_code);
+ #ifdef HAVE_ATTR_cc
+ extern enum attr_cc compute_plussi_cc (rtx *);
+ #endif
+-extern void h8300_expand_branch (rtx[]);
+ extern void h8300_expand_store (rtx[]);
+ extern bool expand_a_shift (machine_mode, enum rtx_code, rtx[]);
+ extern int h8300_shift_needs_scratch_p (int, machine_mode, rtx_code);
+diff --git a/gcc/config/h8300/h8300.c b/gcc/config/h8300/h8300.c
+index 5f7251ab78d..a63c3220e66 100644
+--- a/gcc/config/h8300/h8300.c
++++ b/gcc/config/h8300/h8300.c
+@@ -3256,30 +3256,8 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands, rtx_
+   return length;
+ }
+ 
+-
+ #if 0
+-/* Expand a conditional branch.  */
+-
+-void
+-h8300_expand_branch (rtx operands[])
+-{
+-  enum rtx_code code = GET_CODE (operands[0]);
+-  rtx op0 = operands[1];
+-  rtx op1 = operands[2];
+-  rtx label = operands[3];
+-  rtx tmp;
+-
+-  tmp = gen_rtx_COMPARE (VOIDmode, op0, op1);
+-  emit_insn (gen_rtx_SET (cc0_rtx, tmp));
+-
+-  tmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+-			      gen_rtx_LABEL_REF (VOIDmode, label),
+-			      pc_rtx);
+-  emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+-}
+-
+-
++
+ /* Expand a conditional store.  */
+ 
+ void
+diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
+index 7f49e4284f2..e81e21b103e 100644
+--- a/gcc/config/h8300/h8300.md
++++ b/gcc/config/h8300/h8300.md
+@@ -223,6 +223,7 @@
+ (define_mode_iterator HSI [HI SI])
+ 
+ (define_mode_iterator QHSI [QI HI SI])
++(define_mode_iterator QHSI2 [QI HI SI])
+ 
+ (define_mode_iterator QHSIF [QI HI SI SF])
+ 
+@@ -233,6 +234,14 @@
+ (define_code_iterator logicals [ior xor and])
+ 
+ (define_code_iterator ors [ior xor])
++
++(define_code_iterator eqne [eq ne])
++
++;; For storing the C flag, map from the unsigned comparison to the right
++;; code for testing the C bit.
++(define_code_iterator geultu [geu ltu])
++(define_code_attr geultu_to_c [(geu "eq") (ltu "ne")])
++
+ 
+ (include "movepush.md")
+ (include "mova.md")
+diff --git a/gcc/config/h8300/testcompare.md b/gcc/config/h8300/testcompare.md
+index 29190532e49..eb68bebada9 100644
+--- a/gcc/config/h8300/testcompare.md
++++ b/gcc/config/h8300/testcompare.md
+@@ -61,6 +61,15 @@
+   "mov.b	%t0,%t0"
+   [(set_attr "length" "2")])
+ 
++(define_insn "*tsthi_upper_z"
++  [(set (reg:CCZ CC_REG)
++	(compare (and:HI (match_operand:HI 0 "register_operand" "r")
++			 (const_int -256))
++		 (const_int 0)))]
++  "reload_completed"
++  "mov.b	%t0,%t0"
++  [(set_attr "length" "2")])
++
+ (define_insn "*tstsi_upper"
+   [(set (reg:CCZN CC_REG)
+ 	(compare (and:SI (match_operand:SI 0 "register_operand" "r")
+@@ -70,6 +79,47 @@
+   "mov.w	%e0,%e0"
+   [(set_attr "length" "2")])
+ 
++(define_insn "*tstsi_upper_z"
++  [(set (reg:CCZ CC_REG)
++	(compare (and:SI (match_operand:SI 0 "register_operand" "r")
++			 (const_int -65536))
++		 (const_int 0)))]
++  "reload_completed"
++  "mov.w	%e0,%e0"
++  [(set_attr "length" "2")])
++
++(define_insn "*cmp<mode>_c"
++  [(set (reg:CCC CC_REG)
++	(ltu (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
++	     (match_operand:QHSI 1 "h8300_src_operand" "rQi")))]
++  "reload_completed"
++  {
++    if (<MODE>mode == QImode)
++      return "cmp.b	%X1,%X0";
++    else if (<MODE>mode == HImode)
++      return "cmp.w	%T1,%T0";
++    else if (<MODE>mode == SImode)
++      return "cmp.l	%S1,%S0";
++    gcc_unreachable ();
++  }
++  [(set_attr "length_table" "add")])
++
++(define_insn "*cmp<mode>_z"
++  [(set (reg:CCZ CC_REG)
++	(ne (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
++	    (match_operand:QHSI 1 "h8300_src_operand" "rQi")))]
++  "reload_completed"
++  {
++    if (<MODE>mode == QImode)
++      return "cmp.b	%X1,%X0";
++    else if (<MODE>mode == HImode)
++      return "cmp.w	%T1,%T0";
++    else if (<MODE>mode == SImode)
++      return "cmp.l	%S1,%S0";
++    gcc_unreachable ();
++  }
++  [(set_attr "length_table" "add")])
++
+ (define_insn "*cmpqi"
+   [(set (reg:CC CC_REG)
+ 	(compare (match_operand:QI 0 "h8300_dst_operand" "rQ")
+@@ -144,3 +194,136 @@
+   [(parallel [(set (reg:CCZN CC_REG) (compare:CCZN (match_dup 1) (const_int 0)))
+ 	      (set (match_dup 0) (match_dup 1))])])
+ 
++;; This exists solely to convince ifcvt to try some store-flag sequences.
++;;
++;; Essentially we don't want to expose a general store-flag capability.
++;; The only generally useful/profitable case is when we want to test the
++;; C bit.  In that case we can use addx, subx, bst, or bist to get the bit
++;; into a GPR.
++;;
++;; Others could be handled with stc, shifts and masking, but it likely isn't
++;; profitable.
++;;
++(define_expand "cstore<mode>4"
++  [(use (match_operator 1 "eqne_operator"
++         [(match_operand:QHSI 2 "h8300_dst_operand" "")
++          (match_operand:QHSI 3 "h8300_src_operand" "")]))
++   (clobber (match_operand:QHSI 0 "register_operand"))]
++  ""
++  {
++    FAIL;
++  })
++
++;; Storing the C bit is pretty simple since there are many ways to
++;; introduce it into a GPR.  addx, subx and a variety of bit manipulation
++;; instructions
++;;
++(define_insn "*store_c_<mode>"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(eqne:QHSI (reg:CCC CC_REG) (const_int 0)))]
++  "reload_completed"
++  {
++    if (<CODE> == NE)
++      {
++	if (<MODE>mode == QImode)
++	  return "xor.b\t%X0,%X0\;bst\t#0,%X0";
++	else if (<MODE>mode == HImode)
++	  return "xor.w\t%T0,%T0\;bst\t#0,%s0";
++	else if (<MODE>mode == SImode)
++	  return "xor.l\t%S0,%S0\;bst\t#0,%w0";
++	gcc_unreachable ();
++      }
++    else if (<CODE> == EQ)
++      {
++	if (<MODE>mode == QImode)
++	  return "xor.b\t%X0,%X0\;bist\t#0,%X0";
++	else if (<MODE>mode == HImode)
++	  return "xor.w\t%T0,%T0\;bist\t#0,%s0";
++	else if (<MODE>mode == SImode)
++	  return "xor.l\t%S0,%S0\;bist\t#0,%w0";
++	gcc_unreachable ();
++      }
++  }
++  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 6 : 4"))])
++
++;; Recognize this scc and generate code we can match
++(define_insn_and_split "*store_c_i_<mode>"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(geultu:QHSI (match_operand:QHSI 1 "register_operand" "r")
++		     (match_operand:QHSI 2 "register_operand" "r")))]
++  ""
++  "#"
++  "&& reload_completed"
++  [(set (reg:CCC CC_REG)
++	(ltu:CCC (match_dup 1) (match_dup 2)))
++   (set (match_dup 0)
++	(<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0)))])
++
++;; Using the Z bit is more difficult than the C bit as we only have
++;; stc to get the data from the condition code regsiter into a GPR.
++;; But that copies a bunch of stuff we don't need and the Z bit is not
++;; at a convenient location.  So we have to mask and shift which
++;; increases the cost.
++(define_insn "*store_z_<mode>"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(ne:QHSI (reg:CCZ CC_REG) (const_int 0)))]
++  "TARGET_H8300S && reload_completed"
++  {
++    if (<MODE>mode == QImode)
++      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.b\t#1,%X0";
++    else if (<MODE>mode == HImode)
++      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.w\t#1,%T0";
++    else if (<MODE>mode == SImode)
++      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.l\t#1,%S0";
++    gcc_unreachable ();
++  }
++  [(set (attr "length") (symbol_ref "(<MODE>mode == SImode
++				      ? 10 : <MODE>mode == HImode ? 8 : 6)"))])
++
++(define_insn_and_split "*store_z"
++  [(set (match_operand:QHSI2 0 "register_operand" "=r")
++	(ne:QHSI2 (match_operand:QHSI 1 "register_operand" "r")
++		  (match_operand:QHSI 2 "register_operand" "r")))]
++  "TARGET_H8300S"
++  "#"
++  "&& reload_completed"
++  [(set (reg:CCZ CC_REG)
++	(ne:CCZ (match_dup 1) (match_dup 2)))
++   (set (match_dup 0)
++	(ne:QHSI2 (reg:CCZ CC_REG) (const_int 0)))])
++
++;; We can test the upper byte of a HImode register and the upper word
++;; of a SImode register
++(define_insn_and_split "*store_z"
++  [(set (match_operand:QHSI2 0 "register_operand" "=r")
++	(ne:QHSI2 (and:HI (match_operand:HI 1 "register_operand" "r")
++			  (const_int -256))
++		  (const_int 0)))]
++  "TARGET_H8300S"
++  "#"
++  "&& reload_completed"
++  [(set (reg:CCZ CC_REG)
++	(compare (and:HI (match_dup 1) (const_int -256))
++		 (const_int 0)))
++   (set (match_dup 0)
++	(ne:QHSI2 (reg:CCZ CC_REG) (const_int 0)))])
++
++(define_insn_and_split "*store_z"
++  [(set (match_operand:QHSI2 0 "register_operand" "=r")
++	(ne:QHSI2 (and:SI (match_operand:SI 1 "register_operand" "r")
++			  (const_int -65536))
++		  (const_int 0)))]
++  "TARGET_H8300S"
++  "#"
++  "&& reload_completed"
++  [(set (reg:CCZ CC_REG)
++	(compare (and:SI (match_dup 1) (const_int -65536))
++		 (const_int 0)))
++   (set (match_dup 0)
++	(ne:QHSI2 (reg:CCZ CC_REG) (const_int 0)))])
++
++;; We could probably handle N on the H8/SX, but there's a richer set of
++;; primitives to work with on the H8/SX, so a different approach may be
++;; warranted.  It might be advantageous to handle N on H8/S, but it's hard
++;; to see how it would be profitable on the older models given the need
++;; to shift 3 positions.
