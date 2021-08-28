@@ -52,7 +52,7 @@ index 9ff7a51077e..fefbfaa51e6 100644
  
 +(define_insn "*cmp<mode>_z"
 +  [(set (reg:CCZ CC_REG)
-+	(ne (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
++	(eq (match_operand:QHSI 0 "h8300_dst_operand" "rQ")
 +	    (match_operand:QHSI 1 "h8300_src_operand" "rQi")))]
 +  "reload_completed"
 +  {
