@@ -1,0 +1,14 @@
+diff --git a/libgcc/unwind-arm-common.inc b/libgcc/unwind-arm-common.inc
+index c9b70c10d4f..78adf17dc51 100644
+--- a/libgcc/unwind-arm-common.inc
++++ b/libgcc/unwind-arm-common.inc
+@@ -52,7 +52,9 @@
+ 
+ /* We add a prototype for abort here to avoid creating a dependency on
+    target headers.  */
++#ifndef abort
+ extern void abort (void);
++#endif
+ 
+ /* Definitions for C++ runtime support routines.  We make these weak
+    declarations to avoid pulling in libsupc++ unnecessarily.  */
