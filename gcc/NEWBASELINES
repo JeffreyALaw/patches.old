@@ -2,7 +2,10 @@
 # should be empty, but we can place a target in here if it needs a baseline
 # reset.  
 xstormy16-elf
-iq2000-elf
 h8300-elf
 ft32-elf
 frv-elf
+fr30-elf
+cris-elf
+c6x-elf
+arc-elf
