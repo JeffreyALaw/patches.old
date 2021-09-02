@@ -1,6 +1,9 @@
 # This file contains the job names that need fresh baselines.  In general it
 # should be empty, but we can place a target in here if it needs a baseline
 # reset.  
-mips64el-linux-gnu
-nios2-linux-gnu
-mipsisa32r2-linux-gnu
+nds32be-elf
+s390-linux-gnu
+rl78-elf
+mips64-linux-gnu
+lm32-elf
+nds32le-elf
