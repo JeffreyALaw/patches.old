@@ -2,11 +2,7 @@
 # should be empty, but we can place a target in here if it needs a baseline
 # reset.  
 xstormy16-elf
-sh3-linux-gnu
-sh3eb-linux-gnu
-moxie-elf
-microblaze-linux
-mcore-elf
-m32r-elf
 iq2000-elf
 h8300-elf
+ft32-elf
+frv-elf
