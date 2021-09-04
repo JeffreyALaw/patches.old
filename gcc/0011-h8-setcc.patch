@@ -1,163 +1,151 @@
 diff --git a/gcc/config/h8300/h8300.md b/gcc/config/h8300/h8300.md
-index 89bfcf11126..2332a1ea135 100644
+index 89bfcf11126..e81e21b103e 100644
 --- a/gcc/config/h8300/h8300.md
 +++ b/gcc/config/h8300/h8300.md
-@@ -235,6 +235,7 @@
- (define_code_iterator ors [ior xor])
+@@ -223,6 +223,7 @@
+ (define_mode_iterator HSI [HI SI])
  
- (define_code_iterator eqne [eq ne])
-+(define_code_attr eqne_invert [(eq "ne") (ne "eq")])
+ (define_mode_iterator QHSI [QI HI SI])
++(define_mode_iterator QHSI2 [QI HI SI])
  
- ;; For storing the C flag, map from the unsigned comparison to the right
- ;; code for testing the C bit.
+ (define_mode_iterator QHSIF [QI HI SI SF])
+ 
 diff --git a/gcc/config/h8300/testcompare.md b/gcc/config/h8300/testcompare.md
-index 9ff7a51077e..4b87fd279dd 100644
+index 9ff7a51077e..3f23e2f95cf 100644
 --- a/gcc/config/h8300/testcompare.md
 +++ b/gcc/config/h8300/testcompare.md
-@@ -61,6 +61,15 @@
-   "mov.b	%t0,%t0"
-   [(set_attr "length" "2")])
- 
-+(define_insn "*tsthi_upper_z"
-+  [(set (reg:CCZ CC_REG)
-+	(compare (and:HI (match_operand:HI 0 "register_operand" "r")
-+			 (const_int -256))
-+		 (const_int 0)))]
-+  "reload_completed"
-+  "mov.b	%t0,%t0"
-+  [(set_attr "length" "2")])
-+
- (define_insn "*tstsi_upper"
-   [(set (reg:CCZN CC_REG)
- 	(compare (and:SI (match_operand:SI 0 "register_operand" "r")
-@@ -86,6 +95,22 @@
-   }
-   [(set_attr "length_table" "add")])
- 
-+(define_insn "*cmpqi_z"
-+  [(set (reg:CCZ CC_REG)
-+	(eq (match_operand:QI 0 "h8300_dst_operand" "rQ")
-+	    (match_operand:QI 1 "h8300_src_operand" "rQi")))]
-+  "reload_completed"
-+  { return "cmp.b	%X1,%X0"; }
-+  [(set_attr "length_table" "add")])
-+
-+(define_insn "*cmphi_z"
-+  [(set (reg:CCZ CC_REG)
-+	(eq (match_operand:HI 0 "h8300_dst_operand" "rQ")
-+	    (match_operand:HI 1 "h8300_src_operand" "rQi")))]
-+  "reload_completed"
-+  { return "cmp.w	%T1,%T0"; }
-+  [(set_attr "length_table" "add")])
-+
- (define_insn "*cmpqi"
-   [(set (reg:CC CC_REG)
- 	(compare (match_operand:QI 0 "h8300_dst_operand" "rQ")
-@@ -209,6 +234,8 @@
- 	  return "xor.l\t%S0,%S0\;bist\t#0,%w0";
- 	gcc_unreachable ();
-       }
-+    else
-+      gcc_unreachable ();
+@@ -212,11 +212,96 @@
    }
    [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 6 : 4"))])
  
-@@ -224,3 +251,98 @@
++;; Similarly, but with a negated result
++(define_insn "*store_neg_c_<mode>"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(neg:QHSI (ne:QHSI (reg:CCC CC_REG) (const_int 0))))]
++  "reload_completed"
++  {
++    if (<MODE>mode == QImode)
++      return "subx\t%X0,%X0";
++    else if (<MODE>mode == HImode)
++      return "subx\t%X0,%X0\;exts.w\t%T0";
++    else if (<MODE>mode == SImode)
++      return "subx\t%X0,%X0\;exts.w\t%T0\;exts.l\t%S0";
++    gcc_unreachable ();
++  }
++  [(set
++     (attr "length")
++     (symbol_ref "(<MODE>mode == SImode ? 6 : <MODE>mode == HImode ? 4 : 2)"))])
++
++;; Using b[i]st we can store the C bit into any of the low 16 bits of
++;; a destination.  We can also rotate it up into the high bit of a 32 bit
++;; destination.
++(define_insn "*store_c_sb<mode>"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(ashift:QHSI (eqne:QHSI (reg:CCC CC_REG) (const_int 0))
++		     (match_operand 1 "immediate_operand" "n")))]
++  "(reload_completed
++    && (INTVAL (operands[1]) == 31 || INTVAL (operands[1]) <= 15))"
++  {
++    if (<CODE> == NE)
++      {
++	if (<MODE>mode == QImode)
++	  return "xor.b\t%X0,%X0\;bst\t%1,%X0";
++	else if (<MODE>mode == HImode && INTVAL (operands[1]) < 8)
++	  return "xor.w\t%T0,%T0\;bst\t%1,%X0";
++	else if (<MODE>mode == HImode)
++	  {
++	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
++	    output_asm_insn ("xor.w\t%T0,%T0\;bst\t%1,%t0", operands);
++	    return "";
++	  }
++	else if (<MODE>mode == SImode && INTVAL (operands[1]) == 31)
++	  return "xor.l\t%S0,%S0\;rotxr.l\t%S0";
++	else if (<MODE>mode == SImode && INTVAL (operands[1]) < 8)
++	  return "xor.l\t%S0,%S0\;bst\t%1,%X0";
++	else if (<MODE>mode == SImode)
++	  {
++	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
++	    output_asm_insn ("xor.l\t%S0,%S0\;bst\t%1,%t0", operands);
++	    return "";
++	  }
++	gcc_unreachable ();
++      }
++    else if (<CODE> == EQ)
++      {
++	if (<MODE>mode == QImode)
++	  return "xor.b\t%X0,%X0\;bist\t%1,%X0";
++	else if (<MODE>mode == HImode && INTVAL (operands[1]) < 8)
++	  return "xor.w\t%T0,%T0\;bist\t%1,%X0";
++	else if (<MODE>mode == HImode)
++	  {
++	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
++	    output_asm_insn ("xor.w\t%T0,%T0\;bist\t%1,%t0", operands);
++	    return "";
++	  }
++	else if (<MODE>mode == SImode && INTVAL (operands[1]) == 31)
++	  return "xor.l\t%S0,%S0\;bixor\t#0,%X0\;rotxr.l\t%S0";
++	else if (<MODE>mode == SImode && INTVAL (operands[1]) < 8)
++	  return "xor.l\t%S0,%S0\;bist\t%1,%X0";
++	else if (<MODE>mode == SImode)
++	  {
++	    operands[1] = GEN_INT (INTVAL (operands[1]) - 8);
++	    output_asm_insn ("xor.l\t%S0,%S0\;bist\t%1,%t0", operands);
++	    return "";
++	  }
++	gcc_unreachable ();
++      }
++    gcc_unreachable ();
++  }
++  [(set
++     (attr "length")
++     (symbol_ref "(<MODE>mode == QImode ? 4
++		   : <MODE>mode == HImode ? 4
++		   : <CODE> == NE ? 6
++		   : INTVAL (operands[1]) == 31 ? 8 : 6)"))])
++
+ ;; Recognize this scc and generate code we can match
+-(define_insn_and_split "*store_c_i_<mode>"
++(define_insn_and_split "*store_c"
+   [(set (match_operand:QHSI 0 "register_operand" "=r")
+-	(geultu:QHSI (match_operand:QHSI 1 "register_operand" "r")
+-		     (match_operand:QHSI 2 "register_operand" "r")))]
++	(geultu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
++		     (match_operand:QHSI2 2 "register_operand" "r")))]
+   ""
+   "#"
+   "&& reload_completed"
+@@ -224,3 +309,34 @@
  	(ltu:CCC (match_dup 1) (match_dup 2)))
     (set (match_dup 0)
  	(<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0)))])
 +
-+;; Storing Z into a QImode destination is fairly easy on the H8/S and
-+;; newer as the stc; shift; mask is just 3 insns/6 bytes.  On the H8/300H
-+;; it is 4 insns/8 bytes which is a speed improvement, but a size
-+;; regression relative to the branchy sequence
-+;;
-+;; Storing inverted Z in QImode is not profitable on the H8/300H, but
-+;; is a speed improvement on the H8S.
-+(define_insn_and_split "*store_z_qi"
-+  [(set (match_operand:QI 0 "register_operand" "=r")
-+	(eq:QI (match_operand:HI 1 "register_operand" "r")
-+	       (match_operand:HI 2 "register_operand" "r")))]
-+  "TARGET_H8300S || !optimize_size"
++;; We can fold in negation of the result and generate better code than
++;; what the generic bits would do when testing for C == 1
++(define_insn_and_split "*store_neg_c"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++	(neg:QHSI
++	  (ltu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
++		    (match_operand:QHSI2 2 "register_operand" "r"))))]
++  ""
 +  "#"
 +  "&& reload_completed"
-+  [(set (reg:CCZ CC_REG)
-+	(eq:CCZ (match_dup 1) (match_dup 2)))
++  [(set (reg:CCC CC_REG)
++	(ltu:CCC (match_dup 1) (match_dup 2)))
 +   (set (match_dup 0)
-+	(ne:QI (reg:CCZ CC_REG) (const_int 0)))])
++	(neg:QHSI (ne:QHSI (reg:CCC CC_REG) (const_int 0))))])
 +
-+(define_insn_and_split "*store_z_i_qi"
-+  [(set (match_operand:QI 0 "register_operand" "=r")
-+	(ne:QI (match_operand:HI 1 "register_operand" "r")
-+	       (match_operand:HI 2 "register_operand" "r")))]
-+  "TARGET_H8300S"
++;; We can use rotates and bst/bist to put the C bit into various places
++;; in the destination.
++(define_insn_and_split "*store_c_shifted"
++  [(set (match_operand:QHSI 0 "register_operand" "=r")
++       (ashift:QHSI (geultu:QHSI (match_operand:QHSI2 1 "register_operand" "r")
++                                 (match_operand:QHSI2 2 "register_operand" "r"))
++		    (match_operand 3 "immediate_operand" "n")))]
++  "INTVAL (operands[3]) == 31 || INTVAL (operands[3]) <= 15"
 +  "#"
 +  "&& reload_completed"
-+  [(set (reg:CCZ CC_REG)
-+	(eq:CCZ (match_dup 1) (match_dup 2)))
++  [(set (reg:CCC CC_REG) (ltu:CCC (match_dup 1) (match_dup 2)))
 +   (set (match_dup 0)
-+	(eq:QI (reg:CCZ CC_REG) (const_int 0)))])
++	(ashift:QHSI (<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0))
++		     (match_dup 3)))])
 +
-+(define_insn "*store_z_qi"
-+  [(set (match_operand:QI 0 "register_operand" "=r")
-+	(ne:QI (reg:CCZ CC_REG) (const_int 0)))]
-+  "(TARGET_H8300S || !optimize_size) && reload_completed"
-+  {
-+    if (TARGET_H8300S)
-+      return "stc\tccr,%X0\;shar\t#2,%X0\;and\t#0x1,%X0";
-+    else
-+      return "stc\tccr,%X0\;shar\t%X0\;shar\t%X0\;and\t#0x1,%X0";
-+  }
-+  [(set (attr "length") (symbol_ref "TARGET_H8300S ? 6 : 8"))])
-+
-+(define_insn "*store_z_i_qi"
-+  [(set (match_operand:QI 0 "register_operand" "=r")
-+	(eq:QI (reg:CCZ CC_REG) (const_int 0)))]
-+  "(TARGET_H8300S || !optimize_size) && reload_completed"
-+  "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,%X0";
-+  [(set_attr "length" "8")])
-+
-+;; Storing Z or an inverted Z into a HImode destination is
-+;; profitable on the H8/S and older variants, but not on the
-+;; H8/SX where the branchy sequence can use the two-byte
-+;; mov-immediate that is specific to the H8/SX
-+(define_insn_and_split "*store_z_hi"
-+  [(set (match_operand:HI 0 "register_operand" "=r")
-+	(eqne:HI (match_operand:HI 1 "register_operand" "r")
-+		 (match_operand:HI 2 "register_operand" "r")))]
-+  "!TARGET_H8300SX"
-+  "#"
-+  "&& reload_completed"
-+  [(set (reg:CCZ CC_REG)
-+	(eq:CCZ (match_dup 1) (match_dup 2)))
-+   (set (match_dup 0)
-+	(<eqne_invert>:HI (reg:CCZ CC_REG) (const_int 0)))])
-+
-+(define_insn "*store_z_hi"
-+  [(set (match_operand:HI 0 "register_operand" "=r")
-+	(eqne:HI (reg:CCZ CC_REG) (const_int 0)))]
-+  "!TARGET_H8300SX"
-+  {
-+    if (<CODE> == NE)
-+      return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#0,%X0";
-+    else
-+      return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,%X0";
-+  }
-+  [(set_attr "length" "8")])
-+
-+
-+;; We can test the upper byte of a HImode register and the upper word
-+;; of a SImode register
-+(define_insn_and_split "*store_z"
-+  [(set (match_operand:HI 0 "register_operand" "=r")
-+	(eqne:HI (and:HI (match_operand:HI 1 "register_operand" "r")
-+			 (const_int -256))
-+		 (const_int 0)))]
-+  "!TARGET_H8300SX"
-+  "#"
-+  "&& reload_completed"
-+  [(set (reg:CCZ CC_REG)
-+	(compare (and:HI (match_dup 1) (const_int -256))
-+		 (const_int 0)))
-+   (set (match_dup 0)
-+	(<eqne_invert>:HI (reg:CCZ CC_REG) (const_int 0)))])
