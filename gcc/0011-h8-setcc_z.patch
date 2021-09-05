@@ -200,7 +200,7 @@ index 0ee3e360bea..fb58dab9940 100644
 +	if (<CODE> == NE)
 +	  {
 +	    if (TARGET_H8300S)
-+	      return "stc\tccr,%X0\;shll.b\t#2,%X0\;and.w\t#1,%T0";
++	      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.w\t#1,%T0";
 +	    return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#0,%X0";
 +	  }
 +	else
@@ -211,7 +211,7 @@ index 0ee3e360bea..fb58dab9940 100644
 +	if (<CODE> == NE)
 +	  {
 +	    if (TARGET_H8300S)
-+	      return "stc\tccr,%X0\;shll.b\t#2,%X0\;and.l\t#1,%S0";
++	      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.l\t#1,%S0";
 +	    return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%S0,%S0\;bst\t#0,%X0";
 +	  }
 +	else
